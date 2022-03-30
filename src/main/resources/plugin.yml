@@ -1,0 +1,15 @@
+name: RoseMinions
+main: dev.rosewood.roseminions.RoseMinions
+version: '@version@'
+api-version: '1.13'
+description: TBD
+author: Esophose
+softdepend:
+  - PlaceholderAPI
+permissions:
+  roseminions.basecommand:
+    description: Allows using the RoseMinions commands
+    default: true
+  roseminions.reload:
+    description: Allows running the reload command
+    default: op
