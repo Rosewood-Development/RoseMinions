@@ -10,7 +10,8 @@ import java.util.Collections;
 public class ConfigurationManager extends AbstractConfigurationManager {
 
     public enum Setting implements RoseSetting {
-        DISABLED_WORLDS("disabled-worlds", Collections.singletonList("disabled_world_name"), "A list of worlds that the plugin is disabled in");
+        DISABLED_WORLDS("disabled-worlds", Collections.singletonList("disabled_world_name"), "A list of worlds that the plugin is disabled in"),
+        MINION_UPDATE_FREQUENCY("minion-update-frequency", 1, "The number of ticks to wait between minion updates");
 
         private final String key;
         private final Object defaultValue;
@@ -61,12 +62,12 @@ public class ConfigurationManager extends AbstractConfigurationManager {
     @Override
     protected String[] getHeader() {
         return new String[] {
-                "__________                       _____   __        __",
-                "\\______   \\ ____  ______ ____   /     \\ |__| ____ |__| ____   ____   ______",
-                " |       _//  _ \\/  ___// __ \\ /  \\ /  \\|  |/    \\|  |/  _ \\ /    \\ /  ___/",
-                " |    |   (  <_> )___ \\\\  ___//    Y    \\  |   |  \\  (  <_> )   |  \\\\___ \\",
-                " |____|_  /\\____/____  >\\___  >____|__  /__|___|  /__|\\____/|___|  /____  >",
-                "        \\/           \\/     \\/        \\/        \\/               \\/     \\/"
+                "     __________                       _____   __        __",
+                "     \\______   \\ ____  ______ ____   /     \\ |__| ____ |__| ____   ____   ______",
+                "      |       _//  _ \\/  ___// __ \\ /  \\ /  \\|  |/    \\|  |/  _ \\ /    \\ /  ___/",
+                "      |    |   (  <_> )___ \\\\  ___//    Y    \\  |   |  \\  (  <_> )   |  \\\\___ \\",
+                "      |____|_  /\\____/____  >\\___  >____|__  /__|___|  /__|\\____/|___|  /____  >",
+                "             \\/           \\/     \\/        \\/        \\/               \\/     \\/"
         };
     }
 

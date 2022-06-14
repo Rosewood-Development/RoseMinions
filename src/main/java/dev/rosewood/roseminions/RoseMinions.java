@@ -3,11 +3,20 @@ package dev.rosewood.roseminions;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
+import dev.rosewood.roseminions.listener.EntitiesLoadListener;
+import dev.rosewood.roseminions.listener.MinionPlaceListener;
+import dev.rosewood.roseminions.listener.WorldListener;
 import dev.rosewood.roseminions.manager.CommandManager;
 import dev.rosewood.roseminions.manager.ConfigurationManager;
+import dev.rosewood.roseminions.manager.DataManager;
 import dev.rosewood.roseminions.manager.LocaleManager;
-import java.util.Collections;
+import dev.rosewood.roseminions.manager.MinionManager;
+import dev.rosewood.roseminions.manager.MinionModuleManager;
+import dev.rosewood.roseminions.manager.MinionTypeManager;
+import java.util.Arrays;
 import java.util.List;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.PluginManager;
 
 /**
  * @author Esophose
@@ -24,15 +33,26 @@ public class RoseMinions extends RosePlugin {
     }
 
     public RoseMinions() {
-        super(-1, 12626, ConfigurationManager.class, null, LocaleManager.class, CommandManager.class);
+        super(-1, 14807, ConfigurationManager.class, DataManager.class, LocaleManager.class, CommandManager.class);
 
         instance = this;
     }
 
     @Override
     public void enable() {
-        if (NMSUtil.getVersionNumber() < 16)
-            this.getLogger().severe(this.getDescription().getName() + " best supports 1.16 servers and newer. If you try to use part of the plugin that is not available for your current server version, expect to see some errors.");
+        if (NMSUtil.getVersionNumber() < 16) {
+            this.getLogger().severe(this.getDescription().getName() + " only supports 1.16.3 servers and newer. Disabling plugin...");
+            Bukkit.getPluginManager().disablePlugin(this);
+        }
+
+        PluginManager pluginManager = Bukkit.getPluginManager();
+        if (NMSUtil.getVersionNumber() > 16) {
+            pluginManager.registerEvents(new EntitiesLoadListener(this), this);
+        } else {
+            pluginManager.registerEvents(new WorldListener(this), this);
+        }
+
+        pluginManager.registerEvents(new MinionPlaceListener(this), this);
     }
 
     @Override
@@ -42,7 +62,11 @@ public class RoseMinions extends RosePlugin {
 
     @Override
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
-        return Collections.emptyList();
+        return Arrays.asList(
+                MinionModuleManager.class,
+                MinionTypeManager.class,
+                MinionManager.class
+        );
     }
 
 }
