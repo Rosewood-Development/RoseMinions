@@ -14,6 +14,10 @@ public abstract class MinionAnimation {
         this.settings.loadDefaults(this.getClass());
     }
 
+    public void mergeSettings(SettingsContainer settings) {
+        this.settings.merge(settings);
+    }
+
     public abstract void update();
 
     public abstract void updateEntity();

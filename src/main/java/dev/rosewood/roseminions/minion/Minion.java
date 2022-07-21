@@ -11,8 +11,10 @@ import java.io.ObjectOutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -26,7 +28,7 @@ public class Minion implements ObjectSerializable {
     private UUID owner;
     private Location location;
     private boolean chunkLoaded;
-    private final Map<String, MinionModule> modules;
+    private final Map<Class<? extends MinionModule>, MinionModule> modules;
 
     private MinionAnimation animation;
 
@@ -43,9 +45,14 @@ public class Minion implements ObjectSerializable {
         this.modules = new HashMap<>();
     }
 
-    public void setModules(Map<String, MinionModule> modules) {
+    public void setModules(Collection<MinionModule> modules) {
         this.modules.clear();
-        this.modules.putAll(modules);
+        this.modules.putAll(modules.stream().collect(HashMap::new, (map, module) -> map.put(module.getClass(), module), HashMap::putAll));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends MinionModule> Optional<T> getModule(Class<T> moduleClass) {
+        return Optional.ofNullable((T) this.modules.get(moduleClass));
     }
 
     public void setAnimation(MinionAnimation animation) {
@@ -132,9 +139,9 @@ public class Minion implements ObjectSerializable {
         outputStream.writeBoolean(this.chunkLoaded);
 
         outputStream.writeInt(this.modules.size());
-        for (Map.Entry<String, MinionModule> entry : this.modules.entrySet()) {
-            outputStream.writeUTF(entry.getKey());
-            entry.getValue().serialize(outputStream);
+        for (MinionModule module : this.modules.values()) {
+            outputStream.writeUTF(module.getName());
+            module.serialize(outputStream);
         }
     }
 

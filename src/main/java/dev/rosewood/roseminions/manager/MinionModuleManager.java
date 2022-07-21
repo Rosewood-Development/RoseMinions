@@ -5,6 +5,8 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.module.InventoryModule;
+import dev.rosewood.roseminions.minion.module.ItemPickupModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.MinionModuleInfo;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
@@ -101,6 +103,8 @@ public class MinionModuleManager extends Manager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onMinionModuleRegistration(MinionModuleRegistrationEvent event) {
         event.registerModule(SlayerModule.class);
+        event.registerModule(ItemPickupModule.class);
+        event.registerModule(InventoryModule.class);
     }
 
 }

@@ -10,6 +10,7 @@ import dev.rosewood.roseminions.manager.CommandManager;
 import dev.rosewood.roseminions.manager.ConfigurationManager;
 import dev.rosewood.roseminions.manager.DataManager;
 import dev.rosewood.roseminions.manager.LocaleManager;
+import dev.rosewood.roseminions.manager.MinionAnimationManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
@@ -64,6 +65,7 @@ public class RoseMinions extends RosePlugin {
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
         return Arrays.asList(
                 MinionModuleManager.class,
+                MinionAnimationManager.class,
                 MinionTypeManager.class,
                 MinionManager.class
         );

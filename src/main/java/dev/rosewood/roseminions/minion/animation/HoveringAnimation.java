@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+@MinionAnimationInfo(name = "hovering")
 public class HoveringAnimation extends MinionAnimation {
 
     public static final SettingAccessor<Boolean> SMALL;
@@ -33,9 +34,8 @@ public class HoveringAnimation extends MinionAnimation {
     private double speed;
     private double heightOffset;
 
-    public HoveringAnimation(Minion minion, SettingsContainer settings) {
+    public HoveringAnimation(Minion minion) {
         super(minion);
-        this.settings.merge(settings);
 
         this.theta = 0;
         this.speed = 0.05;
@@ -53,7 +53,7 @@ public class HoveringAnimation extends MinionAnimation {
         if (!newName.equals(armorStand.getCustomName()))
             armorStand.setCustomName(newName);
 
-        centerLocation.setY(centerLocation.getY() - this.heightOffset + Math.sin(this.theta) * 0.25);
+        centerLocation.setY(centerLocation.getY() - this.heightOffset + Math.sin(this.theta) * 0.2);
         centerLocation.setYaw((float) this.theta * 100);
         armorStand.teleport(centerLocation);
 
