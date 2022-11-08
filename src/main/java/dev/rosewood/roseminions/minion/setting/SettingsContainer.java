@@ -3,15 +3,12 @@ package dev.rosewood.roseminions.minion.setting;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
-import dev.rosewood.roseminions.model.ObjectSerializable;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import dev.rosewood.roseminions.model.DataSerializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SettingsContainer implements ObjectSerializable {
+public class SettingsContainer implements DataSerializable {
 
     public static final Multimap<Class<?>, DefaultSettingItem<?>> REGISTERED_SETTINGS = MultimapBuilder.hashKeys().arrayListValues().build();
 
@@ -71,23 +68,33 @@ public class SettingsContainer implements ObjectSerializable {
     }
 
     @Override
-    public void serialize(ObjectOutputStream outputStream) throws IOException {
-        int length = this.settings.size();
-        outputStream.writeInt(length);
-        for (Map.Entry<String, SettingItem<?>> entry : this.settings.entrySet()) {
-            outputStream.writeUTF(entry.getKey());
-            entry.getValue().serialize(outputStream);
-        }
+    public byte[] serialize() {
+        return DataSerializable.write(outputStream -> {
+            int length = this.settings.size();
+            outputStream.writeInt(length);
+            for (Map.Entry<String, SettingItem<?>> entry : this.settings.entrySet()) {
+                outputStream.writeUTF(entry.getKey());
+                byte[] itemBytes = entry.getValue().serialize();
+                outputStream.writeInt(itemBytes.length);
+                outputStream.write(itemBytes);
+            }
+        });
     }
 
     @Override
-    public void deserialize(ObjectInputStream inputStream) throws IOException {
-        int length = inputStream.readInt();
-        for (int i = 0; i < length; i++) {
-            String key = inputStream.readUTF();
-            SettingItem<?> item = this.getItem(key);
-            item.deserialize(inputStream);
-        }
+    public void deserialize(byte[] input) {
+        DataSerializable.read(input, inputStream -> {
+            int length = inputStream.readInt();
+            for (int i = 0; i < length; i++) {
+                String key = inputStream.readUTF();
+                int itemLength = inputStream.readInt();
+                byte[] itemBytes = new byte[itemLength];
+                inputStream.read(itemBytes);
+                SettingItem<?> item = this.getItem(key);
+                if (item != null)
+                    item.deserialize(itemBytes);
+            }
+        });
     }
 
     public record DefaultSettingItem<T>(SettingSerializer<T> serializer, String key, T defaultValue, String... comments) {
@@ -106,7 +113,7 @@ public class SettingsContainer implements ObjectSerializable {
 
     }
 
-    public static class SettingItem<T> implements ObjectSerializable {
+    public static class SettingItem<T> implements DataSerializable {
 
         private final SettingSerializer<T> serializer;
         private T value;
@@ -125,13 +132,22 @@ public class SettingsContainer implements ObjectSerializable {
         }
 
         @Override
-        public void serialize(ObjectOutputStream outputStream) throws IOException {
-            this.serializer.write(outputStream, this.value);
+        public byte[] serialize() {
+            return DataSerializable.write(outputStream -> {
+                byte[] valueBytes = this.serializer.write(this.value);
+                outputStream.writeInt(valueBytes.length);
+                outputStream.write(valueBytes);
+            });
         }
 
         @Override
-        public void deserialize(ObjectInputStream inputStream) throws IOException {
-            this.value = this.serializer.read(inputStream);
+        public void deserialize(byte[] input) {
+            DataSerializable.read(input, inputStream -> {
+                int valueLength = inputStream.readInt();
+                byte[] valueBytes = new byte[valueLength];
+                inputStream.read(valueBytes);
+                this.value = this.serializer.read(valueBytes);
+            });
         }
 
     }

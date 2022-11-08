@@ -2,12 +2,9 @@ package dev.rosewood.roseminions.minion.module;
 
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import dev.rosewood.roseminions.model.ObjectSerializable;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import dev.rosewood.roseminions.model.DataSerializable;
 
-public abstract class MinionModule implements ObjectSerializable {
+public abstract class MinionModule implements DataSerializable {
 
     protected final Minion minion;
     protected final SettingsContainer settings;
@@ -19,13 +16,13 @@ public abstract class MinionModule implements ObjectSerializable {
     }
 
     @Override
-    public void serialize(ObjectOutputStream outputStream) throws IOException {
-        this.settings.serialize(outputStream);
+    public final byte[] serialize() {
+        return this.settings.serialize();
     }
 
     @Override
-    public void deserialize(ObjectInputStream inputStream) throws IOException {
-        this.settings.deserialize(inputStream);
+    public final void deserialize(byte[] input) {
+        this.settings.deserialize(input);
     }
 
     public String getName() {
