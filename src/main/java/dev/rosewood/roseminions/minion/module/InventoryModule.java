@@ -17,6 +17,8 @@ public class InventoryModule extends MinionModule {
         INVENTORY_SIZE = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "inventory-size", 9, "How many individual items can be stored");
     }
 
+    public static void init() { }
+
     private final List<ItemStack> inventoryContents;
 
     public InventoryModule(Minion minion) {

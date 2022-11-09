@@ -30,6 +30,8 @@ public class HoveringAnimation extends MinionAnimation {
         DISPLAY_NAME = SettingsContainer.defineSetting(HoveringAnimation.class, SettingSerializers.STRING, "display-name", "", "The display name of the hovering skull");
     }
 
+    public static void init() { }
+
     private double theta;
     private double speed;
     private double heightOffset;
@@ -47,7 +49,7 @@ public class HoveringAnimation extends MinionAnimation {
         this.theta += this.speed;
 
         ArmorStand armorStand = this.minion.getDisplayEntity();
-        Location centerLocation = this.minion.getDisplayLocation().clone();
+        Location centerLocation = this.minion.getLocation();
 
         String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
         if (!newName.equals(armorStand.getCustomName()))
@@ -58,7 +60,7 @@ public class HoveringAnimation extends MinionAnimation {
         armorStand.teleport(centerLocation);
 
         if (MinionUtils.RANDOM.nextInt(10) == 0)
-            armorStand.getWorld().spawnParticle(Particle.END_ROD, centerLocation.clone().add(0, 1, 0), 1, 0.25, 0.25, 0.25, 0);
+            armorStand.getWorld().spawnParticle(Particle.END_ROD, centerLocation.clone().add(0, this.heightOffset, 0), 1, 0.25, 0.25, 0.25, 0);
     }
 
     @Override
@@ -72,7 +74,7 @@ public class HoveringAnimation extends MinionAnimation {
             this.heightOffset = 1.0;
         } else {
             armorStand.setSmall(false);
-            this.heightOffset = 0.5;
+            this.heightOffset = 1.5;
         }
 
         ItemStack skullItem = new ItemStack(Material.PLAYER_HEAD);

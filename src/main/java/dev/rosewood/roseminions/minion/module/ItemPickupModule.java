@@ -22,6 +22,8 @@ public class ItemPickupModule extends MinionModule {
         PICKUP_FREQUENCY = SettingsContainer.defineSetting(ItemPickupModule.class, SettingSerializers.LONG, "pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)");
     }
 
+    public static void init() { }
+
     private long lastPickupTime;
 
     public ItemPickupModule(Minion minion) {

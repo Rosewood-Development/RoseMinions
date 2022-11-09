@@ -36,7 +36,7 @@ public class MinionPlaceListener implements Listener {
         Minion minion = new Minion(event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
         SettingsContainer animationSettings = new SettingsContainer();
         animationSettings.loadDefaults(HoveringAnimation.class);
-        animationSettings.set(HoveringAnimation.SMALL, true);
+        animationSettings.set(HoveringAnimation.SMALL, Math.random() > 0.5);
         animationSettings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWNiOGU3MjBhMDI3MjRiN2MzNDNmZGQ0NDc5MGZhYjRjMGQxZjE2YWFmODExMzgxOTJjNzBmODEyY2U0ZjYyMiJ9fX0=");
         animationSettings.set(HoveringAnimation.DISPLAY_NAME, "<g#50:#ec9f05:#ff4e00>Slayer Minion");
 

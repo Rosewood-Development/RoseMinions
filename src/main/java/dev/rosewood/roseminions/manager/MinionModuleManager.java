@@ -13,6 +13,7 @@ import dev.rosewood.roseminions.minion.module.SlayerModule;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -41,17 +42,18 @@ public class MinionModuleManager extends Manager implements Listener {
 
         for (Class<? extends MinionModule> moduleClass : event.getRegisteredModules()) {
             try {
-                MinionModuleInfo moduleInfo = moduleClass.getAnnotation(MinionModuleInfo.class);
+                MinionModuleInfo moduleInfo = moduleClass.getDeclaredAnnotation(MinionModuleInfo.class);
                 if (moduleInfo == null)
                     throw new IllegalStateException("MinionModuleInfo annotation not found on " + moduleClass.getName());
 
                 String name = moduleInfo.name();
-                Constructor<? extends MinionModule> constructor = moduleClass.getConstructor(Minion.class);
-                this.moduleConstructors.put(name, constructor);
+                Method initMethod = moduleClass.getMethod("init");
+                initMethod.setAccessible(true);
+                initMethod.invoke(null);
 
-                // Force class static initializer to run so the settings are registered
-                // TODO: Use a required static method to initialize these instead so they can be wiped and re-registered
-                Class.forName(moduleClass.getName());
+                Constructor<? extends MinionModule> constructor = moduleClass.getDeclaredConstructor(Minion.class);
+                constructor.setAccessible(true);
+                this.moduleConstructors.put(name, constructor);
                 this.createModuleFile(name, moduleClass);
             } catch (ReflectiveOperationException e) {
                 this.rosePlugin.getLogger().warning("Failed to register module " + moduleClass.getName() + "!");

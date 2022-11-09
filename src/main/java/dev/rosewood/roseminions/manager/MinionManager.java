@@ -34,6 +34,15 @@ public class MinionManager extends Manager {
         this.loadedMinions = Collections.synchronizedList(new ArrayList<>());
     }
 
+    public List<Minion> getLoadedMinions() {
+        return Collections.unmodifiableList(this.loadedMinions);
+    }
+
+    public void destroyMinion(Minion minion) {
+        this.loadedMinions.remove(minion);
+        minion.getDisplayEntity().remove();
+    }
+
     public void updateMinions() {
         this.loadedMinions.forEach(Minion::update);
     }
@@ -43,17 +52,22 @@ public class MinionManager extends Manager {
     }
 
     public void loadMinion(ArmorStand minionEntity) {
-        Minion existingMinion = this.getMinionFromEntity(minionEntity);
-        if (existingMinion != null)
-            return;
+        try {
+            Minion existingMinion = this.getMinionFromEntity(minionEntity);
+            if (existingMinion != null)
+                return;
 
-        PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
-        byte[] data = pdc.get(MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
-        if (data == null)
-            return;
+            PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
+            byte[] data = pdc.get(MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
+            if (data == null)
+                return;
 
-        Minion minion = new Minion(minionEntity, data);
-        this.loadedMinions.add(minion);
+            Minion minion = new Minion(minionEntity, data);
+            this.loadedMinions.add(minion);
+        } catch (Exception e) {
+            RoseMinions.getInstance().getLogger().warning("Failed to load minion from entity " + minionEntity.getUniqueId());
+            e.printStackTrace();
+        }
     }
 
     public void unloadMinion(ArmorStand minionEntity) {

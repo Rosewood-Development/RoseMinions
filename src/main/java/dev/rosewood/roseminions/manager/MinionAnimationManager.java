@@ -11,6 +11,7 @@ import dev.rosewood.roseminions.minion.animation.MinionAnimationInfo;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -39,17 +40,17 @@ public class MinionAnimationManager extends Manager implements Listener {
 
         for (Class<? extends MinionAnimation> animationClass : event.getRegisteredAnimations()) {
             try {
-                MinionAnimationInfo animationInfo = animationClass.getAnnotation(MinionAnimationInfo.class);
+                MinionAnimationInfo animationInfo = animationClass.getDeclaredAnnotation(MinionAnimationInfo.class);
                 if (animationInfo == null)
                     throw new IllegalStateException("MinionAnimationInfo annotation not found on " + animationClass.getName());
 
                 String name = animationInfo.name();
-                Constructor<? extends MinionAnimation> constructor = animationClass.getConstructor(Minion.class);
-                this.animationConstructors.put(name, constructor);
+                Method initMethod = animationClass.getDeclaredMethod("init");
+                initMethod.setAccessible(true);
+                initMethod.invoke(null);
 
-                // Force class static initializer to run so the settings are registered
-                // TODO: Use a required static method to initialize these instead so they can be wiped and re-registered
-                Class.forName(animationClass.getName());
+                Constructor<? extends MinionAnimation> constructor = animationClass.getDeclaredConstructor(Minion.class);
+                this.animationConstructors.put(name, constructor);
                 this.createAnimationFile(name, animationClass);
             } catch (ReflectiveOperationException e) {
                 this.rosePlugin.getLogger().warning("Failed to register animation " + animationClass.getName() + "!");

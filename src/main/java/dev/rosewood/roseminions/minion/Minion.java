@@ -1,6 +1,7 @@
 package dev.rosewood.roseminions.minion;
 
 import dev.rosewood.roseminions.RoseMinions;
+import dev.rosewood.roseminions.manager.MinionAnimationManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.minion.animation.HoveringAnimation;
 import dev.rosewood.roseminions.minion.animation.MinionAnimation;
@@ -35,34 +36,27 @@ public class Minion implements DataSerializable {
         this.displayEntity = new WeakReference<>(displayEntity);
         this.modules = new HashMap<>();
         this.deserialize(data);
-        this.setDefaultAnimation();
     }
 
     public Minion(UUID owner, Location location, boolean chunkLoaded) {
         this.displayEntity = new WeakReference<>(null);
         this.owner = owner;
-        this.location = location.clone();
+
+        this.location = new Location(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
         this.chunkLoaded = chunkLoaded;
         this.modules = new HashMap<>();
-        this.setDefaultAnimation();
     }
 
     public void setDefaultAnimation() {
-        // TODO: Default animation type should be configurable
-        try {
-            Class.forName(HoveringAnimation.class.getName());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-
         this.animation = new HoveringAnimation(this);
         SettingsContainer settings = new SettingsContainer();
         settings.loadDefaults(HoveringAnimation.class);
-        settings.set(HoveringAnimation.DISPLAY_NAME, "<r#5:0.5>Default Minion Name");
-        settings.set(HoveringAnimation.SMALL, false);
-        //settings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=");
-        settings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTg4YmNlNDk3Y2ZhNWY2MTE4MzlmNmRhMjFjOTVkMzRlM2U3MjNjMmNjNGMzYzMxOWI1NjI3NzNkMTIxNiJ9fX0=");
+        settings.set(HoveringAnimation.DISPLAY_NAME, "<r#5:0.5>Default Minion");
+        settings.set(HoveringAnimation.SMALL, true);
+        settings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=");
+        //settings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTg4YmNlNDk3Y2ZhNWY2MTE4MzlmNmRhMjFjOTVkMzRlM2U3MjNjMmNjNGMzYzMxOWI1NjI3NzNkMTIxNiJ9fX0=");
         this.animation.mergeSettings(settings);
+        this.animation.updateEntity();
     }
 
     public void setModules(Collection<MinionModule> modules) {
@@ -83,13 +77,10 @@ public class Minion implements DataSerializable {
         ArmorStand displayEntity = this.displayEntity.get();
         if (displayEntity == null || !displayEntity.isValid()) {
             this.displayEntity = new WeakReference<>(this.createDisplayEntity());
-            if (this.animation != null)
-                this.animation.updateEntity();
+            this.animation.updateEntity();
         }
 
-        if (this.animation != null)
-            this.animation.update();
-
+        this.animation.update();
         this.modules.values().forEach(MinionModule::update);
     }
 
@@ -102,11 +93,7 @@ public class Minion implements DataSerializable {
     }
 
     public Location getLocation() {
-        return this.location;
-    }
-
-    public Location getDisplayLocation() {
-        return this.location.clone().add(0.5, 0.75, 0.5);
+        return this.location.clone();
     }
 
     public World getWorld() {
@@ -129,7 +116,7 @@ public class Minion implements DataSerializable {
         if (world == null)
             throw new IllegalStateException("Cannot create display entity for minion at " + this.location + " because the world is null");
 
-        return world.spawn(this.getDisplayLocation(), ArmorStand.class, entity -> {
+        return world.spawn(this.getLocation(), ArmorStand.class, entity -> {
             entity.setVisible(false);
             entity.setGravity(false);
             entity.setSmall(true);
@@ -147,14 +134,9 @@ public class Minion implements DataSerializable {
 
     @Override
     public byte[] serialize() {
-        return DataSerializable.write(outputStream -> {
-            World world = this.location.getWorld();
-            if (world == null)
-                throw new IllegalStateException("Cannot create display entity for minion at " + this.location + " because the world is null");
-
-            outputStream.writeLong(this.owner.getMostSignificantBits());
+        return DataSerializable.write(outputStream -> {outputStream.writeLong(this.owner.getMostSignificantBits());
             outputStream.writeLong(this.owner.getLeastSignificantBits());
-            outputStream.writeUTF(world.getName());
+            outputStream.writeUTF(this.getWorld().getName());
             outputStream.writeInt(this.location.getBlockX());
             outputStream.writeInt(this.location.getBlockY());
             outputStream.writeInt(this.location.getBlockZ());
@@ -166,6 +148,14 @@ public class Minion implements DataSerializable {
                 outputStream.writeUTF(module.getName());
                 outputStream.writeInt(moduleData.length);
                 outputStream.write(moduleData);
+            }
+
+            outputStream.writeBoolean(this.animation != null);
+            if (this.animation != null) {
+                byte[] animationData = this.animation.serialize();
+                outputStream.writeUTF(this.animation.getName());
+                outputStream.writeInt(animationData.length);
+                outputStream.write(animationData);
             }
         });
     }
@@ -194,9 +184,31 @@ public class Minion implements DataSerializable {
                 MinionModule module = moduleManager.createModule(name, this);
                 if (module != null) {
                     module.deserialize(moduleData);
+                    this.modules.put(module.getClass(), module);
                 } else {
                     RoseMinions.getInstance().getLogger().warning("Skipped loading module " + name + " for minion at " + this.location + " because it does not exist");
                 }
+            }
+
+            if (inputStream.readBoolean()) {
+                MinionAnimationManager animationManager = RoseMinions.getInstance().getManager(MinionAnimationManager.class);
+
+                String name = inputStream.readUTF();
+                int animationDataLength = inputStream.readInt();
+                byte[] animationData = new byte[animationDataLength];
+                inputStream.read(animationData);
+
+                MinionAnimation animation = animationManager.createAnimation(name, this);
+                if (animation != null) {
+                    animation.deserialize(animationData);
+                    this.animation = animation;
+                    this.animation.updateEntity();
+                } else {
+                    RoseMinions.getInstance().getLogger().warning("Skipped loading animation " + name + " for minion at " + this.location + " because it does not exist");
+                    this.setDefaultAnimation();
+                }
+            } else {
+                this.setDefaultAnimation();
             }
         });
     }
