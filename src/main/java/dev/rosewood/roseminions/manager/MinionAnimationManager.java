@@ -8,6 +8,7 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.animation.HoveringAnimation;
 import dev.rosewood.roseminions.minion.animation.MinionAnimation;
 import dev.rosewood.roseminions.minion.animation.MinionAnimationInfo;
+import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -88,11 +89,12 @@ public class MinionAnimationManager extends Manager implements Listener {
         boolean changed = !file.exists();
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        for (SettingsContainer.DefaultSettingItem<?> settingItem : SettingsContainer.REGISTERED_SETTINGS.get(animationClass)) {
-            if (!config.contains(settingItem.key())) {
-                settingItem.write(config);
+        for (SettingAccessor<?> accessor : SettingsContainer.REGISTERED_SETTINGS.get(animationClass)) {
+            if (!config.contains(accessor.getKey())) {
+                accessor.write(config);
                 changed = true;
             }
+            accessor.read(config);
         }
 
         if (changed)

@@ -38,7 +38,7 @@ public class ItemPickupModule extends MinionModule {
         this.lastPickupTime = System.currentTimeMillis();
 
         int radius = this.settings.get(RADIUS);
-        this.pickup(this.minion.getWorld().getNearbyEntities(this.minion.getDisplayLocation(), radius, radius, radius, entity -> entity.getType() == EntityType.DROPPED_ITEM)
+        this.pickup(this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, entity -> entity.getType() == EntityType.DROPPED_ITEM)
                 .stream()
                 .map(x -> (Item) x)
                 .collect(Collectors.toList()));
@@ -47,7 +47,7 @@ public class ItemPickupModule extends MinionModule {
     private void pickup(List<Item> items) {
         Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
         if (inventoryModule.isEmpty()) {
-            items.forEach(x -> x.teleport(this.minion.getDisplayLocation()));
+            items.forEach(x -> x.teleport(this.minion.getCenterLocation()));
         } else {
             for (Item item : items) {
                 // TODO: Support for plugins that stack items
@@ -57,7 +57,7 @@ public class ItemPickupModule extends MinionModule {
                     item.remove();
                 } else {
                     item.setItemStack(overflow);
-                    item.teleport(this.minion.getDisplayLocation());
+                    item.teleport(this.minion.getCenterLocation());
                 }
             }
         }

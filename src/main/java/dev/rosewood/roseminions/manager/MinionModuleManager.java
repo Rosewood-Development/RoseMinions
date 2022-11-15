@@ -10,6 +10,7 @@ import dev.rosewood.roseminions.minion.module.ItemPickupModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.MinionModuleInfo;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
+import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -54,7 +55,7 @@ public class MinionModuleManager extends Manager implements Listener {
                 Constructor<? extends MinionModule> constructor = moduleClass.getDeclaredConstructor(Minion.class);
                 constructor.setAccessible(true);
                 this.moduleConstructors.put(name, constructor);
-                this.createModuleFile(name, moduleClass);
+                this.createAndLoadModuleFile(name, moduleClass);
             } catch (ReflectiveOperationException e) {
                 this.rosePlugin.getLogger().warning("Failed to register module " + moduleClass.getName() + "!");
                 e.printStackTrace();
@@ -82,7 +83,7 @@ public class MinionModuleManager extends Manager implements Listener {
         return null;
     }
 
-    private void createModuleFile(String name, Class<? extends MinionModule> moduleClass) {
+    private void createAndLoadModuleFile(String name, Class<? extends MinionModule> moduleClass) {
         File directory = new File(this.rosePlugin.getDataFolder(), DIRECTORY);
         if (!directory.exists())
             directory.mkdirs();
@@ -91,11 +92,12 @@ public class MinionModuleManager extends Manager implements Listener {
         boolean changed = !file.exists();
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        for (SettingsContainer.DefaultSettingItem<?> settingItem : SettingsContainer.REGISTERED_SETTINGS.get(moduleClass)) {
-            if (!config.contains(settingItem.key())) {
-                settingItem.write(config);
+        for (SettingAccessor<?> accessor : SettingsContainer.REGISTERED_SETTINGS.get(moduleClass)) {
+            if (!config.contains(accessor.getKey())) {
+                accessor.write(config);
                 changed = true;
             }
+            accessor.read(config);
         }
 
         if (changed)

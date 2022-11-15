@@ -2,15 +2,13 @@ package dev.rosewood.roseminions.minion.setting;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
-import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.roseminions.model.DataSerializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SettingsContainer implements DataSerializable {
 
-    public static final Multimap<Class<?>, DefaultSettingItem<?>> REGISTERED_SETTINGS = MultimapBuilder.hashKeys().arrayListValues().build();
+    public static final Multimap<Class<?>, SettingAccessor<?>> REGISTERED_SETTINGS = MultimapBuilder.hashKeys().arrayListValues().build();
 
     private final Map<String, SettingItem<?>> settings;
 
@@ -20,25 +18,21 @@ public class SettingsContainer implements DataSerializable {
 
     public static <T> SettingAccessor<T> defineSetting(Class<?> clazz, SettingSerializer<T> serializer, String name, T defaultValue, String... comments) {
         String key = name.toLowerCase();
-        DefaultSettingItem<T> settingItem = new DefaultSettingItem<>(serializer, key, defaultValue, comments);
-        if (REGISTERED_SETTINGS.containsEntry(clazz, settingItem))
-            throw new IllegalArgumentException("Setting " + settingItem.key() + " is already defined for class " + clazz.getSimpleName());
+        SettingAccessor<T> accessor = new SettingAccessor<>(serializer, key, defaultValue, comments);
+        if (REGISTERED_SETTINGS.containsEntry(clazz, accessor))
+            throw new IllegalArgumentException("Setting " + accessor.getKey() + " is already defined for class " + clazz.getSimpleName());
 
-        REGISTERED_SETTINGS.put(clazz, settingItem);
-        return createAccessor(settingItem);
-    }
-
-    private static <T> SettingAccessor<T> createAccessor(DefaultSettingItem<T> settingItem) {
-        return new SettingAccessor<>(settingItem);
+        REGISTERED_SETTINGS.put(clazz, accessor);
+        return accessor;
     }
 
     public void loadDefaults(Class<?> clazz) {
-        for (DefaultSettingItem<?> settingItem : REGISTERED_SETTINGS.get(clazz))
-            this.loadDefault(new SettingAccessor<>(settingItem));
+        for (SettingAccessor<?> accessor : REGISTERED_SETTINGS.get(clazz))
+            this.loadDefault(accessor);
     }
 
     public <T> void loadDefault(SettingAccessor<T> accessor) {
-        SettingItem<T> settingItem = new SettingItem<>(accessor.getSerializer(), accessor.getDefaultValue());
+        SettingItem<T> settingItem = new SettingItem<>(accessor.getSerializer(), accessor.getValue());
         this.settings.put(accessor.getKey(), settingItem);
     }
 
@@ -95,22 +89,6 @@ public class SettingsContainer implements DataSerializable {
                     item.deserialize(itemBytes);
             }
         });
-    }
-
-    public record DefaultSettingItem<T>(SettingSerializer<T> serializer, String key, T defaultValue, String... comments) {
-
-        /**
-         * Writes the setting and its default value to the given config.
-         * Adds the default setting value to the end of the comments.
-         *
-         * @param config the config to write to
-         */
-        public void write(CommentedFileConfiguration config) {
-            String[] comments = Arrays.copyOf(this.comments, this.comments.length + 1);
-            comments[comments.length - 1] = "Default: " + this.defaultValue;
-            this.serializer.write(config, this.key, this.defaultValue, comments);
-        }
-
     }
 
     public static class SettingItem<T> implements DataSerializable {

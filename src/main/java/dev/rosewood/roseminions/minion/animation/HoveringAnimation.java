@@ -49,7 +49,7 @@ public class HoveringAnimation extends MinionAnimation {
         this.theta += this.speed;
 
         ArmorStand armorStand = this.minion.getDisplayEntity();
-        Location centerLocation = this.minion.getLocation();
+        Location centerLocation = this.minion.getCenterLocation().add(0, 0.5, 0);
 
         String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
         if (!newName.equals(armorStand.getCustomName()))

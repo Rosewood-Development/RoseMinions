@@ -59,7 +59,7 @@ public class SlayerModule extends MinionModule {
 
         // Attack the entity with the least amount of health in range
         int radius = this.settings.get(RADIUS);
-        this.minion.getWorld().getNearbyEntities(this.minion.getDisplayLocation(), radius, radius, radius, filter)
+        this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, filter)
                 .stream()
                 .map(x -> (LivingEntity) x)
                 .limit(this.settings.get(NUMBER_OF_TARGETS))

@@ -14,7 +14,7 @@ public class InventoryModule extends MinionModule {
     private static final SettingAccessor<Integer> INVENTORY_SIZE;
 
     static {
-        INVENTORY_SIZE = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "inventory-size", 9, "How many individual items can be stored");
+        INVENTORY_SIZE = SettingsContainer.defineSetting(InventoryModule.class, SettingSerializers.INTEGER, "inventory-size", 9, "How many individual items can be stored");
     }
 
     public static void init() { }

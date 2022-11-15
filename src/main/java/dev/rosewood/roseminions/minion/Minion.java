@@ -96,6 +96,10 @@ public class Minion implements DataSerializable {
         return this.location.clone();
     }
 
+    public Location getCenterLocation() {
+        return this.getLocation().add(0.5, 0.5, 0.5);
+    }
+
     public World getWorld() {
         World world = this.location.getWorld();
         if (world == null)
@@ -116,7 +120,7 @@ public class Minion implements DataSerializable {
         if (world == null)
             throw new IllegalStateException("Cannot create display entity for minion at " + this.location + " because the world is null");
 
-        return world.spawn(this.getLocation(), ArmorStand.class, entity -> {
+        return world.spawn(this.getCenterLocation(), ArmorStand.class, entity -> {
             entity.setVisible(false);
             entity.setGravity(false);
             entity.setSmall(true);
