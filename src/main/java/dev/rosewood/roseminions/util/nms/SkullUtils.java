@@ -6,6 +6,8 @@ import dev.rosewood.rosegarden.utils.NMSUtil;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.UUID;
+import me.arcaniax.hdb.api.HeadDatabaseAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.meta.SkullMeta;
 
 public final class SkullUtils {
@@ -26,6 +28,12 @@ public final class SkullUtils {
     public static void setSkullTexture(SkullMeta skullMeta, String texture) {
         if (texture == null || texture.isEmpty())
             return;
+
+        if (texture.startsWith("hdb:") && Bukkit.getPluginManager().isPluginEnabled("HeadDatabase")) {
+            texture = new HeadDatabaseAPI().getBase64(texture.substring(4));
+            if (texture == null)
+                return;
+        }
 
         GameProfile profile = new GameProfile(UUID.nameUUIDFromBytes(texture.getBytes()), null);
         profile.getProperties().put("textures", new Property("textures", texture));
