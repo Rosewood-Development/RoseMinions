@@ -1,0 +1,24 @@
+id: slayer
+modules:
+  slayer:
+    radius: 3
+    attack-frequency: 1000
+    only-attack-enemies: true
+    damage-amount: 5
+    number-of-targets: 1
+  item_pickup:
+    radius: 3
+    pickup-frequency: 1000
+animations:
+  hovering:
+    small: true
+    texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWNiOGU3MjBhMDI3MjRiN2MzNDNmZGQ0NDc5MGZhYjRjMGQxZjE2YWFmODExMzgxOTJjNzBmODEyY2U0ZjYyMiJ9fX0='
+    display-name: '<g#50:#ec9f05:#ff4e00>Slayer Minion'
+item:
+  display-name: '<g:#ec9f05:#ff4e00>Slayer Minion'
+  lore:
+    - ''
+    - '<#c7a4ff>Place to summon a minion that will'
+    - '<#c7a4ff>attack nearby enemies and collect'
+    - '<#c7a4ff>their items.'
+  texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWNiOGU3MjBhMDI3MjRiN2MzNDNmZGQ0NDc5MGZhYjRjMGQxZjE2YWFmODExMzgxOTJjNzBmODEyY2U0ZjYyMiJ9fX0='

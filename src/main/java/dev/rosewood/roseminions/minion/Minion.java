@@ -138,7 +138,8 @@ public class Minion implements DataSerializable {
 
     @Override
     public byte[] serialize() {
-        return DataSerializable.write(outputStream -> {outputStream.writeLong(this.owner.getMostSignificantBits());
+        return DataSerializable.write(outputStream -> {
+            outputStream.writeLong(this.owner.getMostSignificantBits());
             outputStream.writeLong(this.owner.getLeastSignificantBits());
             outputStream.writeUTF(this.getWorld().getName());
             outputStream.writeInt(this.location.getBlockX());

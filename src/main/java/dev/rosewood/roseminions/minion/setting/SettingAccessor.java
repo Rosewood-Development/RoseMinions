@@ -2,6 +2,7 @@ package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import java.util.Arrays;
+import org.bukkit.configuration.ConfigurationSection;
 
 public class SettingAccessor<T> {
 
@@ -31,12 +32,22 @@ public class SettingAccessor<T> {
     }
 
     /**
-     * Reads the setting from the given config.
+     * Reads the setting from the given config and sets it as the default value.
      *
      * @param config the config to read from
      */
-    public void read(CommentedFileConfiguration config) {
+    public void readDefault(ConfigurationSection config) {
         this.value = this.serializer.read(config, this.key);
+    }
+
+    /**
+     * Reads the setting from the given config.
+     *
+     * @param config the config to read from
+     * @return the setting value
+     */
+    public T read(ConfigurationSection config) {
+        return this.serializer.read(config, this.key);
     }
 
     public SettingSerializer<T> getSerializer() {

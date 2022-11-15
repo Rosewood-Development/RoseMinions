@@ -15,6 +15,10 @@ public abstract class MinionModule implements DataSerializable {
         this.settings.loadDefaults(this.getClass());
     }
 
+    public void mergeSettings(SettingsContainer settings) {
+        this.settings.merge(settings);
+    }
+
     @Override
     public final byte[] serialize() {
         return this.settings.serialize();

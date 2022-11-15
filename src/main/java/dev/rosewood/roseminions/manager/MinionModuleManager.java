@@ -18,10 +18,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
+// TODO: Make an abstract class to handle both this and animations since they load/save practically identically
 public class MinionModuleManager extends Manager implements Listener {
 
     private static final String DIRECTORY = "modules";
@@ -83,6 +85,26 @@ public class MinionModuleManager extends Manager implements Listener {
         return null;
     }
 
+    public boolean isValidModule(String name) {
+        return this.moduleConstructors.containsKey(name.toLowerCase());
+    }
+
+    public SettingsContainer getSectionSettings(String name, ConfigurationSection section) {
+        SettingsContainer settingsContainer = new SettingsContainer();
+        Constructor<? extends MinionModule> constructor = this.moduleConstructors.get(name.toLowerCase());
+        if (constructor == null)
+            return settingsContainer;
+
+        Class<? extends MinionModule> moduleClass = constructor.getDeclaringClass();
+        settingsContainer.loadDefaults(moduleClass);
+
+        for (SettingAccessor<?> accessor : SettingsContainer.REGISTERED_SETTINGS.get(moduleClass))
+            if (section.contains(accessor.getKey()))
+                settingsContainer.setFromConfig(accessor, section);
+
+        return settingsContainer;
+    }
+
     private void createAndLoadModuleFile(String name, Class<? extends MinionModule> moduleClass) {
         File directory = new File(this.rosePlugin.getDataFolder(), DIRECTORY);
         if (!directory.exists())
@@ -97,7 +119,7 @@ public class MinionModuleManager extends Manager implements Listener {
                 accessor.write(config);
                 changed = true;
             }
-            accessor.read(config);
+            accessor.readDefault(config);
         }
 
         if (changed)

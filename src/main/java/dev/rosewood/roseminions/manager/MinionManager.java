@@ -7,11 +7,11 @@ import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.ConfigurationManager.Setting;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ChunkLocation;
+import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -19,8 +19,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
 public class MinionManager extends Manager {
-
-    private static final NamespacedKey MINION_DATA_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_data");
 
     private final DataManager dataManager;
     private final List<Minion> loadedMinions;
@@ -58,7 +56,7 @@ public class MinionManager extends Manager {
                 return;
 
             PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
-            byte[] data = pdc.get(MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
+            byte[] data = pdc.get(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
             if (data == null)
                 return;
 
@@ -78,7 +76,7 @@ public class MinionManager extends Manager {
         this.loadedMinions.remove(minion);
 
         PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
-        pdc.set(MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY, minion.serialize());
+        pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY, minion.serialize());
     }
 
     private Minion getMinionFromEntity(ArmorStand entity) {

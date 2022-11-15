@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.atomic.AtomicReference;
+import org.bukkit.configuration.ConfigurationSection;
 
 public interface SettingSerializer<T> {
 
@@ -15,7 +16,7 @@ public interface SettingSerializer<T> {
 
     byte[] write(T value) throws IOException;
 
-    T read(CommentedFileConfiguration config, String key);
+    T read(ConfigurationSection config, String key);
 
     T read(byte[] input) throws IOException;
 

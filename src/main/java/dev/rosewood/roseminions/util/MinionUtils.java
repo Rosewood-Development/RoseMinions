@@ -1,12 +1,17 @@
 package dev.rosewood.roseminions.util;
 
+import dev.rosewood.roseminions.RoseMinions;
 import java.util.Random;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Boss;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Monster;
 
 public final class MinionUtils {
+
+    public static final NamespacedKey MINION_NEW_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_new");
+    public static final NamespacedKey MINION_DATA_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_data");
 
     public static final Random RANDOM = new Random();
 

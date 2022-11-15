@@ -4,18 +4,22 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.roseminions.manager.MinionAnimationManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
+import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.animation.HoveringAnimation;
+import dev.rosewood.roseminions.minion.MinionData;
 import dev.rosewood.roseminions.minion.animation.MinionAnimation;
 import dev.rosewood.roseminions.minion.module.MinionModule;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import java.util.ArrayList;
+import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public class MinionPlaceListener implements Listener {
 
@@ -30,28 +34,56 @@ public class MinionPlaceListener implements Listener {
         if (event.getBlockPlaced().getType() != Material.PLAYER_HEAD)
             return;
 
-        event.setCancelled(true);
+        ItemStack itemStack = event.getItemInHand();
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if (itemMeta == null)
+            return;
 
         MinionManager minionManager = this.rosePlugin.getManager(MinionManager.class);
-        Minion minion = new Minion(event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
-        SettingsContainer animationSettings = new SettingsContainer();
-        animationSettings.loadDefaults(HoveringAnimation.class);
-        animationSettings.set(HoveringAnimation.SMALL, Math.random() > 0.5);
-        animationSettings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWNiOGU3MjBhMDI3MjRiN2MzNDNmZGQ0NDc5MGZhYjRjMGQxZjE2YWFmODExMzgxOTJjNzBmODEyY2U0ZjYyMiJ9fX0=");
-        animationSettings.set(HoveringAnimation.DISPLAY_NAME, "<g#50:#ec9f05:#ff4e00>Slayer Minion");
 
-        MinionAnimation animation = this.rosePlugin.getManager(MinionAnimationManager.class).createAnimation("hovering", minion);
-        if (animation == null)
-            throw new IllegalStateException("Failed to create animation!");
-        animation.mergeSettings(animationSettings);
-        minion.setAnimation(animation);
+        PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
+        if (pdc.has(MinionUtils.MINION_NEW_KEY, PersistentDataType.STRING)) {
+            event.setCancelled(true);
 
-        List<MinionModule> modules = new ArrayList<>();
-        this.addModule(modules, minion, "slayer");
-        this.addModule(modules, minion, "item_pickup");
-        minion.setModules(modules);
+            String minionId = pdc.get(MinionUtils.MINION_NEW_KEY, PersistentDataType.STRING);
+            if (minionId == null)
+                return;
 
-        minionManager.registerMinion(minion);
+            MinionTypeManager minionTypeManager = this.rosePlugin.getManager(MinionTypeManager.class);
+            MinionModuleManager minionModuleManager = this.rosePlugin.getManager(MinionModuleManager.class);
+            MinionAnimationManager minionAnimationManager = this.rosePlugin.getManager(MinionAnimationManager.class);
+
+            MinionData minionData = minionTypeManager.getMinionData(minionId);
+            if (minionData == null) {
+                event.getPlayer().sendMessage("Invalid minion ID: " + minionId);
+                return;
+            }
+
+            Minion minion = new Minion(event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
+
+            MinionData.MinionRank rank = minionData.getRank(0);
+            List<MinionModule> modules = rank.modules().entrySet().stream().map(entry -> {
+                MinionModule module = minionModuleManager.createModule(entry.getKey(), minion);
+                if (module == null)
+                    throw new IllegalStateException("Failed to create module " + entry.getKey() + "!");
+                module.mergeSettings(entry.getValue());
+                return module;
+            }).toList();
+            minion.setModules(modules);
+
+            List<MinionAnimation> animations = rank.animations().entrySet().stream().map(entry -> {
+                MinionAnimation animation = minionAnimationManager.createAnimation(entry.getKey(), minion);
+                if (animation == null)
+                    throw new IllegalStateException("Failed to create animation " + entry.getKey() + "!");
+                animation.mergeSettings(entry.getValue());
+                return animation;
+            }).toList();
+            minion.setAnimation(animations.get(0));
+
+            minionManager.registerMinion(minion);
+        } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY)) {
+            event.setCancelled(true);
+        }
     }
 
     private void addModule(List<MinionModule> modules, Minion minion, String name) {

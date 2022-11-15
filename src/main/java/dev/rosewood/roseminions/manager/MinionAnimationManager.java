@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -52,7 +53,7 @@ public class MinionAnimationManager extends Manager implements Listener {
 
                 Constructor<? extends MinionAnimation> constructor = animationClass.getDeclaredConstructor(Minion.class);
                 this.animationConstructors.put(name, constructor);
-                this.createAnimationFile(name, animationClass);
+                this.createAndLoadAnimationFile(name, animationClass);
             } catch (ReflectiveOperationException e) {
                 this.rosePlugin.getLogger().warning("Failed to register animation " + animationClass.getName() + "!");
                 e.printStackTrace();
@@ -80,7 +81,27 @@ public class MinionAnimationManager extends Manager implements Listener {
         return null;
     }
 
-    private void createAnimationFile(String name, Class<? extends MinionAnimation> animationClass) {
+    public boolean isValidAnimation(String name) {
+        return this.animationConstructors.containsKey(name.toLowerCase());
+    }
+
+    public SettingsContainer getSectionSettings(String name, ConfigurationSection section) {
+        SettingsContainer settingsContainer = new SettingsContainer();
+        Constructor<? extends MinionAnimation> constructor = this.animationConstructors.get(name.toLowerCase());
+        if (constructor == null)
+            return settingsContainer;
+
+        Class<? extends MinionAnimation> animationClass = constructor.getDeclaringClass();
+        settingsContainer.loadDefaults(animationClass);
+
+        for (SettingAccessor<?> accessor : SettingsContainer.REGISTERED_SETTINGS.get(animationClass))
+            if (section.contains(accessor.getKey()))
+                settingsContainer.setFromConfig(accessor, section);
+
+        return settingsContainer;
+    }
+
+    private void createAndLoadAnimationFile(String name, Class<? extends MinionAnimation> animationClass) {
         File directory = new File(this.rosePlugin.getDataFolder(), DIRECTORY);
         if (!directory.exists())
             directory.mkdirs();
@@ -94,7 +115,7 @@ public class MinionAnimationManager extends Manager implements Listener {
                 accessor.write(config);
                 changed = true;
             }
-            accessor.read(config);
+            accessor.readDefault(config);
         }
 
         if (changed)

@@ -5,6 +5,7 @@ import com.google.common.collect.MultimapBuilder;
 import dev.rosewood.roseminions.model.DataSerializable;
 import java.util.HashMap;
 import java.util.Map;
+import org.bukkit.configuration.ConfigurationSection;
 
 public class SettingsContainer implements DataSerializable {
 
@@ -42,6 +43,10 @@ public class SettingsContainer implements DataSerializable {
 
     public <T> void set(SettingAccessor<T> accessor, T value) {
         this.getItem(accessor).setValue(value);
+    }
+
+    public <T> void setFromConfig(SettingAccessor<T> accessor, ConfigurationSection section) {
+        this.getItem(accessor).setValue(accessor.read(section));
     }
 
     public void merge(SettingsContainer other) {
