@@ -59,7 +59,7 @@ public class MinionPlaceListener implements Listener {
                 return;
             }
 
-            Minion minion = new Minion(event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
+            Minion minion = new Minion(minionId, 0, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
 
             MinionData.MinionRank rank = minionData.getRank(0);
             List<MinionModule> modules = rank.modules().entrySet().stream().map(entry -> {
@@ -83,14 +83,17 @@ public class MinionPlaceListener implements Listener {
             minionManager.registerMinion(minion);
         } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY)) {
             event.setCancelled(true);
-        }
-    }
 
-    private void addModule(List<MinionModule> modules, Minion minion, String name) {
-        MinionModule module = this.rosePlugin.getManager(MinionModuleManager.class).createModule(name, minion);
-        if (module == null)
-            throw new IllegalStateException("Failed to create module " + name + "!");
-        modules.add(module);
+            byte[] data = pdc.get(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
+            if (data == null)
+                return;
+
+            Minion minion = new Minion(event.getBlockPlaced().getLocation(), data);
+            minionManager.registerMinion(minion);
+        }
+
+        if (event.getPlayer().getGameMode() != org.bukkit.GameMode.CREATIVE)
+            itemStack.setAmount(itemStack.getAmount() - 1);
     }
 
 }

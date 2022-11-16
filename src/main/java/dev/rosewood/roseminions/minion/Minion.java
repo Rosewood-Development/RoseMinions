@@ -25,6 +25,8 @@ import org.bukkit.inventory.EquipmentSlot;
 public class Minion implements DataSerializable {
 
     private Reference<ArmorStand> displayEntity;
+    private String typeId;
+    private int rank;
     private UUID owner;
     private Location location;
     private boolean chunkLoaded;
@@ -32,14 +34,44 @@ public class Minion implements DataSerializable {
 
     private MinionAnimation animation;
 
+    /**
+     * Used for loading a minion from an existing entity in the world
+     *
+     * @param displayEntity
+     * @param data
+     */
     public Minion(ArmorStand displayEntity, byte[] data) {
         this.displayEntity = new WeakReference<>(displayEntity);
         this.modules = new HashMap<>();
         this.deserialize(data);
     }
 
-    public Minion(UUID owner, Location location, boolean chunkLoaded) {
+    /**
+     * Used for placing a minion from an item
+     *
+     * @param location
+     * @param data
+     */
+    public Minion(Location location, byte[] data) {
         this.displayEntity = new WeakReference<>(null);
+        this.location = location;
+        this.modules = new HashMap<>();
+        this.deserialize(data);
+    }
+
+    /**
+     * Used for creating a new minion
+     *
+     * @param typeId
+     * @param rank
+     * @param owner
+     * @param location
+     * @param chunkLoaded
+     */
+    public Minion(String typeId, int rank, UUID owner, Location location, boolean chunkLoaded) {
+        this.displayEntity = new WeakReference<>(null);
+        this.typeId = typeId;
+        this.rank = rank;
         this.owner = owner;
 
         this.location = new Location(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
@@ -88,6 +120,14 @@ public class Minion implements DataSerializable {
         return this.displayEntity.get();
     }
 
+    public String getTypeId() {
+        return this.typeId;
+    }
+
+    public int getRank() {
+        return this.rank;
+    }
+
     public UUID getOwner() {
         return this.owner;
     }
@@ -129,7 +169,7 @@ public class Minion implements DataSerializable {
             entity.setCanPickupItems(false);
             entity.setPersistent(true);
 
-            Arrays.stream(EquipmentSlot.values()).forEach(x -> {
+            Arrays.stream(EquipmentSlot.values()).filter(x -> x != EquipmentSlot.HEAD).forEach(x -> {
                 entity.addEquipmentLock(x, ArmorStand.LockType.ADDING_OR_CHANGING);
                 entity.addEquipmentLock(x, ArmorStand.LockType.REMOVING_OR_CHANGING);
             });
@@ -139,6 +179,7 @@ public class Minion implements DataSerializable {
     @Override
     public byte[] serialize() {
         return DataSerializable.write(outputStream -> {
+            outputStream.writeUTF(this.typeId);
             outputStream.writeLong(this.owner.getMostSignificantBits());
             outputStream.writeLong(this.owner.getLeastSignificantBits());
             outputStream.writeUTF(this.getWorld().getName());
@@ -168,13 +209,17 @@ public class Minion implements DataSerializable {
     @Override
     public void deserialize(byte[] input) {
         DataSerializable.read(input, inputStream -> {
+            this.typeId = inputStream.readUTF();
             this.owner = new UUID(inputStream.readLong(), inputStream.readLong());
 
             World world = Bukkit.getWorld(inputStream.readUTF());
             if (world == null)
                 throw new IllegalStateException("Cannot create display entity for minion at " + this.location + " because the world is null");
 
-            this.location = new Location(world, inputStream.readInt(), inputStream.readInt(), inputStream.readInt());
+            Location location = new Location(world, inputStream.readInt(), inputStream.readInt(), inputStream.readInt());
+            if (this.location == null)
+                this.location = location;
+
             this.chunkLoaded = inputStream.readBoolean();
 
             MinionModuleManager moduleManager = RoseMinions.getInstance().getManager(MinionModuleManager.class);

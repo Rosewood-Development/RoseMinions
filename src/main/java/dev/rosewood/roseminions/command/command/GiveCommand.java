@@ -16,7 +16,7 @@ public class GiveCommand extends RoseCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, Player player, MinionData minionType) {
-        player.getInventory().addItem(minionType.getItemStack(0));
+        player.getInventory().addItem(minionType.getItemStack(0, true));
     }
 
     @Override

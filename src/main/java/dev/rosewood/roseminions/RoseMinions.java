@@ -4,6 +4,7 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
+import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
 import dev.rosewood.roseminions.listener.WorldListener;
 import dev.rosewood.roseminions.manager.CommandManager;
@@ -54,6 +55,7 @@ public class RoseMinions extends RosePlugin {
         }
 
         pluginManager.registerEvents(new MinionPlaceListener(this), this);
+        pluginManager.registerEvents(new MinionPickupListener(this), this);
     }
 
     @Override

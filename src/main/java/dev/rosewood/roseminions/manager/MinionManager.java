@@ -79,7 +79,7 @@ public class MinionManager extends Manager {
         pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY, minion.serialize());
     }
 
-    private Minion getMinionFromEntity(ArmorStand entity) {
+    public Minion getMinionFromEntity(ArmorStand entity) {
         return this.loadedMinions.stream()
                 .filter(x -> x.getDisplayEntity().equals(entity))
                 .findFirst()
@@ -109,6 +109,10 @@ public class MinionManager extends Manager {
 
         // Unload minions that are currently loaded
         new ArrayList<>(this.loadedMinions).stream().map(Minion::getDisplayEntity).forEach(this::unloadMinion);
+    }
+
+    public boolean isMinion(ArmorStand armorStand) {
+        return this.loadedMinions.stream().anyMatch(x -> x.getDisplayEntity().equals(armorStand));
     }
 
 }

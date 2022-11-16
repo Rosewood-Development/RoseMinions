@@ -125,7 +125,7 @@ public class MinionData {
         return this.ranks.size() - 1;
     }
 
-    public ItemStack getItemStack(int rank) {
+    public ItemStack getItemStack(int rank, boolean includeData) {
         MinionRank minionRank = this.ranks.get(rank);
         if (minionRank == null)
             throw new IllegalArgumentException("Invalid rank " + rank + " for minion " + this.id);
@@ -142,8 +142,10 @@ public class MinionData {
             if (lore != null)
                 itemMeta.setLore(lore.stream().map(x -> HexUtils.colorify(placeholders.apply(x))).toList());
 
-            PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-            pdc.set(MinionUtils.MINION_NEW_KEY, PersistentDataType.STRING, this.id);
+            if (includeData) {
+                PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
+                pdc.set(MinionUtils.MINION_NEW_KEY, PersistentDataType.STRING, this.id);
+            }
 
             itemStack.setItemMeta(itemMeta);
         }
