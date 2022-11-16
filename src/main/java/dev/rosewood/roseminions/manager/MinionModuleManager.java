@@ -14,7 +14,6 @@ import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -23,7 +22,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-// TODO: Make an abstract class to handle both this and animations since they load/save practically identically
 public class MinionModuleManager extends Manager implements Listener {
 
     private static final String DIRECTORY = "modules";
@@ -50,10 +48,6 @@ public class MinionModuleManager extends Manager implements Listener {
                     throw new IllegalStateException("MinionModuleInfo annotation not found on " + moduleClass.getName());
 
                 String name = moduleInfo.name();
-                Method initMethod = moduleClass.getMethod("init");
-                initMethod.setAccessible(true);
-                initMethod.invoke(null);
-
                 Constructor<? extends MinionModule> constructor = moduleClass.getDeclaredConstructor(Minion.class);
                 constructor.setAccessible(true);
                 this.moduleConstructors.put(name, constructor);
@@ -90,17 +84,13 @@ public class MinionModuleManager extends Manager implements Listener {
     }
 
     public SettingsContainer getSectionSettings(String name, ConfigurationSection section) {
-        SettingsContainer settingsContainer = new SettingsContainer();
         Constructor<? extends MinionModule> constructor = this.moduleConstructors.get(name.toLowerCase());
         if (constructor == null)
-            return settingsContainer;
+            throw new IllegalArgumentException("Invalid module name: " + name);
 
         Class<? extends MinionModule> moduleClass = constructor.getDeclaringClass();
-        settingsContainer.loadDefaults(moduleClass);
-
-        for (SettingAccessor<?> accessor : SettingsContainer.REGISTERED_SETTINGS.get(moduleClass))
-            if (section.contains(accessor.getKey()))
-                settingsContainer.setFromConfig(accessor, section);
+        SettingsContainer settingsContainer = new SettingsContainer(moduleClass);
+        settingsContainer.loadDefaultsFromConfig(section);
 
         return settingsContainer;
     }

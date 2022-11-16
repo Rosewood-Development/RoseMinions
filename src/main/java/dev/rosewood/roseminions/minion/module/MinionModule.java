@@ -11,8 +11,7 @@ public abstract class MinionModule implements DataSerializable {
 
     public MinionModule(Minion minion) {
         this.minion = minion;
-        this.settings = new SettingsContainer();
-        this.settings.loadDefaults(this.getClass());
+        this.settings = new SettingsContainer(this.getClass());
     }
 
     public void mergeSettings(SettingsContainer settings) {

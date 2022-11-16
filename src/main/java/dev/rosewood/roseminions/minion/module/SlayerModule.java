@@ -35,8 +35,6 @@ public class SlayerModule extends MinionModule {
         NUMBER_OF_TARGETS = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "number-of-targets", 1, "How many targets the minion will attack at once");
     }
 
-    public static void init() { }
-
     private long lastAttackTime;
 
     public SlayerModule(Minion minion) {

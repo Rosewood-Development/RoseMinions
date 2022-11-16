@@ -11,10 +11,15 @@ public class SettingsContainer implements DataSerializable {
 
     public static final Multimap<Class<?>, SettingAccessor<?>> REGISTERED_SETTINGS = MultimapBuilder.hashKeys().arrayListValues().build();
 
+    private final Class<?> clazz;
     private final Map<String, SettingItem<?>> settings;
 
-    public SettingsContainer() {
+    public SettingsContainer(Class<?> clazz) {
+        this.clazz = clazz;
         this.settings = new HashMap<>();
+
+        for (SettingAccessor<?> accessor : REGISTERED_SETTINGS.get(this.clazz))
+            this.loadDefault(accessor);
     }
 
     public static <T> SettingAccessor<T> defineSetting(Class<?> clazz, SettingSerializer<T> serializer, String name, T defaultValue, String... comments) {
@@ -27,26 +32,34 @@ public class SettingsContainer implements DataSerializable {
         return accessor;
     }
 
-    public void loadDefaults(Class<?> clazz) {
-        for (SettingAccessor<?> accessor : REGISTERED_SETTINGS.get(clazz))
-            this.loadDefault(accessor);
-    }
-
     public <T> void loadDefault(SettingAccessor<T> accessor) {
-        SettingItem<T> settingItem = new SettingItem<>(accessor.getSerializer(), accessor.getValue());
+        SettingItem<T> settingItem = new SettingItem<>(accessor.getSerializer(), accessor.getDefaultValue());
         this.settings.put(accessor.getKey(), settingItem);
     }
 
     public <T> T get(SettingAccessor<T> accessor) {
-        return this.getItem(accessor).getValue();
+        SettingItem<T> settingItem = this.getItem(accessor);
+        if (settingItem == null)
+            throw new IllegalArgumentException("SettingsContainer for " + this.clazz.getSimpleName() + " does not have  " + accessor.getKey() + " defined");
+        return settingItem.getValue();
     }
 
     public <T> void set(SettingAccessor<T> accessor, T value) {
-        this.getItem(accessor).setValue(value);
+        SettingItem<T> settingItem = this.getItem(accessor);
+        if (settingItem == null)
+            throw new IllegalArgumentException("SettingsContainer for " + this.clazz.getSimpleName() + " does not have  " + accessor.getKey() + " defined");
+        settingItem.setValue(value);
     }
 
-    public <T> void setFromConfig(SettingAccessor<T> accessor, ConfigurationSection section) {
-        this.getItem(accessor).setValue(accessor.read(section));
+    public <T> void loadDefaultsFromConfig(ConfigurationSection section) {
+        for (SettingAccessor<?> accessor : REGISTERED_SETTINGS.get(this.clazz)) {
+            @SuppressWarnings("unchecked")
+            SettingAccessor<T> typedAccessor = (SettingAccessor<T>) accessor;
+            if (section.contains(typedAccessor.getKey())) {
+                SettingItem<T> settingItem = new SettingItem<>(typedAccessor.getSerializer(), typedAccessor.read(section));
+                this.settings.put(accessor.getKey(), settingItem);
+            }
+        }
     }
 
     public void merge(SettingsContainer other) {
@@ -69,8 +82,7 @@ public class SettingsContainer implements DataSerializable {
     @Override
     public byte[] serialize() {
         return DataSerializable.write(outputStream -> {
-            int length = this.settings.size();
-            outputStream.writeInt(length);
+            outputStream.writeInt(this.settings.size());
             for (Map.Entry<String, SettingItem<?>> entry : this.settings.entrySet()) {
                 outputStream.writeUTF(entry.getKey());
                 byte[] itemBytes = entry.getValue().serialize();

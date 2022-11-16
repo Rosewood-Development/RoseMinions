@@ -4,8 +4,8 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
-import dev.rosewood.roseminions.manager.MinionAnimationManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
+import dev.rosewood.roseminions.minion.controller.AnimationController;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
@@ -91,30 +91,12 @@ public class MinionData {
             }
         }
 
-        Map<String, SettingsContainer> animations = new HashMap<>();
-        MinionAnimationManager minionAnimationManager = RoseMinions.getInstance().getManager(MinionAnimationManager.class);
+        SettingsContainer animationSettings = new SettingsContainer(AnimationController.class);
+        ConfigurationSection animationsSection = section.getConfigurationSection("animation");
+        if (animationsSection != null)
+            animationSettings.loadDefaultsFromConfig(animationsSection);
 
-        ConfigurationSection animationsSection = section.getConfigurationSection("animations");
-        if (animationsSection != null) {
-            for (String key : animationsSection.getKeys(false)) {
-                key = key.toLowerCase();
-                if (!minionAnimationManager.isValidAnimation(key)) {
-                    RoseMinions.getInstance().getLogger().warning("Invalid animation " + key + " for minion " + this.id);
-                    continue;
-                }
-
-                ConfigurationSection animationSection = animationsSection.getConfigurationSection(key);
-                if (animationSection == null) {
-                    RoseMinions.getInstance().getLogger().warning("No settings found for animation " + key + " for minion " + this.id);
-                    continue;
-                }
-
-                SettingsContainer settingsContainer = minionAnimationManager.getSectionSettings(key, animationSection);
-                animations.put(key, settingsContainer);
-            }
-        }
-
-        return new MinionRank(modules, animations);
+        return new MinionRank(modules, animationSettings);
     }
 
     public String getId() {
@@ -157,7 +139,7 @@ public class MinionData {
         return this.ranks.get(rank);
     }
 
-    public record MinionRank(Map<String, SettingsContainer> modules, Map<String, SettingsContainer> animations) {
+    public record MinionRank(Map<String, SettingsContainer> modules, SettingsContainer animationSettings) {
 
     }
 

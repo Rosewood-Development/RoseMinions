@@ -10,7 +10,7 @@ public class SettingAccessor<T> {
     private final String key;
     private final T defaultValue;
     private final String[] comments;
-    private T value;
+    private T loadedConfigValue;
 
     public SettingAccessor(SettingSerializer<T> serializer, String key, T defaultValue, String... comments) {
         this.serializer = serializer;
@@ -37,7 +37,7 @@ public class SettingAccessor<T> {
      * @param config the config to read from
      */
     public void readDefault(ConfigurationSection config) {
-        this.value = this.serializer.read(config, this.key);
+        this.loadedConfigValue = this.serializer.read(config, this.key);
     }
 
     /**
@@ -58,8 +58,8 @@ public class SettingAccessor<T> {
         return this.key;
     }
 
-    public T getValue() {
-        return this.value;
+    public T getDefaultValue() {
+        return this.loadedConfigValue == null ? this.defaultValue : this.loadedConfigValue;
     }
 
 }

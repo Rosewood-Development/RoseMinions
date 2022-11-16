@@ -1,6 +1,5 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;

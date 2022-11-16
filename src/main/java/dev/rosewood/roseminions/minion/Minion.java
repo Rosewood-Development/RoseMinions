@@ -1,12 +1,9 @@
 package dev.rosewood.roseminions.minion;
 
 import dev.rosewood.roseminions.RoseMinions;
-import dev.rosewood.roseminions.manager.MinionAnimationManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
-import dev.rosewood.roseminions.minion.animation.HoveringAnimation;
-import dev.rosewood.roseminions.minion.animation.MinionAnimation;
+import dev.rosewood.roseminions.minion.controller.AnimationController;
 import dev.rosewood.roseminions.minion.module.MinionModule;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.model.DataSerializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -32,41 +29,34 @@ public class Minion implements DataSerializable {
     private boolean chunkLoaded;
     private final Map<Class<? extends MinionModule>, MinionModule> modules;
 
-    private MinionAnimation animation;
+    private final AnimationController animationController;
+
+    private Minion(ArmorStand displayEntity) {
+        this.displayEntity = new WeakReference<>(displayEntity);
+        this.modules = new HashMap<>();
+        this.animationController = new AnimationController(this);
+    }
 
     /**
      * Used for loading a minion from an existing entity in the world
-     *
-     * @param displayEntity
-     * @param data
      */
     public Minion(ArmorStand displayEntity, byte[] data) {
-        this.displayEntity = new WeakReference<>(displayEntity);
-        this.modules = new HashMap<>();
+        this(displayEntity);
         this.deserialize(data);
     }
 
     /**
      * Used for placing a minion from an item
-     *
-     * @param location
-     * @param data
      */
     public Minion(Location location, byte[] data) {
+        this(null);
         this.displayEntity = new WeakReference<>(null);
         this.location = location;
-        this.modules = new HashMap<>();
         this.deserialize(data);
     }
 
     /**
      * Used for creating a new minion
-     *
-     * @param typeId
-     * @param rank
-     * @param owner
-     * @param location
-     * @param chunkLoaded
      */
     public Minion(String typeId, int rank, UUID owner, Location location, boolean chunkLoaded) {
         this.displayEntity = new WeakReference<>(null);
@@ -77,18 +67,7 @@ public class Minion implements DataSerializable {
         this.location = new Location(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
         this.chunkLoaded = chunkLoaded;
         this.modules = new HashMap<>();
-    }
-
-    public void setDefaultAnimation() {
-        this.animation = new HoveringAnimation(this);
-        SettingsContainer settings = new SettingsContainer();
-        settings.loadDefaults(HoveringAnimation.class);
-        settings.set(HoveringAnimation.DISPLAY_NAME, "<r#5:0.5>Default Minion");
-        settings.set(HoveringAnimation.SMALL, true);
-        settings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=");
-        //settings.set(HoveringAnimation.TEXTURE, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTg4YmNlNDk3Y2ZhNWY2MTE4MzlmNmRhMjFjOTVkMzRlM2U3MjNjMmNjNGMzYzMxOWI1NjI3NzNkMTIxNiJ9fX0=");
-        this.animation.mergeSettings(settings);
-        this.animation.updateEntity();
+        this.animationController = new AnimationController(this);
     }
 
     public void setModules(Collection<MinionModule> modules) {
@@ -101,18 +80,14 @@ public class Minion implements DataSerializable {
         return Optional.ofNullable((T) this.modules.get(moduleClass));
     }
 
-    public void setAnimation(MinionAnimation animation) {
-        this.animation = animation;
-    }
-
     public void update() {
         ArmorStand displayEntity = this.displayEntity.get();
         if (displayEntity == null || !displayEntity.isValid()) {
             this.displayEntity = new WeakReference<>(this.createDisplayEntity());
-            this.animation.updateEntity();
+            this.animationController.updateEntity();
         }
 
-        this.animation.update();
+        this.animationController.update();
         this.modules.values().forEach(MinionModule::update);
     }
 
@@ -145,6 +120,10 @@ public class Minion implements DataSerializable {
         if (world == null)
             throw new IllegalStateException("Minion has no world!");
         return world;
+    }
+
+    public AnimationController getAnimationController() {
+        return this.animationController;
     }
 
     public boolean isChunkLoaded() {
@@ -196,13 +175,9 @@ public class Minion implements DataSerializable {
                 outputStream.write(moduleData);
             }
 
-            outputStream.writeBoolean(this.animation != null);
-            if (this.animation != null) {
-                byte[] animationData = this.animation.serialize();
-                outputStream.writeUTF(this.animation.getName());
-                outputStream.writeInt(animationData.length);
-                outputStream.write(animationData);
-            }
+            byte[] animationData = this.animationController.serialize();
+            outputStream.writeInt(animationData.length);
+            outputStream.write(animationData);
         });
     }
 
@@ -240,26 +215,11 @@ public class Minion implements DataSerializable {
                 }
             }
 
-            if (inputStream.readBoolean()) {
-                MinionAnimationManager animationManager = RoseMinions.getInstance().getManager(MinionAnimationManager.class);
-
-                String name = inputStream.readUTF();
-                int animationDataLength = inputStream.readInt();
-                byte[] animationData = new byte[animationDataLength];
-                inputStream.read(animationData);
-
-                MinionAnimation animation = animationManager.createAnimation(name, this);
-                if (animation != null) {
-                    animation.deserialize(animationData);
-                    this.animation = animation;
-                    this.animation.updateEntity();
-                } else {
-                    RoseMinions.getInstance().getLogger().warning("Skipped loading animation " + name + " for minion at " + this.location + " because it does not exist");
-                    this.setDefaultAnimation();
-                }
-            } else {
-                this.setDefaultAnimation();
-            }
+            int animationDataLength = inputStream.readInt();
+            byte[] animationData = new byte[animationDataLength];
+            inputStream.read(animationData);
+            this.animationController.deserialize(animationData);
+            this.animationController.updateEntity();
         });
     }
 

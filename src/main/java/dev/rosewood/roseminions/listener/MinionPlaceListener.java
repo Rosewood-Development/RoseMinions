@@ -1,13 +1,11 @@
 package dev.rosewood.roseminions.listener;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.roseminions.manager.MinionAnimationManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.MinionData;
-import dev.rosewood.roseminions.minion.animation.MinionAnimation;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
@@ -51,7 +49,6 @@ public class MinionPlaceListener implements Listener {
 
             MinionTypeManager minionTypeManager = this.rosePlugin.getManager(MinionTypeManager.class);
             MinionModuleManager minionModuleManager = this.rosePlugin.getManager(MinionModuleManager.class);
-            MinionAnimationManager minionAnimationManager = this.rosePlugin.getManager(MinionAnimationManager.class);
 
             MinionData minionData = minionTypeManager.getMinionData(minionId);
             if (minionData == null) {
@@ -71,14 +68,7 @@ public class MinionPlaceListener implements Listener {
             }).toList();
             minion.setModules(modules);
 
-            List<MinionAnimation> animations = rank.animations().entrySet().stream().map(entry -> {
-                MinionAnimation animation = minionAnimationManager.createAnimation(entry.getKey(), minion);
-                if (animation == null)
-                    throw new IllegalStateException("Failed to create animation " + entry.getKey() + "!");
-                animation.mergeSettings(entry.getValue());
-                return animation;
-            }).toList();
-            minion.setAnimation(animations.get(0));
+            minion.getAnimationController().mergeSettings(rank.animationSettings());
 
             minionManager.registerMinion(minion);
         } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY)) {

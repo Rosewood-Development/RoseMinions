@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.minion.animation;
+package dev.rosewood.roseminions.minion.controller;
 
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
@@ -17,36 +17,32 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-@MinionAnimationInfo(name = "hovering")
-public class HoveringAnimation extends MinionAnimation {
+public class AnimationController extends MinionController {
 
     public static final SettingAccessor<Boolean> SMALL;
     public static final SettingAccessor<String> TEXTURE;
     public static final SettingAccessor<String> DISPLAY_NAME;
+    public static final SettingAccessor<Double> ROTATION_SPEED;
 
     static {
-        SMALL = SettingsContainer.defineSetting(HoveringAnimation.class, SettingSerializers.BOOLEAN, "small", true, "If the hovering skull should be small");
-        TEXTURE = SettingsContainer.defineSetting(HoveringAnimation.class, SettingSerializers.STRING, "texture", "", "The texture of the hovering skull");
-        DISPLAY_NAME = SettingsContainer.defineSetting(HoveringAnimation.class, SettingSerializers.STRING, "display-name", "", "The display name of the hovering skull");
+        SMALL = SettingsContainer.defineSetting(AnimationController.class, SettingSerializers.BOOLEAN, "small", true, "If the skull should be small");
+        TEXTURE = SettingsContainer.defineSetting(AnimationController.class, SettingSerializers.STRING, "texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull");
+        DISPLAY_NAME = SettingsContainer.defineSetting(AnimationController.class, SettingSerializers.STRING, "display-name", "<r#5:0.5>Default Minion", "The display name of the skull");
+        ROTATION_SPEED = SettingsContainer.defineSetting(AnimationController.class, SettingSerializers.DOUBLE, "rotation-speed", 0.05, "The speed at which the skull should rotate");
     }
 
-    public static void init() { }
-
     private double theta;
-    private double speed;
     private double heightOffset;
 
-    public HoveringAnimation(Minion minion) {
+    public AnimationController(Minion minion) {
         super(minion);
 
         this.theta = 0;
-        this.speed = 0.05;
     }
 
-    @Override
     public void update() {
         // Make the armor stand hover and spin in place around the location
-        this.theta += this.speed;
+        this.theta += this.settings.get(ROTATION_SPEED);
 
         ArmorStand armorStand = this.minion.getDisplayEntity();
         Location centerLocation = this.minion.getCenterLocation().add(0, 0.5, 0);
@@ -63,7 +59,6 @@ public class HoveringAnimation extends MinionAnimation {
             armorStand.getWorld().spawnParticle(Particle.END_ROD, centerLocation.clone().add(0, this.heightOffset, 0), 1, 0.25, 0.25, 0.25, 0);
     }
 
-    @Override
     public void updateEntity() {
         ArmorStand armorStand = this.minion.getDisplayEntity();
         if (armorStand == null)

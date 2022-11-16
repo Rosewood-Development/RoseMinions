@@ -2,6 +2,7 @@ package dev.rosewood.roseminions;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
+import dev.rosewood.rosegarden.utils.ClassUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
 import dev.rosewood.roseminions.listener.MinionPickupListener;
@@ -11,7 +12,6 @@ import dev.rosewood.roseminions.manager.CommandManager;
 import dev.rosewood.roseminions.manager.ConfigurationManager;
 import dev.rosewood.roseminions.manager.DataManager;
 import dev.rosewood.roseminions.manager.LocaleManager;
-import dev.rosewood.roseminions.manager.MinionAnimationManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
@@ -38,6 +38,9 @@ public class RoseMinions extends RosePlugin {
         super(-1, 14807, ConfigurationManager.class, DataManager.class, LocaleManager.class, CommandManager.class);
 
         instance = this;
+
+        // Force all RoseMinions classes in the jar to initialize
+        ClassUtils.getClassesOf(this, "dev.rosewood.roseminions", Object.class);
     }
 
     @Override
@@ -67,7 +70,6 @@ public class RoseMinions extends RosePlugin {
     protected List<Class<? extends Manager>> getManagerLoadPriority() {
         return Arrays.asList(
                 MinionModuleManager.class,
-                MinionAnimationManager.class,
                 MinionTypeManager.class,
                 MinionManager.class
         );
