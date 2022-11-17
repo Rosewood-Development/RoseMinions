@@ -177,6 +177,7 @@ public class Minion implements DataSerializable {
     public byte[] serialize() {
         return DataSerializable.write(outputStream -> {
             outputStream.writeUTF(this.minionData.getId());
+            outputStream.writeInt(this.rank);
             outputStream.writeLong(this.owner.getMostSignificantBits());
             outputStream.writeLong(this.owner.getLeastSignificantBits());
             outputStream.writeUTF(this.getWorld().getName());
@@ -209,6 +210,7 @@ public class Minion implements DataSerializable {
             if (this.minionData == null)
                 throw new IllegalStateException("Minion type " + typeId + " no longer exists");
 
+            this.rank = inputStream.readInt();
             this.loadRankData();
 
             this.owner = new UUID(inputStream.readLong(), inputStream.readLong());

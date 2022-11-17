@@ -1,12 +1,14 @@
 package dev.rosewood.roseminions.minion.controller;
 
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -16,6 +18,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.scheduler.BukkitTask;
 
 public class AnimationController extends MinionController {
 
@@ -31,18 +34,20 @@ public class AnimationController extends MinionController {
         ROTATION_SPEED = SettingsContainer.defineSetting(AnimationController.class, SettingSerializers.DOUBLE, "rotation-speed", 0.05, "The speed at which the skull should rotate");
     }
 
-    private double theta;
+    private static BukkitTask thetaUpdateTask;
+    private static long thetaTicks;
     private double heightOffset;
 
     public AnimationController(Minion minion) {
         super(minion);
 
-        this.theta = 0;
+        if (thetaUpdateTask == null)
+            thetaUpdateTask = Bukkit.getScheduler().runTaskTimer(RoseMinions.getInstance(), () -> thetaTicks++, 0L, 1L);
     }
 
     public void update() {
         // Make the armor stand hover and spin in place around the location
-        this.theta += this.settings.get(ROTATION_SPEED);
+        double theta = thetaTicks * this.settings.get(ROTATION_SPEED);
 
         ArmorStand armorStand = this.minion.getDisplayEntity();
         Location centerLocation = this.minion.getCenterLocation().add(0, 0.5, 0);
@@ -51,8 +56,8 @@ public class AnimationController extends MinionController {
         if (!newName.equals(armorStand.getCustomName()))
             armorStand.setCustomName(newName);
 
-        centerLocation.setY(centerLocation.getY() - this.heightOffset + Math.sin(this.theta) * 0.2);
-        centerLocation.setYaw((float) this.theta * 100);
+        centerLocation.setY(centerLocation.getY() - this.heightOffset + Math.sin(theta) * 0.2);
+        centerLocation.setYaw((float) theta * 100);
         armorStand.teleport(centerLocation);
 
         if (MinionUtils.RANDOM.nextInt(10) == 0)
