@@ -1,8 +1,11 @@
 package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
+import dev.rosewood.roseminions.model.DataSerializable;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class SettingSerializers {
@@ -18,7 +21,7 @@ public class SettingSerializers {
         public void write(CommentedFileConfiguration config, String key, Integer value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Integer value) { return this.writeValue(value, ObjectOutputStream::writeInt); }
         public Integer read(ConfigurationSection config, String key) { return config.getInt(key); }
-        public Integer read(byte[] input) { return this.readValue(input, ObjectInputStream::readInt);  }
+        public Integer read(byte[] input) { return this.readValue(input, ObjectInputStream::readInt); }
     };
 
     public static final SettingSerializer<Long> LONG = new SettingSerializer<>() {
@@ -40,6 +43,27 @@ public class SettingSerializers {
         public byte[] write(String value) { return this.writeValue(value, ObjectOutputStream::writeUTF); }
         public String read(ConfigurationSection config, String key) { return config.getString(key); }
         public String read(byte[] input) { return this.readValue(input, ObjectInputStream::readUTF); }
+    };
+
+    public static final SettingSerializer<List<String>> STRING_LIST = new SettingSerializer<>() {
+        public void write(CommentedFileConfiguration config, String key, List<String> value, String... comments) { config.set(key, value, comments); }
+        public byte[] write(List<String> value) {
+            return DataSerializable.write(inputStream -> {
+                inputStream.writeInt(value.size());
+                for (String s : value)
+                    inputStream.writeUTF(s);
+            });
+        }
+        public List<String> read(ConfigurationSection config, String key) { return config.getStringList(key); }
+        public List<String> read(byte[] input) {
+            List<String> list = new ArrayList<>();
+            DataSerializable.read(input, inputStream -> {
+                int size = inputStream.readInt();
+                for (int i = 0; i < size; i++)
+                    list.add(inputStream.readUTF());
+            });
+            return list;
+        }
     };
 
 }

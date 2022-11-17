@@ -2,13 +2,10 @@ package dev.rosewood.roseminions.listener;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.roseminions.manager.MinionManager;
-import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.MinionData;
-import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.util.MinionUtils;
-import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,7 +26,7 @@ public class MinionPlaceListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMinionPlace(BlockPlaceEvent event) {
-        if (event.getBlockPlaced().getType() != Material.PLAYER_HEAD)
+        if (event.getBlockPlaced().getType() != Material.PLAYER_HEAD && event.getBlockPlaced().getType() != Material.PLAYER_WALL_HEAD)
             return;
 
         ItemStack itemStack = event.getItemInHand();
@@ -40,36 +37,29 @@ public class MinionPlaceListener implements Listener {
         MinionManager minionManager = this.rosePlugin.getManager(MinionManager.class);
 
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-        if (pdc.has(MinionUtils.MINION_NEW_KEY, PersistentDataType.STRING)) {
+        if (pdc.has(MinionUtils.MINION_NEW_TYPE_KEY, PersistentDataType.STRING)) {
             event.setCancelled(true);
 
-            String minionId = pdc.get(MinionUtils.MINION_NEW_KEY, PersistentDataType.STRING);
+            String minionId = pdc.get(MinionUtils.MINION_NEW_TYPE_KEY, PersistentDataType.STRING);
             if (minionId == null)
                 return;
 
-            MinionTypeManager minionTypeManager = this.rosePlugin.getManager(MinionTypeManager.class);
-            MinionModuleManager minionModuleManager = this.rosePlugin.getManager(MinionModuleManager.class);
+            Integer minionRank = pdc.get(MinionUtils.MINION_NEW_RANK_KEY, PersistentDataType.INTEGER);
+            if (minionRank == null)
+                return;
 
-            MinionData minionData = minionTypeManager.getMinionData(minionId);
+            MinionData minionData = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(minionId);
             if (minionData == null) {
                 event.getPlayer().sendMessage("Invalid minion ID: " + minionId);
                 return;
             }
 
-            Minion minion = new Minion(minionId, 0, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
+            if (minionRank < 0 || minionRank > minionData.getMaxRank()) {
+                event.getPlayer().sendMessage("Invalid minion rank: " + minionRank);
+                return;
+            }
 
-            MinionData.MinionRank rank = minionData.getRank(0);
-            List<MinionModule> modules = rank.modules().entrySet().stream().map(entry -> {
-                MinionModule module = minionModuleManager.createModule(entry.getKey(), minion);
-                if (module == null)
-                    throw new IllegalStateException("Failed to create module " + entry.getKey() + "!");
-                module.mergeSettings(entry.getValue());
-                return module;
-            }).toList();
-            minion.setModules(modules);
-
-            minion.getAnimationController().mergeSettings(rank.animationSettings());
-
+            Minion minion = new Minion(minionData, minionRank, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
             minionManager.registerMinion(minion);
         } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY)) {
             event.setCancelled(true);

@@ -66,7 +66,7 @@ public class SettingsContainer implements DataSerializable {
         for (Map.Entry<String, SettingItem<?>> entry : other.settings.entrySet()) {
             SettingItem<?> item = entry.getValue();
             if (this.settings.containsKey(entry.getKey()))
-                this.settings.put(entry.getKey(), item);
+                this.settings.put(entry.getKey(), item.copy());
         }
     }
 
@@ -77,6 +77,12 @@ public class SettingsContainer implements DataSerializable {
     @SuppressWarnings("unchecked")
     private <T> SettingItem<T> getItem(String key) {
         return (SettingItem<T>) this.settings.get(key);
+    }
+
+    public SettingsContainer copy() {
+        SettingsContainer copy = new SettingsContainer(this.clazz);
+        copy.merge(this);
+        return copy;
     }
 
     @Override
@@ -124,6 +130,10 @@ public class SettingsContainer implements DataSerializable {
 
         public void setValue(T value) {
             this.value = value;
+        }
+
+        public SettingItem<T> copy() {
+            return new SettingItem<>(this.serializer, this.value);
         }
 
         @Override

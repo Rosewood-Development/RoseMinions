@@ -46,7 +46,8 @@ public class MinionTypeManager extends Manager {
                 MinionData minionData = new MinionData(config);
                 this.minionTypes.put(minionData.getId(), minionData);
             } catch (Exception e) {
-                this.rosePlugin.getLogger().warning("Failed to load minion type from file " + file.getName() + "!");
+                this.rosePlugin.getLogger().warning("Failed to load minion type from file " + file.getName());
+                e.printStackTrace();
             }
         }
     }

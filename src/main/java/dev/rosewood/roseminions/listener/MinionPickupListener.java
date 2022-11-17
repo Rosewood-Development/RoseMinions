@@ -2,9 +2,7 @@ package dev.rosewood.roseminions.listener;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.roseminions.manager.MinionManager;
-import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.MinionData;
 import dev.rosewood.roseminions.util.MinionUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
@@ -36,8 +34,11 @@ public class MinionPickupListener implements Listener {
 
         MinionManager minionManager = this.rosePlugin.getManager(MinionManager.class);
         Minion minion = minionManager.getMinionFromEntity(armorStand);
-        if (minion == null)
+        if (minion == null) {
+            if (armorStand.getPersistentDataContainer().has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY))
+                event.setCancelled(true);
             return;
+        }
 
         event.setCancelled(true);
 
@@ -48,16 +49,10 @@ public class MinionPickupListener implements Listener {
         }
 
         if (player.isSneaking() && player.getInventory().getItemInMainHand().getType() == Material.AIR) {
-            MinionData minionData = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(minion.getTypeId());
-            if (minionData == null) {
-                event.getPlayer().sendMessage("Invalid minion ID: " + minion.getTypeId());
-                return;
-            }
-
             byte[] data = minion.serialize();
             minionManager.destroyMinion(minion);
 
-            ItemStack itemStack = minionData.getItemStack(minion.getRank(), false);
+            ItemStack itemStack = minion.getRankData().getItemStack(false);
             ItemMeta itemMeta = itemStack.getItemMeta();
             if (itemMeta == null)
                 throw new IllegalStateException("ItemStack does not have any ItemMeta");
@@ -69,7 +64,7 @@ public class MinionPickupListener implements Listener {
             PlayerInventory inventory = player.getInventory();
             inventory.setItem(inventory.getHeldItemSlot(), itemStack);
         } else {
-
+            player.sendMessage("pretend the gui opened");
         }
     }
 

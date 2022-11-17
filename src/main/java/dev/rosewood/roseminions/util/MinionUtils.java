@@ -10,7 +10,8 @@ import org.bukkit.entity.Monster;
 
 public final class MinionUtils {
 
-    public static final NamespacedKey MINION_NEW_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_new");
+    public static final NamespacedKey MINION_NEW_TYPE_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_new_type");
+    public static final NamespacedKey MINION_NEW_RANK_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_new_rank");
     public static final NamespacedKey MINION_DATA_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_data");
 
     public static final Random RANDOM = new Random();
