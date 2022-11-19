@@ -1,5 +1,8 @@
 package dev.rosewood.roseminions.minion.module;
 
+import dev.rosewood.guiframework.GuiFactory;
+import dev.rosewood.guiframework.gui.GuiSize;
+import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
@@ -22,6 +25,7 @@ public class ItemPickupModule extends MinionModule {
     static {
         RADIUS = SettingsContainer.defineSetting(ItemPickupModule.class, SettingSerializers.INTEGER, "radius", 5, "The radius in which to pick up items");
         PICKUP_FREQUENCY = SettingsContainer.defineSetting(ItemPickupModule.class, SettingSerializers.LONG, "pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)");
+        SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_TITLE, "Item Pickup Module");
         SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON, Material.HOPPER);
         SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Item Pickup Module");
         SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
@@ -45,6 +49,19 @@ public class ItemPickupModule extends MinionModule {
                 .stream()
                 .map(x -> (Item) x)
                 .collect(Collectors.toList()));
+    }
+
+    @Override
+    protected void buildGui() {
+        this.guiContainer = GuiFactory.createContainer();
+
+        GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
+                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+
+        this.addBackButton(mainScreen);
+
+        this.guiContainer.addScreen(mainScreen);
+        this.guiFramework.getGuiManager().registerGui(this.guiContainer);
     }
 
     private void pickup(List<Item> items) {

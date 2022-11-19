@@ -1,5 +1,8 @@
 package dev.rosewood.roseminions.minion.module;
 
+import dev.rosewood.guiframework.GuiFactory;
+import dev.rosewood.guiframework.gui.GuiSize;
+import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
@@ -35,6 +38,7 @@ public class SlayerModule extends MinionModule {
         ONLY_ATTACK_ENEMIES = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.BOOLEAN, "only-attack-enemies", true, "Whether the minion will only attack enemies");
         DAMAGE_AMOUNT = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "damage-amount", 10, "How much damage the minion will deal to targets");
         NUMBER_OF_TARGETS = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "number-of-targets", 1, "How many targets the minion will attack at once");
+        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_TITLE, "Slayer Module");
         SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON, Material.IRON_SWORD);
         SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Slayer Module");
         SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
@@ -68,6 +72,19 @@ public class SlayerModule extends MinionModule {
                 .limit(this.settings.get(NUMBER_OF_TARGETS))
                 .sorted(Comparator.comparingDouble(Damageable::getHealth))
                 .forEach(this::attack);
+    }
+
+    @Override
+    protected void buildGui() {
+        this.guiContainer = GuiFactory.createContainer();
+
+        GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
+                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+
+        this.addBackButton(mainScreen);
+
+        this.guiContainer.addScreen(mainScreen);
+        this.guiFramework.getGuiManager().registerGui(this.guiContainer);
     }
 
     private void attack(LivingEntity entity) {

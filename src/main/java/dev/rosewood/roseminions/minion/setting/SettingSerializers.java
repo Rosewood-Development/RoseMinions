@@ -85,8 +85,11 @@ public class SettingSerializers {
         public byte[] write(ItemStack[] value) {
             return DataSerializable.write(x -> {
                 x.writeInt(value.length);
-                for (ItemStack itemStack : value)
-                    x.writeObject(itemStack);
+                for (ItemStack itemStack : value) {
+                    x.writeBoolean(itemStack != null);
+                    if (itemStack != null)
+                        x.writeObject(itemStack);
+                }
             });
         }
         public ItemStack[] read(ConfigurationSection config, String key) { throw new IllegalStateException("Cannot read ItemStack[] from a ConfigurationSection"); }
@@ -95,7 +98,8 @@ public class SettingSerializers {
             DataSerializable.read(input, x -> {
                 ItemStack[] items = new ItemStack[x.readInt()];
                 for (int i = 0; i < items.length; i++)
-                    items[i] = (ItemStack) x.readObject();
+                    if (x.readBoolean())
+                        items[i] = (ItemStack) x.readObject();
                 value.set(items);
             });
             return value.get();
