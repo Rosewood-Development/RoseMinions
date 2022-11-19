@@ -64,7 +64,7 @@ public class MinionPickupListener implements Listener {
             PlayerInventory inventory = player.getInventory();
             inventory.setItem(inventory.getHeldItemSlot(), itemStack);
         } else {
-            player.sendMessage("pretend the gui opened");
+            minion.openGui(player);
         }
     }
 

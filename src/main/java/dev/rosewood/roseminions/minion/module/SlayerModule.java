@@ -7,8 +7,10 @@ import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Damageable;
@@ -33,6 +35,9 @@ public class SlayerModule extends MinionModule {
         ONLY_ATTACK_ENEMIES = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.BOOLEAN, "only-attack-enemies", true, "Whether the minion will only attack enemies");
         DAMAGE_AMOUNT = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "damage-amount", 10, "How much damage the minion will deal to targets");
         NUMBER_OF_TARGETS = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "number-of-targets", 1, "How many targets the minion will attack at once");
+        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON, Material.IRON_SWORD);
+        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Slayer Module");
+        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
     }
 
     private long lastAttackTime;

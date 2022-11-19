@@ -4,12 +4,14 @@ import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.controller.AnimationController;
+import dev.rosewood.roseminions.minion.gui.MinionGui;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.model.DataSerializable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 
 public class Minion implements DataSerializable {
@@ -33,12 +36,14 @@ public class Minion implements DataSerializable {
     private final Map<Class<? extends MinionModule>, MinionModule> modules;
 
     private final AnimationController animationController;
+    private final MinionGui gui;
 
     private Minion(ArmorStand displayEntity) {
         this.displayEntity = new WeakReference<>(displayEntity);
-        this.modules = new HashMap<>();
+        this.modules = new LinkedHashMap<>();
 
         this.animationController = new AnimationController(this);
+        this.gui = new MinionGui(this);
     }
 
     /**
@@ -63,16 +68,13 @@ public class Minion implements DataSerializable {
      * Used for creating a new minion
      */
     public Minion(MinionData minionData, int rank, UUID owner, Location location, boolean chunkLoaded) {
+        this(null);
+
         this.minionData = minionData;
         this.rank = rank;
-
-        this.displayEntity = new WeakReference<>(null);
         this.owner = owner;
-
         this.location = new Location(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
         this.chunkLoaded = chunkLoaded;
-        this.modules = new HashMap<>();
-        this.animationController = new AnimationController(this);
         this.loadRankData();
     }
 
@@ -92,6 +94,10 @@ public class Minion implements DataSerializable {
     @SuppressWarnings("unchecked")
     public <T extends MinionModule> Optional<T> getModule(Class<T> moduleClass) {
         return Optional.ofNullable((T) this.modules.get(moduleClass));
+    }
+
+    public List<MinionModule> getModules() {
+        return List.copyOf(this.modules.values());
     }
 
     public void update() {
@@ -152,6 +158,14 @@ public class Minion implements DataSerializable {
         this.chunkLoaded = chunkLoaded;
     }
 
+    public void openGui(Player player) {
+        this.gui.openFor(player);
+    }
+
+    public void kickOutViewers() {
+        this.gui.kickOutViewers();
+    }
+
     private ArmorStand createDisplayEntity() {
         World world = this.location.getWorld();
         if (world == null)
@@ -195,7 +209,7 @@ public class Minion implements DataSerializable {
                 outputStream.write(moduleData);
             }
 
-            // TODO: Only write modified animations ettings
+            // TODO: Only write modified animation settings
             byte[] animationData = this.animationController.serialize();
             outputStream.writeInt(animationData.length);
             outputStream.write(animationData);
@@ -238,7 +252,7 @@ public class Minion implements DataSerializable {
                         .findFirst();
 
                 if (module.isPresent()) {
-                    //module.get().deserialize(moduleData); // TODO: Make sure values are still within allowed range
+                    module.get().deserialize(moduleData); // TODO: Make sure values are still within allowed range
                 } else {
                     RoseMinions.getInstance().getLogger().warning("Skipped loading module " + name + " for minion at " + this.location + " because the module no longer exists");
                 }
@@ -247,7 +261,7 @@ public class Minion implements DataSerializable {
             int animationDataLength = inputStream.readInt();
             byte[] animationData = new byte[animationDataLength];
             inputStream.read(animationData);
-            //this.animationController.deserialize(animationData);
+            this.animationController.deserialize(animationData);
             this.animationController.updateEntity();
         });
     }

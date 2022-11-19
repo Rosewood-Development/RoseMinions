@@ -15,6 +15,7 @@ import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
+import dev.rosewood.roseminions.minion.Minion;
 import java.util.Arrays;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -48,6 +49,7 @@ public class RoseMinions extends RosePlugin {
         if (NMSUtil.getVersionNumber() < 16) {
             this.getLogger().severe(this.getDescription().getName() + " only supports 1.16.5 servers and newer. Disabling plugin...");
             Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         PluginManager pluginManager = Bukkit.getPluginManager();
@@ -63,7 +65,7 @@ public class RoseMinions extends RosePlugin {
 
     @Override
     public void disable() {
-
+        this.getManager(MinionManager.class).getLoadedMinions().forEach(Minion::kickOutViewers);
     }
 
     @Override

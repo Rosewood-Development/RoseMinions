@@ -6,17 +6,27 @@ import org.bukkit.configuration.ConfigurationSection;
 
 public class SettingAccessor<T> {
 
-    private final SettingSerializer<T> serializer;
-    private final String key;
+    protected final SettingSerializer<T> serializer;
+    protected final String key;
     private final T defaultValue;
-    private final String[] comments;
+    protected final String[] comments;
     private T loadedConfigValue;
+    private final boolean hidden;
 
-    public SettingAccessor(SettingSerializer<T> serializer, String key, T defaultValue, String... comments) {
+    protected SettingAccessor(SettingSerializer<T> serializer, String key, T defaultValue, String... comments) {
         this.serializer = serializer;
         this.key = key;
         this.defaultValue = defaultValue;
         this.comments = comments;
+        this.hidden = false;
+    }
+
+    protected SettingAccessor(SettingSerializer<T> serializer, String key, T defaultValue) {
+        this.serializer = serializer;
+        this.key = key;
+        this.defaultValue = defaultValue;
+        this.comments = new String[0];
+        this.hidden = true;
     }
 
     /**
@@ -26,6 +36,9 @@ public class SettingAccessor<T> {
      * @param config the config to write to
      */
     public void write(CommentedFileConfiguration config) {
+        if (this.hidden)
+            return;
+
         String[] comments = Arrays.copyOf(this.comments, this.comments.length + 1);
         comments[comments.length - 1] = "Default: " + this.defaultValue;
         this.serializer.write(config, this.key, this.defaultValue, comments);
@@ -37,6 +50,9 @@ public class SettingAccessor<T> {
      * @param config the config to read from
      */
     public void readDefault(ConfigurationSection config) {
+        if (this.hidden)
+            return;
+
         this.loadedConfigValue = this.serializer.read(config, this.key);
     }
 
@@ -47,6 +63,8 @@ public class SettingAccessor<T> {
      * @return the setting value
      */
     public T read(ConfigurationSection config) {
+        if (this.hidden)
+            return null;
         return this.serializer.read(config, this.key);
     }
 
@@ -60,6 +78,14 @@ public class SettingAccessor<T> {
 
     public T getDefaultValue() {
         return this.loadedConfigValue == null ? this.defaultValue : this.loadedConfigValue;
+    }
+
+    public SettingAccessor<T> copy(T defaultValue) {
+        return new SettingAccessor<>(this.serializer, this.key, defaultValue != null ? defaultValue : this.defaultValue, this.comments);
+    }
+
+    public boolean isHidden() {
+        return this.hidden;
     }
 
 }

@@ -4,24 +4,36 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import java.util.ArrayList;
+import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 @MinionModuleInfo(name = "inventory")
 public class InventoryModule extends MinionModule {
 
     private static final SettingAccessor<Integer> INVENTORY_SIZE;
+    private static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS;
 
     static {
-        INVENTORY_SIZE = SettingsContainer.defineSetting(InventoryModule.class, SettingSerializers.INTEGER, "inventory-size", 9, "How many individual items can be stored");
+        INVENTORY_SIZE = SettingsContainer.defineSetting(InventoryModule.class, SettingSerializers.INTEGER, "inventory-size", 27, "How many individual items can be stored");
+        INVENTORY_CONTENTS = SettingsContainer.defineHiddenSetting(InventoryModule.class, SettingSerializers.ITEMSTACK_ARRAY, "inventory-contents", new ItemStack[27]);
+        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON, Material.CHEST);
+        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Inventory Module");
+        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
     }
-
-    private final List<ItemStack> inventoryContents;
 
     public InventoryModule(Minion minion) {
         super(minion);
-        this.inventoryContents = new ArrayList<>();
+
+        // Adjust the inventory size if needed
+        int size = this.settings.get(INVENTORY_SIZE);
+        ItemStack[] contents = this.settings.get(INVENTORY_CONTENTS);
+        if (contents.length != size) {
+            ItemStack[] newContents = new ItemStack[size];
+            System.arraycopy(contents, 0, newContents, 0, Math.min(contents.length, size));
+            this.settings.set(INVENTORY_CONTENTS, newContents);
+        }
     }
 
     @Override
@@ -39,24 +51,22 @@ public class InventoryModule extends MinionModule {
         ItemStack clone = item.clone();
         int maxStackSize = clone.getMaxStackSize();
 
-        // Try to add to existing stacks
-        for (ItemStack existingStack : this.inventoryContents) {
-            if (existingStack.isSimilar(clone)) {
-                int remaining = existingStack.getAmount() + clone.getAmount();
+        // Try to add to existing stacks or fill a new slot
+        ItemStack[] contents = this.settings.get(INVENTORY_CONTENTS);
+        for (int i = 0; i < contents.length; i++) {
+            if (contents[i] == null) {
+                contents[i] = clone;
+                return null;
+            } else if (contents[i].isSimilar(clone)) {
+                int remaining = contents[i].getAmount() + clone.getAmount();
                 if (remaining <= maxStackSize) {
-                    existingStack.setAmount(remaining);
+                    contents[i].setAmount(remaining);
                     return null;
                 } else {
                     clone.setAmount(remaining - maxStackSize);
-                    existingStack.setAmount(maxStackSize);
+                    contents[i].setAmount(maxStackSize);
                 }
             }
-        }
-
-        // Add to new stack if there is enough space
-        if (this.inventoryContents.size() < this.settings.get(INVENTORY_SIZE)) {
-            this.inventoryContents.add(clone);
-            return null;
         }
 
         // Otherwise, return the remaining item

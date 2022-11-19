@@ -6,7 +6,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 
 public class SettingSerializers {
 
@@ -48,22 +51,56 @@ public class SettingSerializers {
     public static final SettingSerializer<List<String>> STRING_LIST = new SettingSerializer<>() {
         public void write(CommentedFileConfiguration config, String key, List<String> value, String... comments) { config.set(key, value, comments); }
         public byte[] write(List<String> value) {
-            return DataSerializable.write(inputStream -> {
-                inputStream.writeInt(value.size());
+            return DataSerializable.write(x -> {
+                x.writeInt(value.size());
                 for (String s : value)
-                    inputStream.writeUTF(s);
+                    x.writeUTF(s);
             });
         }
         public List<String> read(ConfigurationSection config, String key) { return config.getStringList(key); }
         public List<String> read(byte[] input) {
             List<String> list = new ArrayList<>();
-            DataSerializable.read(input, inputStream -> {
-                int size = inputStream.readInt();
+            DataSerializable.read(input, x -> {
+                int size = x.readInt();
                 for (int i = 0; i < size; i++)
-                    list.add(inputStream.readUTF());
+                    list.add(x.readUTF());
             });
             return list;
         }
+    };
+
+    public static final SettingSerializer<Material> MATERIAL = new SettingSerializer<>() {
+        public void write(CommentedFileConfiguration config, String key, Material value, String... comments) { config.set(key, value.name(), comments); }
+        public byte[] write(Material value) { return DataSerializable.write(x -> x.writeUTF(value.name())); }
+        public Material read(ConfigurationSection config, String key) { return Material.getMaterial(config.getString(key, "BARRIER")); }
+        public Material read(byte[] input) {
+            AtomicReference<Material> value = new AtomicReference<>();
+            DataSerializable.read(input, x -> value.set(Material.getMaterial(x.readUTF())));
+            return value.get();
+        }
+    };
+
+    public static final SettingSerializer<ItemStack[]> ITEMSTACK_ARRAY = new SettingSerializer<>() {
+        public void write(CommentedFileConfiguration config, String key, ItemStack[] value, String... comments) { throw new IllegalStateException("Cannot write ItemStack[] to a ConfigurationSection"); }
+        public byte[] write(ItemStack[] value) {
+            return DataSerializable.write(x -> {
+                x.writeInt(value.length);
+                for (ItemStack itemStack : value)
+                    x.writeObject(itemStack);
+            });
+        }
+        public ItemStack[] read(ConfigurationSection config, String key) { throw new IllegalStateException("Cannot read ItemStack[] from a ConfigurationSection"); }
+        public ItemStack[] read(byte[] input) {
+            AtomicReference<ItemStack[]> value = new AtomicReference<>();
+            DataSerializable.read(input, x -> {
+                ItemStack[] items = new ItemStack[x.readInt()];
+                for (int i = 0; i < items.length; i++)
+                    items[i] = (ItemStack) x.readObject();
+                value.set(items);
+            });
+            return value.get();
+        }
+
     };
 
 }

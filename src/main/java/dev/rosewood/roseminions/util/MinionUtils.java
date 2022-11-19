@@ -14,6 +14,9 @@ public final class MinionUtils {
     public static final NamespacedKey MINION_NEW_RANK_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_new_rank");
     public static final NamespacedKey MINION_DATA_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_data");
 
+    public static final String PRIMARY_COLOR = "<#c7a4ff>";
+    public static final String SECONDARY_COLOR = "<#ffaaff>";
+
     public static final Random RANDOM = new Random();
 
     private MinionUtils() {
