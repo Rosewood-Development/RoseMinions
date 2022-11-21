@@ -51,7 +51,7 @@ public class InventoryModule extends MinionModule {
 
         int rows = Math.max(1, Math.min((int) Math.ceil(this.settings.get(INVENTORY_SIZE) / 9.0), 3));
         GuiSize editableSize = GuiSize.fromRows(rows);
-        GuiSize fullSize = GuiSize.fromRows(rows + 2);
+        GuiSize fullSize = GuiSize.fromRows(rows + 1);
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
                 .setTitle(this.settings.get(MinionModule.GUI_TITLE))
@@ -59,27 +59,7 @@ public class InventoryModule extends MinionModule {
                     ItemStack[] contents = new ItemStack[this.settings.get(INVENTORY_SIZE)];
                     System.arraycopy(items.toArray(ItemStack[]::new), 0, contents, 0, Math.min(items.size(), contents.length));
                     this.settings.set(INVENTORY_CONTENTS, contents);
-                })
-                .addButtonAt(fullSize.getNumSlots() - 6, GuiFactory.createButton()
-                        .setIcon(Material.PAPER)
-                        .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Previous Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.PREVIOUS_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
-                        .setClickAction(event -> {
-                            if (event.isShiftClick())
-                                return ClickAction.PAGE_FIRST;
-                            return ClickAction.PAGE_BACKWARDS;
-                        })
-                        .setFlags(GuiButtonFlag.HIDE_IF_FIRST_PAGE)
-                        .setHiddenReplacement(new ItemStack(Material.AIR)))
-                .addButtonAt(fullSize.getNumSlots() - 4, GuiFactory.createButton()
-                        .setIcon(Material.PAPER)
-                        .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Next Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.NEXT_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
-                        .setClickAction(event -> {
-                            if (event.isShiftClick())
-                                return ClickAction.PAGE_LAST;
-                            return ClickAction.PAGE_FORWARDS;
-                        })
-                        .setFlags(GuiButtonFlag.HIDE_IF_LAST_PAGE)
-                        .setHiddenReplacement(new ItemStack(Material.AIR)));
+                });
 
         // Fill inventory border with class for util buttons
         ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
@@ -90,6 +70,28 @@ public class InventoryModule extends MinionModule {
             borderItem.setItemMeta(itemMeta);
         }
         GuiUtil.fillRow(mainScreen, editableSize.getRows(), borderItem);
+
+        mainScreen
+                .addButtonAt(fullSize.getNumSlots() - 6, GuiFactory.createButton()
+                        .setIcon(Material.PAPER)
+                        .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Previous Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.PREVIOUS_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
+                        .setClickAction(event -> {
+                            if (event.isShiftClick())
+                                return ClickAction.PAGE_FIRST;
+                            return ClickAction.PAGE_BACKWARDS;
+                        })
+                        .setFlags(GuiButtonFlag.HIDE_IF_FIRST_PAGE)
+                        .setHiddenReplacement(borderItem))
+                .addButtonAt(fullSize.getNumSlots() - 4, GuiFactory.createButton()
+                        .setIcon(Material.PAPER)
+                        .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Next Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.NEXT_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
+                        .setClickAction(event -> {
+                            if (event.isShiftClick())
+                                return ClickAction.PAGE_LAST;
+                            return ClickAction.PAGE_FORWARDS;
+                        })
+                        .setFlags(GuiButtonFlag.HIDE_IF_LAST_PAGE)
+                        .setHiddenReplacement(borderItem));
 
         this.addBackButton(mainScreen);
 
