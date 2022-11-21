@@ -2,6 +2,7 @@ package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import java.util.Arrays;
+import java.util.List;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class SettingAccessor<T> {
@@ -39,9 +40,13 @@ public class SettingAccessor<T> {
         if (this.hidden)
             return;
 
-        String[] comments = Arrays.copyOf(this.comments, this.comments.length + 1);
-        comments[comments.length - 1] = "Default: " + this.defaultValue;
-        this.serializer.write(config, this.key, this.defaultValue, comments);
+        if (this.defaultValue instanceof List<?>) {
+            this.serializer.write(config, this.key, this.defaultValue, this.comments);
+        } else {
+            String[] comments = Arrays.copyOf(this.comments, this.comments.length + 1);
+            comments[comments.length - 1] = "Default: " + this.defaultValue;
+            this.serializer.write(config, this.key, this.defaultValue, comments);
+        }
     }
 
     /**
