@@ -187,7 +187,7 @@ public class MinionData {
 
         static {
             DISPLAY_NAME = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.STRING, "display-name", "&cMissing display-name");
-            LORE = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.STRING_LIST, "lore", List.of("", "<#c0ffee>Missing lore"));
+            LORE = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.ofList(SettingSerializers.STRING), "lore", List.of("", "<#c0ffee>Missing lore"));
             TEXTURE = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.STRING, "texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=");
         }
 

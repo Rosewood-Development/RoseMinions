@@ -8,8 +8,8 @@ import org.bukkit.inventory.ItemStack;
  */
 public interface NMSHandler {
 
-    byte[] serializeItemStacks(ItemStack[] itemStacks);
+    byte[] serializeItemStack(ItemStack itemStack);
 
-    ItemStack[] deserializeItemStacks(byte[] bytes);
+    ItemStack deserializeItemStack(byte[] bytes);
 
 }

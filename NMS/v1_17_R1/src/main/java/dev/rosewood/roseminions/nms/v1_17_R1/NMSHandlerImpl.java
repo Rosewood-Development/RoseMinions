@@ -11,29 +11,15 @@ import org.bukkit.inventory.ItemStack;
 public class NMSHandlerImpl implements NMSHandler {
 
     @Override
-    public byte[] serializeItemStacks(ItemStack[] itemStacks) {
-        return DataSerializable.write(x -> {
-            x.writeInt(itemStacks.length);
-            for (ItemStack itemStack : itemStacks) {
-                x.writeBoolean(itemStack != null);
-                if (itemStack != null)
-                    NbtIo.write(CraftItemStack.asNMSCopy(itemStack).save(new CompoundTag()), x);
-            }
-        });
+    public byte[] serializeItemStack(ItemStack itemStack) {
+        return DataSerializable.write(x -> NbtIo.write(CraftItemStack.asNMSCopy(itemStack).save(new CompoundTag()), x));
     }
 
     @Override
-    public ItemStack[] deserializeItemStacks(byte[] bytes) {
-        AtomicReference<ItemStack[]> itemStacks = new AtomicReference<>();
-        DataSerializable.read(bytes, x -> {
-            int length = x.readInt();
-            ItemStack[] stacks = new ItemStack[length];
-            for (int i = 0; i < length; i++)
-                if (x.readBoolean())
-                    stacks[i] = CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.of(NbtIo.read(x)));
-            itemStacks.set(stacks);
-        });
-        return itemStacks.get();
+    public ItemStack deserializeItemStack(byte[] bytes) {
+        AtomicReference<ItemStack> itemStack = new AtomicReference<>();
+        DataSerializable.read(bytes, x -> itemStack.set(CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.of(NbtIo.read(x)))));
+        return itemStack.get();
     }
 
 }

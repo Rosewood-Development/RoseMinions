@@ -23,7 +23,7 @@ public class MinerModule extends MinionModule {
 
     static {
         MINE_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "mine-distance", 3, "The distance in which to mine blocks");
-        MINE_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.BLOCK_FACE, "mine-direction", BlockFace.NORTH, "The direction in which to mine blocks");
+        MINE_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofEnum(BlockFace.class), "mine-direction", BlockFace.NORTH, "The direction in which to mine blocks");
         MINE_FREQUENCY = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.LONG, "mine-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);

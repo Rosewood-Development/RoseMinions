@@ -13,29 +13,15 @@ import org.bukkit.inventory.ItemStack;
 public class NMSHandlerImpl implements NMSHandler {
 
     @Override
-    public byte[] serializeItemStacks(ItemStack[] itemStacks) {
-        return DataSerializable.write(x -> {
-            x.writeInt(itemStacks.length);
-            for (ItemStack itemStack : itemStacks) {
-                x.writeBoolean(itemStack != null);
-                if (itemStack != null)
-                    NBTCompressedStreamTools.a(CraftItemStack.asNMSCopy(itemStack).save(new NBTTagCompound()), (DataOutput) x);
-            }
-        });
+    public byte[] serializeItemStack(ItemStack itemStack) {
+        return DataSerializable.write(x -> NBTCompressedStreamTools.a(CraftItemStack.asNMSCopy(itemStack).save(new NBTTagCompound()), (DataOutput) x));
     }
 
     @Override
-    public ItemStack[] deserializeItemStacks(byte[] bytes) {
-        AtomicReference<ItemStack[]> itemStacks = new AtomicReference<>();
-        DataSerializable.read(bytes, x -> {
-            int length = x.readInt();
-            ItemStack[] stacks = new ItemStack[length];
-            for (int i = 0; i < length; i++)
-                if (x.readBoolean())
-                    stacks[i] = CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a(NBTCompressedStreamTools.a((DataInput) x)));
-            itemStacks.set(stacks);
-        });
-        return itemStacks.get();
+    public ItemStack deserializeItemStack(byte[] bytes) {
+        AtomicReference<ItemStack> itemStack = new AtomicReference<>();
+        DataSerializable.read(bytes, x -> itemStack.set(CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a(NBTCompressedStreamTools.a((DataInput) x)))));
+        return itemStack.get();
     }
 
 }

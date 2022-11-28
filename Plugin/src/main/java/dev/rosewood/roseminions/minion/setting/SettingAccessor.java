@@ -1,8 +1,7 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
+import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import java.util.Arrays;
-import java.util.List;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class SettingAccessor<T> {
@@ -36,16 +35,16 @@ public class SettingAccessor<T> {
      *
      * @param config the config to write to
      */
-    public void write(CommentedFileConfiguration config) {
+    public void write(CommentedConfigurationSection config) {
         if (this.hidden)
             return;
 
-        if (this.defaultValue instanceof List<?>) {
-            this.serializer.write(config, this.key, this.defaultValue, this.comments);
-        } else {
+        if (this.serializer.isStringificationAllowed() && this.defaultValue != null) {
             String[] comments = Arrays.copyOf(this.comments, this.comments.length + 1);
-            comments[comments.length - 1] = "Default: " + this.defaultValue;
+            comments[comments.length - 1] = "Default: " + this.serializer.stringify(this.defaultValue);
             this.serializer.write(config, this.key, this.defaultValue, comments);
+        } else {
+            this.serializer.write(config, this.key, this.defaultValue, this.comments);
         }
     }
 
@@ -58,7 +57,8 @@ public class SettingAccessor<T> {
         if (this.hidden)
             return;
 
-        this.loadedConfigValue = this.serializer.read(config, this.key);
+        if (config.contains(this.key))
+            this.loadedConfigValue = this.serializer.read(config, this.key);
     }
 
     /**
@@ -68,8 +68,9 @@ public class SettingAccessor<T> {
      * @return the setting value
      */
     public T read(ConfigurationSection config) {
-        if (this.hidden)
+        if (this.hidden || !config.contains(this.key))
             return null;
+
         return this.serializer.read(config, this.key);
     }
 

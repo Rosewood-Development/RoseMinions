@@ -27,7 +27,7 @@ public class InventoryModule extends MinionModule {
 
     static {
         INVENTORY_SIZE = SettingsContainer.defineSetting(InventoryModule.class, SettingSerializers.INTEGER, "inventory-size", 27, "How many individual items can be stored");
-        INVENTORY_CONTENTS = SettingsContainer.defineHiddenSetting(InventoryModule.class, SettingSerializers.ITEMSTACK_ARRAY, "inventory-contents", new ItemStack[27]);
+        INVENTORY_CONTENTS = SettingsContainer.defineHiddenSetting(InventoryModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "inventory-contents", new ItemStack[27]);
         SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_TITLE, "Inventory Module");
         SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON, Material.CHEST);
         SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Inventory Module");
