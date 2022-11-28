@@ -17,9 +17,9 @@ import org.bukkit.inventory.ItemStack;
 @MinionModuleInfo(name = "miner")
 public class MinerModule extends MinionModule {
 
-    private static final SettingAccessor<Integer> MINE_DISTANCE;
-    private static final SettingAccessor<BlockFace> MINE_DIRECTION;
-    private static final SettingAccessor<Long> MINE_FREQUENCY;
+    public static final SettingAccessor<Integer> MINE_DISTANCE;
+    public static final SettingAccessor<BlockFace> MINE_DIRECTION;
+    public static final SettingAccessor<Long> MINE_FREQUENCY;
 
     static {
         MINE_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "mine-distance", 3, "The distance in which to mine blocks");

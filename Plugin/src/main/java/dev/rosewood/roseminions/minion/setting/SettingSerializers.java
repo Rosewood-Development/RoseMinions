@@ -96,7 +96,7 @@ public final class SettingSerializers {
         public byte[] write(Character value) { return this.writeValue(value, ObjectOutputStream::writeChar); }
         public Character read(ConfigurationSection config, String key) {
             String value = config.getString(key);
-            if (value == null || value.length() != 1)
+            if (value == null || value.isEmpty())
                 return ' ';
             return value.charAt(0);
         }
