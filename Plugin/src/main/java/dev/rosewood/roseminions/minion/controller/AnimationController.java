@@ -37,6 +37,7 @@ public class AnimationController extends MinionController {
     private static BukkitTask thetaUpdateTask;
     private static long thetaTicks;
     private double heightOffset;
+    private int nametagUpdateTicks;
 
     public AnimationController(Minion minion) {
         super(minion);
@@ -45,23 +46,33 @@ public class AnimationController extends MinionController {
             thetaUpdateTask = Bukkit.getScheduler().runTaskTimer(RoseMinions.getInstance(), () -> thetaTicks++, 0L, 1L);
     }
 
-    public void update() {
+    public Location getCenterVisibleLocation() {
         // Make the armor stand hover and spin in place around the location
         double theta = thetaTicks * this.settings.get(ROTATION_SPEED);
-
-        ArmorStand armorStand = this.minion.getDisplayEntity();
         Location centerLocation = this.minion.getCenterLocation().add(0, 0.5, 0);
-
-        String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
-        if (!newName.equals(armorStand.getCustomName()))
-            armorStand.setCustomName(newName);
-
-        centerLocation.setY(centerLocation.getY() - this.heightOffset + Math.sin(theta) * 0.2);
+        centerLocation.setY(centerLocation.getY() - this.heightOffset + Math.sin(theta) * 0.2 + this.heightOffset);
         centerLocation.setYaw((float) theta * 100);
-        armorStand.teleport(centerLocation);
+        return centerLocation;
+    }
+
+    public void update() {
+        ArmorStand armorStand = this.minion.getDisplayEntity();
+        Location centerLocation = this.getCenterVisibleLocation();
+        armorStand.teleport(centerLocation.clone().subtract(0, this.heightOffset, 0));
+    }
+
+    @Override
+    public void updateAsync() {
+        ArmorStand armorStand = this.minion.getDisplayEntity();
+        this.nametagUpdateTicks = (this.nametagUpdateTicks + 1) % 2;
+        if (this.nametagUpdateTicks == 0) {
+            String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
+            if (!newName.equals(armorStand.getCustomName()))
+                armorStand.setCustomName(newName);
+        }
 
         if (MinionUtils.RANDOM.nextInt(10) == 0)
-            armorStand.getWorld().spawnParticle(Particle.END_ROD, centerLocation.clone().add(0, this.heightOffset, 0), 1, 0.25, 0.25, 0.25, 0);
+            armorStand.getWorld().spawnParticle(Particle.END_ROD, this.getCenterVisibleLocation(), 1, 0.25, 0.25, 0.25, 0);
     }
 
     public void updateEntity() {

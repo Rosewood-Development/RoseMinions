@@ -63,6 +63,10 @@ public abstract class MinionModule extends GuiHolder implements DataSerializable
 
     public abstract void update();
 
+    public void updateAsync() {
+        // Does nothing by default
+    }
+
     protected void addBackButton(GuiScreen guiScreen) {
         guiScreen.addButtonAt(guiScreen.getCurrentSize().getNumSlots() - 1, GuiFactory.createButton()
                 .setIcon(Material.ARROW)

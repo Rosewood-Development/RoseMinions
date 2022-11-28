@@ -30,4 +30,8 @@ public abstract class MinionController implements DataSerializable {
 
     public abstract void update();
 
+    public void updateAsync() {
+        // Does nothing by default
+    }
+
 }

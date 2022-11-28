@@ -23,7 +23,7 @@ public class MinionManager extends Manager {
     private final DataManager dataManager;
     private final List<Minion> loadedMinions;
     private Multimap<String, ChunkLocation> chunkLoadedMinionLocations;
-    private BukkitTask minionTask;
+    private BukkitTask minionTask, asyncMinionTask;
 
     public MinionManager(RosePlugin rosePlugin) {
         super(rosePlugin);
@@ -39,10 +39,6 @@ public class MinionManager extends Manager {
     public void destroyMinion(Minion minion) {
         this.loadedMinions.remove(minion);
         minion.getDisplayEntity().remove();
-    }
-
-    public void updateMinions() {
-        this.loadedMinions.forEach(Minion::update);
     }
 
     public void registerMinion(Minion minion) {
@@ -90,7 +86,8 @@ public class MinionManager extends Manager {
     public void reload() {
         this.chunkLoadedMinionLocations = this.dataManager.getChunkLoadedMinions();
 
-        this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, this::updateMinions, 0L, Setting.MINION_UPDATE_FREQUENCY.getLong());
+        this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::update), 0L, Setting.MINION_UPDATE_FREQUENCY.getLong());
+        this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::updateAsync), 0L, Setting.MINION_UPDATE_FREQUENCY.getLong());
 
         // Load minions from chunks that are already loaded
         for (World world : Bukkit.getWorlds())
@@ -103,6 +100,11 @@ public class MinionManager extends Manager {
         if (this.minionTask != null) {
             this.minionTask.cancel();
             this.minionTask = null;
+        }
+
+        if (this.asyncMinionTask != null) {
+            this.asyncMinionTask.cancel();
+            this.asyncMinionTask = null;
         }
 
         this.chunkLoadedMinionLocations.clear();

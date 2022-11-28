@@ -8,11 +8,11 @@ import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.List;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
-
-import java.util.List;
 
 @MinionModuleInfo(name = "miner")
 public class MinerModule extends MinionModule {
@@ -28,12 +28,7 @@ public class MinerModule extends MinionModule {
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Miner Module");
-        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of(
-                "",
-                MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.",
-                MinionUtils.SECONDARY_COLOR + "Left-click to open.",
-                MinionUtils.SECONDARY_COLOR + "Right-click to edit settings.")
-        );
+        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
     }
 
     private long lastMineTime;
@@ -51,11 +46,10 @@ public class MinerModule extends MinionModule {
 
         // Get blocks in direction
         for (int i = 1; i <= this.settings.get(MINE_DISTANCE); i++) {
-            var block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINE_DIRECTION), i);
+            Block block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINE_DIRECTION), i);
             block.breakNaturally(new ItemStack(Material.DIAMOND_PICKAXE));
         }
     }
-
 
     @Override
     protected void buildGui() {

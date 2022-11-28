@@ -111,6 +111,11 @@ public class Minion implements DataSerializable {
         this.modules.values().forEach(MinionModule::update);
     }
 
+    public void updateAsync() {
+        this.animationController.updateAsync();
+        this.modules.values().forEach(MinionModule::updateAsync);
+    }
+
     public ArmorStand getDisplayEntity() {
         return this.displayEntity.get();
     }
