@@ -6,11 +6,15 @@ import dev.rosewood.roseminions.nms.NMSAdapter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
 public class SettingSerializers {
@@ -122,6 +126,52 @@ public class SettingSerializers {
             AtomicReference<BlockFace> value = new AtomicReference<>();
             DataSerializable.read(input, x -> value.set(BlockFace.valueOf(x.readUTF())));
             return value.get();
+        }
+    };
+
+    public static final SettingSerializer<Map<Enchantment, Integer>> ENCHANTMENTS = new SettingSerializer<>() {
+
+        public void write(CommentedFileConfiguration config, String key, Map<Enchantment, Integer> value, String... comments) {
+            value.forEach((key1, value1) -> config.set(key + "." + key1.getKey().getKey().toLowerCase(), value1, comments));
+            config.save();
+        }
+
+        public byte[] write(Map<Enchantment, Integer> value) {
+            return DataSerializable.write(x -> {
+                x.writeInt(value.size());
+                for (Map.Entry<Enchantment, Integer> entry : value.entrySet()) {
+                    x.writeUTF(entry.getKey().getKey().getKey().toLowerCase());
+                    x.writeInt(entry.getValue());
+                }
+            });
+        }
+
+        public Map<Enchantment, Integer> read(ConfigurationSection config, String key) {
+            Map<Enchantment, Integer> map = new HashMap<>();
+            ConfigurationSection section = config.getConfigurationSection(key);
+            if (section != null) {
+                for (String configKey : section.getKeys(false)) {
+                    Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(configKey));
+                    if (enchant != null)
+                        map.put(enchant, section.getInt(configKey));
+                }
+            }
+
+            return map;
+        }
+
+        public Map<Enchantment, Integer> read(byte[] input) {
+            Map<Enchantment, Integer> map = new HashMap<>();
+            DataSerializable.read(input, x -> {
+                int size = x.readInt();
+                for (int i = 0; i < size; i++) {
+                    Enchantment enchant = Enchantment.getByKey(NamespacedKey.minecraft(x.readUTF()));
+                    if (enchant != null)
+                        map.put(enchant, x.readInt());
+                }
+            });
+
+            return map;
         }
     };
 
