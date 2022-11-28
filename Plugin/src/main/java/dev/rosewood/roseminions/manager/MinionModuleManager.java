@@ -7,20 +7,22 @@ import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.InventoryModule;
 import dev.rosewood.roseminions.minion.module.ItemPickupModule;
+import dev.rosewood.roseminions.minion.module.MinerModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.MinionModuleInfo;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import java.io.File;
-import java.lang.reflect.Constructor;
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MinionModuleManager extends Manager implements Listener {
 
@@ -119,6 +121,7 @@ public class MinionModuleManager extends Manager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onMinionModuleRegistration(MinionModuleRegistrationEvent event) {
         event.registerModule(SlayerModule.class);
+        event.registerModule(MinerModule.class);
         event.registerModule(ItemPickupModule.class);
         event.registerModule(InventoryModule.class);
     }

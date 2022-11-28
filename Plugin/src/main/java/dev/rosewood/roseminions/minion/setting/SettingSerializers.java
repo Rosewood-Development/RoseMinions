@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 
@@ -102,6 +103,26 @@ public class SettingSerializers {
             return value.get();
         }
 
+    };
+
+    public static final SettingSerializer<BlockFace> BLOCK_FACE = new SettingSerializer<>() {
+        public void write(CommentedFileConfiguration config, String key, BlockFace value, String... comments) { config.set(key, value.name(), comments); }
+        public byte[] write(BlockFace value) { return DataSerializable.write(x -> x.writeUTF(value.name())); }
+
+        public BlockFace read(ConfigurationSection config, String key) {
+            String name = config.getString(key, "NORTH");
+            try {
+                return BlockFace.valueOf(name);
+            } catch (IllegalArgumentException e) {
+                return BlockFace.NORTH;
+            }
+        }
+
+        public BlockFace read(byte[] input) {
+            AtomicReference<BlockFace> value = new AtomicReference<>();
+            DataSerializable.read(input, x -> value.set(BlockFace.valueOf(x.readUTF())));
+            return value.get();
+        }
     };
 
 }
