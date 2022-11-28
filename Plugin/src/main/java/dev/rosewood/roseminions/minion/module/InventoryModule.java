@@ -75,21 +75,13 @@ public class InventoryModule extends MinionModule {
                 .addButtonAt(fullSize.getNumSlots() - 6, GuiFactory.createButton()
                         .setIcon(Material.PAPER)
                         .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Previous Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.PREVIOUS_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
-                        .setClickAction(event -> {
-                            if (event.isShiftClick())
-                                return ClickAction.PAGE_FIRST;
-                            return ClickAction.PAGE_BACKWARDS;
-                        })
+                        .setClickAction(event -> event.isShiftClick() ? ClickAction.PAGE_FIRST : ClickAction.PAGE_BACKWARDS)
                         .setFlags(GuiButtonFlag.HIDE_IF_FIRST_PAGE)
                         .setHiddenReplacement(borderItem))
                 .addButtonAt(fullSize.getNumSlots() - 4, GuiFactory.createButton()
                         .setIcon(Material.PAPER)
                         .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Next Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.NEXT_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
-                        .setClickAction(event -> {
-                            if (event.isShiftClick())
-                                return ClickAction.PAGE_LAST;
-                            return ClickAction.PAGE_FORWARDS;
-                        })
+                        .setClickAction(event -> event.isShiftClick() ? ClickAction.PAGE_LAST : ClickAction.PAGE_FORWARDS)
                         .setFlags(GuiButtonFlag.HIDE_IF_LAST_PAGE)
                         .setHiddenReplacement(borderItem));
 
