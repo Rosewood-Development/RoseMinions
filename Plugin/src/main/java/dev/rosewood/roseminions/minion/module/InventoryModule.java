@@ -14,6 +14,7 @@ import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -132,7 +133,7 @@ public class InventoryModule extends MinionModule {
         // Don't allow modifications while the GUI is open
         if (this.guiContainer != null && this.guiContainer.hasViewers())
             return clone;
-
+        
         int maxStackSize = clone.getMaxStackSize();
 
         // Try to add to existing stacks or fill a new slot

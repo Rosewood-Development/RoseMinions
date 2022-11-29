@@ -66,12 +66,18 @@ public class ItemPickupModule extends MinionModule {
 
     private void pickup(List<Item> items) {
         Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
+        Optional<FilterModule> filterModule = this.minion.getModule(FilterModule.class);
+
         if (inventoryModule.isEmpty()) {
             items.forEach(x -> x.teleport(this.minion.getCenterLocation()));
         } else {
             for (Item item : items) {
                 // TODO: Support for plugins that stack items
                 ItemStack itemStack = item.getItemStack();
+                // Don't pick up items that are filtered
+                if (filterModule.isPresent() && filterModule.get().isFiltered(itemStack))
+                    continue;
+
                 ItemStack overflow = inventoryModule.get().addItem(itemStack);
                 if (overflow == null) {
                     item.remove();

@@ -9,6 +9,7 @@ import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
+import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -44,9 +45,14 @@ public class MinerModule extends MinionModule {
 
         this.lastMineTime = System.currentTimeMillis();
 
+        Optional<FilterModule> filterModule = this.minion.getModule(FilterModule.class);
         // Get blocks in direction
         for (int i = 1; i <= this.settings.get(MINE_DISTANCE); i++) {
             Block block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINE_DIRECTION), i);
+
+            if (filterModule.isPresent() && filterModule.get().isFiltered(new ItemStack(block.getType())))
+                continue;
+
             block.breakNaturally(new ItemStack(Material.DIAMOND_PICKAXE));
         }
     }
