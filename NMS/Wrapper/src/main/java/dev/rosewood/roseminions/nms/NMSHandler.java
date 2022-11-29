@@ -1,5 +1,8 @@
 package dev.rosewood.roseminions.nms;
 
+import java.util.List;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -11,5 +14,9 @@ public interface NMSHandler {
     byte[] serializeItemStack(ItemStack itemStack);
 
     ItemStack deserializeItemStack(byte[] bytes);
+
+    default List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod) {
+        throw new UnsupportedOperationException("getFishingLoot is not supported on this version of Minecraft");
+    }
 
 }
