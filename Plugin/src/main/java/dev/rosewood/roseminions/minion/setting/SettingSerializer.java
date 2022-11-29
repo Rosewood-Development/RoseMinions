@@ -7,29 +7,27 @@ import dev.rosewood.roseminions.util.catching.CatchingFunction;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import org.bukkit.configuration.ConfigurationSection;
 
 public abstract class SettingSerializer<T> {
 
     protected final Class<?> type;
-    private final boolean supportsStringification;
+    private final Function<T, String> toStringFunction;
+    private final Function<String, T> fromStringFunction;
+
+    public SettingSerializer(Class<?> type, Function<T, String> toStringFunction, Function<String, T> fromStringFunction) {
+        this.type = type;
+        this.toStringFunction = toStringFunction;
+        this.fromStringFunction = fromStringFunction;
+    }
 
     public SettingSerializer(Class<?> type) {
-        this.type = type;
+        this(type, null, null);
+    }
 
-        // If an UnsupportedOperationException is thrown, stringification is not supported
-        // If anything else happens, it is
-        boolean stringificationAllowed;
-        try {
-            this.stringify(null);
-            this.parseString(null);
-            stringificationAllowed = true;
-        } catch (UnsupportedOperationException e) {
-            stringificationAllowed = false;
-        } catch (Exception e) {
-            stringificationAllowed = true;
-        }
-        this.supportsStringification = stringificationAllowed;
+    public SettingSerializer() {
+        this(null);
     }
 
     public abstract void write(CommentedConfigurationSection config, String key, T value, String... comments);
@@ -51,15 +49,19 @@ public abstract class SettingSerializer<T> {
     }
 
     public final boolean isStringificationAllowed() {
-        return this.supportsStringification;
+        return this.toStringFunction != null && this.fromStringFunction != null;
     }
 
-    public String stringify(T value) {
-        throw new UnsupportedOperationException("stringify not implemented");
+    public final String stringify(T value) {
+        if (this.toStringFunction == null)
+            throw new UnsupportedOperationException("stringify not implemented");
+        return this.toStringFunction.apply(value);
     }
 
-    public T parseString(String value) {
-        throw new UnsupportedOperationException("parseString not properly implemented");
+    public final T parseString(String value) {
+        if (this.fromStringFunction == null)
+            throw new UnsupportedOperationException("parseString not implemented");
+        return this.fromStringFunction.apply(value);
     }
 
     public String getTypeName() {

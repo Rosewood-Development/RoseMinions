@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,70 +29,56 @@ public final class SettingSerializers {
     private SettingSerializers() { }
 
     //region Primitive Serializers
-    public static final SettingSerializer<Boolean> BOOLEAN = new SettingSerializer<>(Boolean.class) {
+    public static final SettingSerializer<Boolean> BOOLEAN = new SettingSerializer<>(Boolean.class, Object::toString, Boolean::parseBoolean) {
         public void write(CommentedConfigurationSection config, String key, Boolean value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Boolean value) { return this.writeValue(value, ObjectOutputStream::writeBoolean); }
         public Boolean read(ConfigurationSection config, String key) { return config.getBoolean(key); }
         public Boolean read(byte[] input) { return this.readValue(input, ObjectInputStream::readBoolean); }
-        public String stringify(Boolean value) { return value.toString(); }
-        public Boolean parseString(String value) { return Boolean.parseBoolean(value); }
     };
 
-    public static final SettingSerializer<Integer> INTEGER = new SettingSerializer<>(Integer.class) {
+    public static final SettingSerializer<Integer> INTEGER = new SettingSerializer<>(Integer.class, Object::toString, Integer::parseInt) {
         public void write(CommentedConfigurationSection config, String key, Integer value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Integer value) { return this.writeValue(value, ObjectOutputStream::writeInt); }
         public Integer read(ConfigurationSection config, String key) { return config.getInt(key); }
         public Integer read(byte[] input) { return this.readValue(input, ObjectInputStream::readInt); }
-        public String stringify(Integer value) { return value.toString(); }
-        public Integer parseString(String value) { return Integer.parseInt(value); }
     };
 
-    public static final SettingSerializer<Long> LONG = new SettingSerializer<>(Long.class) {
+    public static final SettingSerializer<Long> LONG = new SettingSerializer<>(Long.class, Object::toString, Long::parseLong) {
         public void write(CommentedConfigurationSection config, String key, Long value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Long value) { return this.writeValue(value, ObjectOutputStream::writeLong); }
         public Long read(ConfigurationSection config, String key) { return config.getLong(key); }
         public Long read(byte[] input) { return this.readValue(input, ObjectInputStream::readLong); }
-        public String stringify(Long value) { return value.toString(); }
-        public Long parseString(String value) { return Long.parseLong(value); }
     };
 
-    public static final SettingSerializer<Short> SHORT = new SettingSerializer<>(Short.class) {
+    public static final SettingSerializer<Short> SHORT = new SettingSerializer<>(Short.class, Object::toString, Short::parseShort) {
         public void write(CommentedConfigurationSection config, String key, Short value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Short value) { return this.writeValue(value, ObjectOutputStream::writeShort); }
         public Short read(ConfigurationSection config, String key) { return (short) config.getInt(key); }
         public Short read(byte[] input) { return this.readValue(input, ObjectInputStream::readShort); }
-        public String stringify(Short value) { return value.toString(); }
-        public Short parseString(String value) { return Short.parseShort(value); }
     };
 
-    public static final SettingSerializer<Byte> BYTE = new SettingSerializer<>(Byte.class) {
+    public static final SettingSerializer<Byte> BYTE = new SettingSerializer<>(Byte.class, Object::toString, Byte::parseByte) {
         public void write(CommentedConfigurationSection config, String key, Byte value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Byte value) { return this.writeValue(value, ObjectOutputStream::writeByte); }
         public Byte read(ConfigurationSection config, String key) { return (byte) config.getInt(key); }
         public Byte read(byte[] input) { return this.readValue(input, ObjectInputStream::readByte); }
-        public String stringify(Byte value) { return value.toString(); }
-        public Byte parseString(String value) { return Byte.parseByte(value); }
     };
 
-    public static final SettingSerializer<Double> DOUBLE = new SettingSerializer<>(Double.class) {
+    public static final SettingSerializer<Double> DOUBLE = new SettingSerializer<>(Double.class, Object::toString, Double::parseDouble) {
         public void write(CommentedConfigurationSection config, String key, Double value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Double value) { return this.writeValue(value, ObjectOutputStream::writeDouble); }
         public Double read(ConfigurationSection config, String key) { return config.getDouble(key); }
         public Double read(byte[] input) { return this.readValue(input, ObjectInputStream::readDouble); }
-        public String stringify(Double value) { return value.toString(); }
-        public Double parseString(String value) { return Double.parseDouble(value); }
     };
 
-    public static final SettingSerializer<Float> FLOAT = new SettingSerializer<>(Float.class) {
+    public static final SettingSerializer<Float> FLOAT = new SettingSerializer<>(Float.class, Object::toString, Float::parseFloat) {
         public void write(CommentedConfigurationSection config, String key, Float value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Float value) { return this.writeValue(value, ObjectOutputStream::writeFloat); }
         public Float read(ConfigurationSection config, String key) { return (float) config.getDouble(key); }
         public Float read(byte[] input) { return this.readValue(input, ObjectInputStream::readFloat); }
-        public String stringify(Float value) { return value.toString(); }
-        public Float parseString(String value) { return Float.parseFloat(value); }
     };
 
-    public static final SettingSerializer<Character> CHAR = new SettingSerializer<>(Character.class) {
+    public static final SettingSerializer<Character> CHAR = new SettingSerializer<>(Character.class, Object::toString, x -> x.charAt(0)) {
         public void write(CommentedConfigurationSection config, String key, Character value, String... comments) { config.set(key, value, comments); }
         public byte[] write(Character value) { return this.writeValue(value, ObjectOutputStream::writeChar); }
         public Character read(ConfigurationSection config, String key) {
@@ -101,8 +88,6 @@ public final class SettingSerializers {
             return value.charAt(0);
         }
         public Character read(byte[] input) { return this.readValue(input, ObjectInputStream::readChar); }
-        public String stringify(Character value) { return value.toString(); }
-        public Character parseString(String value) { return value.charAt(0); }
     };
     //endregion
 
@@ -112,17 +97,15 @@ public final class SettingSerializers {
     //endregion
 
     //region Other Serializers
-    public static final SettingSerializer<String> STRING = new SettingSerializer<>(String.class) {
+    public static final SettingSerializer<String> STRING = new SettingSerializer<>(String.class, Function.identity(), Function.identity()) {
         public void write(CommentedConfigurationSection config, String key, String value, String... comments) { config.set(key, value, comments); }
         public byte[] write(String value) { return this.writeValue(value, ObjectOutputStream::writeUTF); }
         public String read(ConfigurationSection config, String key) { return config.getString(key); }
         public String read(byte[] input) { return this.readValue(input, ObjectInputStream::readUTF); }
-        public String stringify(String value) { return value; }
-        public String parseString(String value) { return value; }
     };
 
     public static final SettingSerializer<ItemStack> ITEMSTACK = new SettingSerializer<>(ItemStack.class) {
-        public void write(CommentedConfigurationSection config, String key, ItemStack value, String... comments) { throw new IllegalStateException("Cannot write ItemStack to a ConfigurationSection"); }
+        public void write(CommentedConfigurationSection config, String key, ItemStack value, String... comments) { config.set(key, Base64.getEncoder().encodeToString(this.write(value)), comments); }
         public byte[] write(ItemStack value) {
             return DataSerializable.write(x -> {
                 byte[] data = NMSAdapter.getHandler().serializeItemStack(value);
@@ -130,7 +113,7 @@ public final class SettingSerializers {
                 x.write(data);
             });
         }
-        public ItemStack read(ConfigurationSection config, String key) { throw new IllegalStateException("Cannot read ItemStack from a ConfigurationSection"); }
+        public ItemStack read(ConfigurationSection config, String key) { return this.read(Base64.getDecoder().decode(config.getString(key, ""))); }
         public ItemStack read(byte[] input) {
             AtomicReference<ItemStack> value = new AtomicReference<>();
             DataSerializable.read(input, x -> {
@@ -150,23 +133,14 @@ public final class SettingSerializers {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<T>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<T> serializer = new SettingSerializer<>(enumClass) {
+        SettingSerializer<T> serializer = new SettingSerializer<>(enumClass, Enum::name, x -> Enum.valueOf(enumClass, x)) {
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) { config.set(key, value.name(), comments); }
             public byte[] write(T value) { return DataSerializable.write(x -> x.writeUTF(value.name())); }
-            public T read(ConfigurationSection config, String key) { return this.parse(config.getString(key)); }
+            public T read(ConfigurationSection config, String key) { return Enum.valueOf(enumClass, config.getString(key, "")); }
             public T read(byte[] input) {
                 AtomicReference<T> value = new AtomicReference<>();
-                DataSerializable.read(input, x -> value.set(T.valueOf(enumClass, x.readUTF())));
+                DataSerializable.read(input, x -> value.set(Enum.valueOf(enumClass, x.readUTF())));
                 return value.get();
-            }
-            public String stringify(T value) { return value.name(); }
-            public T parseString(String value) { return this.parse(value); }
-            private T parse(String value) {
-                try {
-                    return T.valueOf(enumClass, value);
-                } catch (IllegalArgumentException | NullPointerException e) {
-                    return enumClass.getEnumConstants()[0];
-                }
             }
         };
 
@@ -179,7 +153,7 @@ public final class SettingSerializers {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<T>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<T> serializer = new SettingSerializer<>(keyedClass) {
+        SettingSerializer<T> serializer = new SettingSerializer<>(keyedClass, x -> translateName(x.getKey()), x -> valueOfFunction.apply(translateKey(x))) {
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) { config.set(key, translateName(value.getKey()), comments); }
             public byte[] write(T value) { return DataSerializable.write(x -> x.writeUTF(translateName(value.getKey()))); }
             public T read(ConfigurationSection config, String key) { return valueOfFunction.apply(translateKey(config.getString(key))); }
@@ -187,16 +161,6 @@ public final class SettingSerializers {
                 AtomicReference<T> value = new AtomicReference<>();
                 DataSerializable.read(input, x -> value.set(valueOfFunction.apply(translateKey(x.readUTF()))));
                 return value.get();
-            }
-            public String stringify(T value) { return translateName(value.getKey()); }
-            public T parseString(String value) { return valueOfFunction.apply(translateKey(value)); }
-            private static NamespacedKey translateKey(String key) {
-                return NamespacedKey.fromString(key);
-            }
-            private static String translateName(NamespacedKey key) {
-                if (key.getNamespace().equals(NamespacedKey.MINECRAFT))
-                    return key.getKey();
-                return key.toString();
             }
         };
 
@@ -209,7 +173,7 @@ public final class SettingSerializers {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<T[]>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<T[]> arraySerializer = new SettingSerializer<>(null) {
+        SettingSerializer<T[]> arraySerializer = new SettingSerializer<>() {
             public void write(CommentedConfigurationSection config, String key, T[] value, String... comments) {
                 if (serializer.isStringificationAllowed()) {
                     config.set(key, Arrays.stream(value).map(x -> x == null ? "" : serializer.stringify(x)).toList(), comments);
@@ -293,7 +257,7 @@ public final class SettingSerializers {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<List<T>>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<List<T>> listSerializer = new SettingSerializer<>(null) {
+        SettingSerializer<List<T>> listSerializer = new SettingSerializer<>() {
             public void write(CommentedConfigurationSection config, String key, List<T> value, String... comments) {
                 if (serializer.isStringificationAllowed()) {
                     config.set(key, value.stream().map(serializer::stringify).toList(), comments);
@@ -357,7 +321,7 @@ public final class SettingSerializers {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<Map<K, V>>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<Map<K, V>> mapSerializer = new SettingSerializer<>(null) {
+        SettingSerializer<Map<K, V>> mapSerializer = new SettingSerializer<>() {
             public void write(CommentedConfigurationSection config, String key, Map<K, V> value, String... comments) {
                 CommentedConfigurationSection section = getOrCreateSection(config, key, comments);
                 if (keySerializer.isStringificationAllowed() && valueSerializer.isStringificationAllowed()) {
@@ -366,7 +330,7 @@ public final class SettingSerializers {
                 } else {
                     int index = 0;
                     for (Map.Entry<K, V> entry : value.entrySet()) {
-                        CommentedConfigurationSection indexedSection = getOrCreateSection(config, String.valueOf(index++), comments);
+                        CommentedConfigurationSection indexedSection = getOrCreateSection(section, String.valueOf(index++));
                         keySerializer.write(indexedSection, "key", entry.getKey());
                         valueSerializer.write(indexedSection, "value", entry.getValue());
                     }
@@ -443,6 +407,16 @@ public final class SettingSerializers {
             section = config.createSection(key);
         }
         return section;
+    }
+
+    private static NamespacedKey translateKey(String key) {
+        return NamespacedKey.fromString(key);
+    }
+
+    private static String translateName(NamespacedKey key) {
+        if (key.getNamespace().equals(NamespacedKey.MINECRAFT))
+            return key.getKey();
+        return key.toString();
     }
 
 }
