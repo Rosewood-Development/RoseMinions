@@ -72,7 +72,7 @@ public class ItemPickupModule extends MinionModule {
         if (inventoryModule.isEmpty()) {
             // Teleport items directly under the minion
             for (Item item : items)
-                if (filterModule.isEmpty() || !filterModule.get().isFiltered(item.getItemStack()))
+                if (filterModule.isEmpty() || filterModule.get().isAllowed(item.getItemStack()))
                     item.teleport(this.minion.getCenterLocation());
         } else {
             // Add items to the inventory
@@ -81,7 +81,7 @@ public class ItemPickupModule extends MinionModule {
                 ItemStack itemStack = item.getItemStack();
 
                 // Don't pick up items that are filtered
-                if (filterModule.isPresent() && filterModule.get().isFiltered(itemStack))
+                if (filterModule.isPresent() && !filterModule.get().isAllowed(itemStack))
                     continue;
 
                 ItemStack overflow = inventoryModule.get().addItem(itemStack);

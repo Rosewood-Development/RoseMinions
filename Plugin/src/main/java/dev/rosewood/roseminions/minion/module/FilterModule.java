@@ -122,7 +122,7 @@ public class FilterModule extends MinionModule {
      * @param itemStack The item to check
      * @return true if the item is allowed, false otherwise
      */
-    public boolean isFiltered(ItemStack itemStack) {
+    public boolean isAllowed(ItemStack itemStack) {
         ItemStack[] filterItems = this.settings.get(FILTER_ITEMS);
         FilterType filterType = this.settings.get(FILTER_TYPE);
         boolean matchNbt = this.settings.get(MATCH_NBT);
@@ -140,7 +140,12 @@ public class FilterModule extends MinionModule {
         }
 
         // If the item is in the filter, return true if the filter type is whitelist, false otherwise
-        return (filterType == FilterType.BLACKLIST) == inFilter;
+        // If the item is not in the filter, return true if the filter type is blacklist, false otherwise
+        if (inFilter) {
+            return filterType == FilterType.WHITELIST;
+        } else {
+            return filterType == FilterType.BLACKLIST;
+        }
     }
 
     public enum FilterType {

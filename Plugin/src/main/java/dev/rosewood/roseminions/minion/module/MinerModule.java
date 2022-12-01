@@ -51,7 +51,7 @@ public class MinerModule extends MinionModule {
         for (int i = 1; i <= this.settings.get(MINE_DISTANCE); i++) {
             Block block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINE_DIRECTION), i);
 
-            if (filterModule.isPresent() && filterModule.get().isFiltered(new ItemStack(block.getType())))
+            if (filterModule.isPresent() && !filterModule.get().isAllowed(new ItemStack(block.getType())))
                 continue;
 
             block.breakNaturally(new ItemStack(Material.DIAMOND_PICKAXE));
