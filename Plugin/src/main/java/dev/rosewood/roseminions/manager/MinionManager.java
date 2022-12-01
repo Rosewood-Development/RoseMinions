@@ -101,6 +101,9 @@ public class MinionManager extends Manager {
             this.asyncMinionTask = null;
         }
 
+        // Kick out GUI viewers
+        this.loadedMinions.forEach(Minion::kickOutViewers);
+
         // Unload minions that are currently loaded
         new ArrayList<>(this.loadedMinions).stream().map(Minion::getDisplayEntity).forEach(this::unloadMinion);
     }

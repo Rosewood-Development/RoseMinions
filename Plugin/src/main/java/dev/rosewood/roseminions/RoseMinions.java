@@ -14,7 +14,6 @@ import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
-import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +64,7 @@ public class RoseMinions extends RosePlugin {
 
     @Override
     public void disable() {
-        this.getManager(MinionManager.class).getLoadedMinions().forEach(Minion::kickOutViewers);
+
     }
 
     @Override

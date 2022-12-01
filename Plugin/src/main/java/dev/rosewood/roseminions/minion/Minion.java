@@ -186,7 +186,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
                         .findFirst();
 
                 if (module.isPresent()) {
-                    module.get().deserialize(moduleData); // TODO: Make sure values are still within allowed range
+                    module.get().deserialize(moduleData);
                 } else {
                     RoseMinions.getInstance().getLogger().warning("Skipped loading module " + name + " for minion at " + this.location + " because the module no longer exists");
                 }

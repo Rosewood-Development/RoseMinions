@@ -41,6 +41,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     protected final Minion minion;
     protected final SettingsContainer settings;
     protected final Map<Class<? extends MinionModule>, MinionModule> submodules;
+    protected Modular parentModular;
 
     protected final GuiFramework guiFramework;
     protected GuiContainer guiContainer;
@@ -49,12 +50,8 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
         this.minion = minion;
         this.settings = new SettingsContainer(this.getClass());
         this.submodules = new LinkedHashMap<>();
+        this.parentModular = minion;
         this.guiFramework = GuiFramework.instantiate(RoseMinions.getInstance());
-    }
-
-    public MinionModule(Minion minion, Map<Class<? extends MinionModule>, MinionModule> submodules) {
-        this(minion);
-        this.submodules.putAll(submodules);
     }
 
     protected abstract void buildGui();
@@ -128,7 +125,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     public <T extends MinionModule> Optional<T> getModule(Class<T> moduleClass) {
         if (this.submodules.containsKey(moduleClass))
             return Optional.of((T) this.submodules.get(moduleClass));
-        return this.minion.getModule(moduleClass);
+        return this.parentModular.getModule(moduleClass);
     }
 
     @Override
@@ -155,6 +152,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     public final void setSubModules(Map<Class<? extends MinionModule>, MinionModule> modules) {
         this.submodules.clear();
         this.submodules.putAll(modules);
+        this.submodules.values().forEach(x -> x.parentModular = this);
     }
 
     protected final void addBackButton(GuiScreen guiScreen) {
