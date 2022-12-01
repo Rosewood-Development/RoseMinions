@@ -7,13 +7,14 @@ import dev.rosewood.guiframework.gui.GuiContainer;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
-import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.model.Modular;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingHolder;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.model.DataSerializable;
+import dev.rosewood.roseminions.model.GuiHolder;
+import dev.rosewood.roseminions.model.Modular;
 import dev.rosewood.roseminions.model.Updatable;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.LinkedHashMap;
@@ -76,6 +77,50 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     @Override
     public final SettingsContainer getSettings() {
         return this.settings;
+    }
+
+    @Override
+    public byte[] serialize() {
+        return DataSerializable.write(outputStream -> {
+            byte[] settingsData = SettingHolder.super.serialize();
+            outputStream.writeInt(settingsData.length);
+            outputStream.write(settingsData);
+
+            outputStream.writeInt(this.submodules.size());
+            for (MinionModule submodule : this.submodules.values()) {
+                outputStream.writeUTF(submodule.getName());
+                byte[] submoduleData = submodule.serialize();
+                outputStream.writeInt(submoduleData.length);
+                outputStream.write(submoduleData);
+            }
+        });
+    }
+
+    @Override
+    public void deserialize(byte[] input) {
+        DataSerializable.read(input, inputStream -> {
+            byte[] settingsData = new byte[inputStream.readInt()];
+            inputStream.read(settingsData);
+            SettingHolder.super.deserialize(settingsData);
+
+            int submodulesSize = inputStream.readInt();
+            for (int i = 0; i < submodulesSize; i++) {
+                String name = inputStream.readUTF();
+                byte[] submoduleData = new byte[inputStream.readInt()];
+                inputStream.read(submoduleData);
+
+                // Find module with this name
+                Optional<MinionModule> module = this.submodules.values().stream()
+                        .filter(x -> x.getName().equals(name))
+                        .findFirst();
+
+                if (module.isPresent()) {
+                    module.get().deserialize(submoduleData); // TODO: Make sure values are still within allowed range
+                } else {
+                    RoseMinions.getInstance().getLogger().warning("Skipped loading submodule " + name + " for minion at " + this.getMinion().getLocation() + " because the module no longer exists");
+                }
+            }
+        });
     }
 
     @Override

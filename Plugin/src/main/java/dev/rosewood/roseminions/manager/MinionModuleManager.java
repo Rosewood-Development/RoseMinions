@@ -5,7 +5,6 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.MinionData;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.module.FilterModule;
 import dev.rosewood.roseminions.minion.module.FisherModule;
@@ -70,21 +69,6 @@ public class MinionModuleManager extends Manager implements Listener {
     }
 
     public MinionModule createModule(String name, Minion minion) {
-        Constructor<? extends MinionModule> constructor = this.moduleConstructors.get(name.toLowerCase());
-        if (constructor == null)
-            return null;
-
-        try {
-            return constructor.newInstance(minion);
-        } catch (ReflectiveOperationException e) {
-            this.rosePlugin.getLogger().warning("Failed to create module " + name.toLowerCase() + "!");
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public MinionModule createModule(String name, Minion minion, Map<String, MinionData.ModuleData> submodules) {
         Constructor<? extends MinionModule> constructor = this.moduleConstructors.get(name.toLowerCase());
         if (constructor == null)
             return null;

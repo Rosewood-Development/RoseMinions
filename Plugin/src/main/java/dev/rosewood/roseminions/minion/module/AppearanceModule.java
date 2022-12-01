@@ -69,8 +69,10 @@ public class AppearanceModule extends MinionModule {
         this.nametagUpdateTicks = (this.nametagUpdateTicks + 1) % 2;
         if (this.nametagUpdateTicks == 0) {
             String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
-            if (!newName.equals(armorStand.getCustomName()))
+            if (!newName.equals(armorStand.getCustomName())) {
                 armorStand.setCustomName(newName);
+                armorStand.setCustomNameVisible(true);
+            }
         }
 
         if (MinionUtils.RANDOM.nextInt(10) == 0)

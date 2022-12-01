@@ -7,6 +7,9 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.roseminions.manager.MinionManager;
 import java.util.ArrayList;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 
 public class TestCommand extends RoseCommand {
 
@@ -17,7 +20,15 @@ public class TestCommand extends RoseCommand {
     @RoseExecutable
     public void execute(CommandContext context) {
         MinionManager minionManager = this.rosePlugin.getManager(MinionManager.class);
+
+        // Remove active minions
         new ArrayList<>(minionManager.getLoadedMinions()).forEach(minionManager::destroyMinion);
+
+        // Remove broken minions that are loaded
+        Bukkit.getWorlds().stream()
+                .flatMap(world -> world.getEntitiesByClass(ArmorStand.class).stream())
+                .filter(minionManager::isMinion)
+                .forEach(Entity::remove);
     }
 
     @Override

@@ -9,6 +9,7 @@ import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
@@ -42,8 +43,8 @@ public class MinionManager extends Manager {
 
     public void loadMinion(ArmorStand minionEntity) {
         try {
-            Minion existingMinion = this.getMinionFromEntity(minionEntity);
-            if (existingMinion != null)
+            Optional<Minion> existingMinion = this.getMinionFromEntity(minionEntity);
+            if (existingMinion.isPresent())
                 return;
 
             PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
@@ -60,21 +61,21 @@ public class MinionManager extends Manager {
     }
 
     public void unloadMinion(ArmorStand minionEntity) {
-        Minion minion = this.getMinionFromEntity(minionEntity);
-        if (minion == null)
+        Optional<Minion> optionalMinion = this.getMinionFromEntity(minionEntity);
+        if (optionalMinion.isEmpty())
             return;
 
+        Minion minion = optionalMinion.get();
         this.loadedMinions.remove(minion);
 
         PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
         pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY, minion.serialize());
     }
 
-    public Minion getMinionFromEntity(ArmorStand entity) {
+    public Optional<Minion> getMinionFromEntity(ArmorStand entity) {
         return this.loadedMinions.stream()
                 .filter(x -> x.getDisplayEntity().equals(entity))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     @Override
@@ -105,7 +106,10 @@ public class MinionManager extends Manager {
     }
 
     public boolean isMinion(ArmorStand armorStand) {
-        return this.loadedMinions.stream().anyMatch(x -> x.getDisplayEntity().equals(armorStand));
+        if (this.loadedMinions.stream().anyMatch(x -> x.getDisplayEntity().equals(armorStand)))
+            return true;
+
+        return armorStand.getPersistentDataContainer().has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
     }
 
 }

@@ -304,7 +304,6 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
             module.getSettings().merge(data.settings());
             Map<Class<? extends MinionModule>, MinionModule> submodules = this.loadModules(data.subModules(), minionModuleManager);
             module.setSubModules(submodules);
-            RoseMinions.getInstance().getLogger().warning("Loaded module " + name + " with " + submodules.size() + " submodules");
             modules.put(module.getClass(), module);
         });
         return modules;
@@ -315,7 +314,6 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
             entity.setVisible(false);
             entity.setGravity(false);
             entity.setSmall(true);
-            entity.setCustomNameVisible(true);
             entity.setInvulnerable(true);
             entity.setCanPickupItems(false);
             entity.setPersistent(true);

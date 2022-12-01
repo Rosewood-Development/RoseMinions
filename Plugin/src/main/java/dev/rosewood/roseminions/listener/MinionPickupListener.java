@@ -4,6 +4,7 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -33,15 +34,16 @@ public class MinionPickupListener implements Listener {
             return;
 
         MinionManager minionManager = this.rosePlugin.getManager(MinionManager.class);
-        Minion minion = minionManager.getMinionFromEntity(armorStand);
-        if (minion == null) {
-            if (armorStand.getPersistentDataContainer().has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY))
+        Optional<Minion> minionOptional = minionManager.getMinionFromEntity(armorStand);
+        if (minionOptional.isEmpty()) {
+            if (minionManager.isMinion(armorStand))
                 event.setCancelled(true);
             return;
         }
 
         event.setCancelled(true);
 
+        Minion minion = minionOptional.get();
         Player player = event.getPlayer();
         if (!minion.getOwner().equals(player.getUniqueId())) {
             player.sendMessage("You do not own this minion");
