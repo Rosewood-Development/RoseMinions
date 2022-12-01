@@ -6,6 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+/**
+ * Represents something that can be serialized and deserialized
+ */
 public interface DataSerializable {
 
     /**

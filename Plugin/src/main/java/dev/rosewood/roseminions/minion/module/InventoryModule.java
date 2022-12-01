@@ -14,7 +14,6 @@ import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -23,16 +22,17 @@ import org.bukkit.inventory.meta.ItemMeta;
 @MinionModuleInfo(name = "inventory")
 public class InventoryModule extends MinionModule {
 
-    private static final SettingAccessor<Integer> INVENTORY_SIZE;
-    private static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS;
+    public static final SettingAccessor<Integer> INVENTORY_SIZE;
+    public static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS;
 
     static {
         INVENTORY_SIZE = SettingsContainer.defineSetting(InventoryModule.class, SettingSerializers.INTEGER, "inventory-size", 27, "How many individual items can be stored");
         INVENTORY_CONTENTS = SettingsContainer.defineHiddenSetting(InventoryModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "inventory-contents", new ItemStack[27]);
+
         SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_TITLE, "Inventory Module");
         SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON, Material.CHEST);
         SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Inventory Module");
-        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
+        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     public InventoryModule(Minion minion) {
@@ -46,7 +46,7 @@ public class InventoryModule extends MinionModule {
 
     @Override
     protected void buildGui() {
-        this.fixInventorySize();
+        MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
 
         this.guiContainer = GuiFactory.createContainer();
 
@@ -90,35 +90,6 @@ public class InventoryModule extends MinionModule {
 
         this.guiContainer.addScreen(mainScreen);
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
-    }
-
-    private void fixInventorySize() {
-        // Make sure the inventory size is always either 9, 18, 27, or intervals of 27
-        int inventorySize = this.settings.get(INVENTORY_SIZE);
-        if (inventorySize % 9 != 0) {
-            if (inventorySize < 9) {
-                inventorySize = 9;
-            } else if (inventorySize < 18) {
-                inventorySize = 18;
-            } else if (inventorySize < 27) {
-                inventorySize = 27;
-            }
-        }
-
-        if (inventorySize > 27)
-            inventorySize = (int) Math.ceil(inventorySize / 27.0) * 27;
-
-        if (inventorySize != this.settings.get(INVENTORY_SIZE))
-            this.settings.set(INVENTORY_SIZE, inventorySize);
-
-        // Adjust the inventory size if needed
-        int size = this.settings.get(INVENTORY_SIZE);
-        ItemStack[] contents = this.settings.get(INVENTORY_CONTENTS);
-        if (contents.length != size) {
-            ItemStack[] newContents = new ItemStack[size];
-            System.arraycopy(contents, 0, newContents, 0, Math.min(contents.length, size));
-            this.settings.set(INVENTORY_CONTENTS, newContents);
-        }
     }
 
     /**

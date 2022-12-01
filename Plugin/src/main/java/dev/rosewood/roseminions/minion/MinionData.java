@@ -5,7 +5,6 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
-import dev.rosewood.roseminions.minion.controller.AnimationController;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
@@ -60,60 +59,62 @@ public class MinionData {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Minion " + this.id + " has an invalid rank number");
         }
-
-        RoseMinions.getInstance().getLogger().warning("Loaded minion type " + this.id);
     }
 
     private MinionRank loadRank(int rank, ConfigurationSection section) {
         SettingsContainer itemSettings;
-        Map<String, SettingsContainer> modules;
-        SettingsContainer animationSettings;
+        Map<String, ModuleData> moduleData = new HashMap<>();
 
         // Load settings from previous rank
         if (rank > 0) {
             MinionRank previousRank = this.ranks.get(rank - 1);
             itemSettings = previousRank.getItemSettings().copy();
-            modules = new HashMap<>();
-            for (Map.Entry<String, SettingsContainer> entry : previousRank.getModuleSettings().entrySet())
-                modules.put(entry.getKey(), entry.getValue().copy());
-            previousRank.getModuleSettings().forEach((module, settings) -> modules.put(module, settings.copy()));
-            animationSettings = previousRank.getAnimationSettings().copy();
+            previousRank.getModuleData().forEach((module, data) -> moduleData.put(module, data.copy()));
         } else {
             itemSettings = new SettingsContainer(MinionItem.class);
-            modules = new HashMap<>();
-            animationSettings = new SettingsContainer(AnimationController.class);
         }
 
         ConfigurationSection itemSection = section.getConfigurationSection("item");
         if (itemSection != null)
             itemSettings.loadDefaultsFromConfig(itemSection);
 
+        MinionModuleManager minionModuleManager = RoseMinions.getInstance().getManager(MinionModuleManager.class);
         ConfigurationSection modulesSection = section.getConfigurationSection("modules");
-        if (modulesSection != null) {
-            MinionModuleManager minionModuleManager = RoseMinions.getInstance().getManager(MinionModuleManager.class);
-            for (String key : modulesSection.getKeys(false)) {
-                key = key.toLowerCase();
-                if (!minionModuleManager.isValidModule(key)) {
-                    RoseMinions.getInstance().getLogger().warning("Invalid module " + key + " for minion " + this.id);
-                    continue;
-                }
-
-                ConfigurationSection moduleSection = modulesSection.getConfigurationSection(key);
-                if (moduleSection == null) {
-                    RoseMinions.getInstance().getLogger().warning("No settings found for module " + key + " for minion " + this.id);
-                    continue;
-                }
-
-                SettingsContainer settingsContainer = minionModuleManager.getSectionSettings(key, moduleSection);
-                modules.put(key, settingsContainer);
+        this.getModules(modulesSection, minionModuleManager).values().forEach(data -> {
+            ModuleData existingData = moduleData.get(data.id());
+            if (existingData != null) {
+                existingData.merge(data);
+            } else {
+                moduleData.put(data.id(), data);
             }
+        });
+
+        return new MinionRank(rank, itemSettings, moduleData);
+    }
+
+    private Map<String, ModuleData> getModules(ConfigurationSection section, MinionModuleManager minionModuleManager) {
+        if (section == null)
+            return new HashMap<>();
+
+        Map<String, ModuleData> moduleData = new HashMap<>();
+        for (String key : section.getKeys(false)) {
+            key = key.toLowerCase();
+            if (!minionModuleManager.isValidModule(key)) {
+                RoseMinions.getInstance().getLogger().warning("Invalid module " + key + " for minion " + this.id);
+                continue;
+            }
+
+            ConfigurationSection moduleSection = section.getConfigurationSection(key);
+            if (moduleSection == null) {
+                RoseMinions.getInstance().getLogger().warning("No settings found for module " + key + " for minion " + this.id);
+                continue;
+            }
+
+            SettingsContainer settingsContainer = minionModuleManager.getSectionSettings(key, moduleSection);
+            Map<String, ModuleData> submodules = this.getModules(moduleSection.getConfigurationSection("sub-modules"), minionModuleManager);
+            moduleData.put(key, new ModuleData(key, settingsContainer, submodules));
         }
-
-        ConfigurationSection animationsSection = section.getConfigurationSection("animation");
-        if (animationsSection != null)
-            animationSettings.loadDefaultsFromConfig(animationsSection);
-
-        return new MinionRank(rank, itemSettings, modules, animationSettings);
+        return moduleData;
     }
 
     public String getId() {
@@ -134,14 +135,12 @@ public class MinionData {
 
         private final int rank;
         private final SettingsContainer itemSettings;
-        private final Map<String, SettingsContainer> moduleSettings;
-        private final SettingsContainer animationSettings;
+        private final Map<String, ModuleData> moduleData;
 
-        public MinionRank(int rank, SettingsContainer itemSettings, Map<String, SettingsContainer> moduleSettings, SettingsContainer animationSettings) {
+        public MinionRank(int rank, SettingsContainer itemSettings, Map<String, ModuleData> moduleData) {
             this.rank = rank;
             this.itemSettings = itemSettings;
-            this.moduleSettings = moduleSettings;
-            this.animationSettings = animationSettings;
+            this.moduleData = moduleData;
         }
 
         public ItemStack getItemStack(boolean includeSettings) {
@@ -169,12 +168,8 @@ public class MinionData {
             return this.itemSettings;
         }
 
-        public Map<String, SettingsContainer> getModuleSettings() {
-            return this.moduleSettings;
-        }
-
-        public SettingsContainer getAnimationSettings() {
-            return this.animationSettings;
+        public Map<String, ModuleData> getModuleData() {
+            return this.moduleData;
         }
 
     }
@@ -189,6 +184,32 @@ public class MinionData {
             DISPLAY_NAME = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.STRING, "display-name", "&cMissing display-name");
             LORE = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.ofList(SettingSerializers.STRING), "lore", List.of("", "<#c0ffee>Missing lore"));
             TEXTURE = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.STRING, "texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=");
+        }
+
+    }
+
+    public record ModuleData(String id, SettingsContainer settings, Map<String, ModuleData> subModules) {
+
+        public ModuleData copy() {
+            return new ModuleData(this.id, this.settings.copy(), this.copySubModules());
+        }
+
+        private Map<String, ModuleData> copySubModules() {
+            Map<String, ModuleData> subModules = new HashMap<>();
+            this.subModules.forEach((id, data) -> subModules.put(id, data.copy()));
+            return subModules;
+        }
+
+        public void merge(ModuleData data) {
+            this.settings.merge(data.settings);
+            data.subModules().forEach((id, subData) -> {
+                ModuleData existingData = this.subModules.get(id);
+                if (existingData != null) {
+                    existingData.merge(subData);
+                } else {
+                    this.subModules.put(id, subData.copy());
+                }
+            });
         }
 
     }

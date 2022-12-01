@@ -1,12 +1,10 @@
 package dev.rosewood.roseminions.manager;
 
-import com.google.common.collect.Multimap;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.ConfigurationManager.Setting;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.model.ChunkLocation;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,15 +18,12 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class MinionManager extends Manager {
 
-    private final DataManager dataManager;
     private final List<Minion> loadedMinions;
-    private Multimap<String, ChunkLocation> chunkLoadedMinionLocations;
     private BukkitTask minionTask, asyncMinionTask;
 
     public MinionManager(RosePlugin rosePlugin) {
         super(rosePlugin);
 
-        this.dataManager = this.rosePlugin.getManager(DataManager.class);
         this.loadedMinions = Collections.synchronizedList(new ArrayList<>());
     }
 
@@ -84,8 +79,6 @@ public class MinionManager extends Manager {
 
     @Override
     public void reload() {
-        this.chunkLoadedMinionLocations = this.dataManager.getChunkLoadedMinions();
-
         this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::update), 0L, Setting.MINION_UPDATE_FREQUENCY.getLong());
         this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::updateAsync), 0L, Setting.MINION_UPDATE_FREQUENCY.getLong());
 
@@ -106,8 +99,6 @@ public class MinionManager extends Manager {
             this.asyncMinionTask.cancel();
             this.asyncMinionTask = null;
         }
-
-        this.chunkLoadedMinionLocations.clear();
 
         // Unload minions that are currently loaded
         new ArrayList<>(this.loadedMinions).stream().map(Minion::getDisplayEntity).forEach(this::unloadMinion);

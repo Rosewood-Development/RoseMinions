@@ -26,10 +26,11 @@ public class MinerModule extends MinionModule {
         MINE_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "mine-distance", 3, "The distance in which to mine blocks");
         MINE_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofEnum(BlockFace.class), "mine-direction", BlockFace.NORTH, "The direction in which to mine blocks");
         MINE_FREQUENCY = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.LONG, "mine-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
+
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Miner Module");
-        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
+        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastMineTime;
@@ -45,7 +46,7 @@ public class MinerModule extends MinionModule {
 
         this.lastMineTime = System.currentTimeMillis();
 
-        Optional<FilterModule> filterModule = this.minion.getModule(FilterModule.class);
+        Optional<FilterModule> filterModule = this.getModule(FilterModule.class);
         // Get blocks in direction
         for (int i = 1; i <= this.settings.get(MINE_DISTANCE); i++) {
             Block block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINE_DIRECTION), i);

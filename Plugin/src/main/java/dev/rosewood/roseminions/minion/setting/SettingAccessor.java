@@ -54,11 +54,10 @@ public class SettingAccessor<T> {
      * @param config the config to read from
      */
     public void readDefault(ConfigurationSection config) {
-        if (this.hidden)
+        if (this.hidden && !config.contains(this.key))
             return;
 
-        if (config.contains(this.key))
-            this.loadedConfigValue = this.serializer.read(config, this.key);
+        this.loadedConfigValue = this.serializer.read(config, this.key);
     }
 
     /**

@@ -59,7 +59,7 @@ public class MinionPlaceListener implements Listener {
                 return;
             }
 
-            Minion minion = new Minion(minionData, minionRank, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation(), false);
+            Minion minion = new Minion(minionData, minionRank, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation());
             minionManager.registerMinion(minion);
         } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY)) {
             event.setCancelled(true);

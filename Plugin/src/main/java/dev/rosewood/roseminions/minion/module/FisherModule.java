@@ -28,14 +28,14 @@ import org.bukkit.util.Vector;
 @MinionModuleInfo(name = "fisher")
 public class FisherModule extends MinionModule {
 
-    private static final SettingAccessor<Integer> RADIUS;
-    private static final SettingAccessor<Long> FISH_MIN_DELAY;
-    private static final SettingAccessor<Long> FISH_MAX_DELAY;
-    private static final SettingAccessor<Long> FISH_LURE_DELAY_OFFSET;
-    private static final SettingAccessor<Long> REEL_IN_MIN_DELAY;
-    private static final SettingAccessor<Long> REEL_IN_MAX_DELAY;
-    private static final SettingAccessor<Integer> WATER_LOOKUP_ATTEMPTS;
-    private static final SettingAccessor<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS;
+    public static final SettingAccessor<Integer> RADIUS;
+    public static final SettingAccessor<Long> FISH_MIN_DELAY;
+    public static final SettingAccessor<Long> FISH_MAX_DELAY;
+    public static final SettingAccessor<Long> FISH_LURE_DELAY_OFFSET;
+    public static final SettingAccessor<Long> REEL_IN_MIN_DELAY;
+    public static final SettingAccessor<Long> REEL_IN_MAX_DELAY;
+    public static final SettingAccessor<Integer> WATER_LOOKUP_ATTEMPTS;
+    public static final SettingAccessor<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS;
 
     static {
         RADIUS = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.INTEGER, "radius", 5, "How far away the minion will search for water");
@@ -46,10 +46,11 @@ public class FisherModule extends MinionModule {
         REEL_IN_MAX_DELAY = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.LONG, "reel-in-max-delay", 4000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
         WATER_LOOKUP_ATTEMPTS = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.INTEGER, "water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up");
         TOOL_ENCHANTMENTS = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", Map.of(Enchantment.LUCK, 3, Enchantment.LURE, 3), "The enchantments to apply to the fishing rod");
+
         SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_TITLE, "Fisher Module");
         SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_ICON, Material.FISHING_ROD);
         SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Fisher Module");
-        SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
+        SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastEventTime;

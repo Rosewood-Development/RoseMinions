@@ -19,16 +19,17 @@ import org.bukkit.inventory.ItemStack;
 @MinionModuleInfo(name = "item_pickup")
 public class ItemPickupModule extends MinionModule {
 
-    private static final SettingAccessor<Integer> RADIUS;
-    private static final SettingAccessor<Long> PICKUP_FREQUENCY;
+    public static final SettingAccessor<Integer> RADIUS;
+    public static final SettingAccessor<Long> PICKUP_FREQUENCY;
 
     static {
         RADIUS = SettingsContainer.defineSetting(ItemPickupModule.class, SettingSerializers.INTEGER, "radius", 5, "The radius in which to pick up items");
         PICKUP_FREQUENCY = SettingsContainer.defineSetting(ItemPickupModule.class, SettingSerializers.LONG, "pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)");
+
         SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_TITLE, "Item Pickup Module");
         SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON, Material.HOPPER);
         SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Item Pickup Module");
-        SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
+        SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastPickupTime;
@@ -65,15 +66,20 @@ public class ItemPickupModule extends MinionModule {
     }
 
     private void pickup(List<Item> items) {
-        Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
-        Optional<FilterModule> filterModule = this.minion.getModule(FilterModule.class);
+        Optional<InventoryModule> inventoryModule = this.getModule(InventoryModule.class);
+        Optional<FilterModule> filterModule = this.getModule(FilterModule.class);
 
         if (inventoryModule.isEmpty()) {
-            items.forEach(x -> x.teleport(this.minion.getCenterLocation()));
+            // Teleport items directly under the minion
+            for (Item item : items)
+                if (filterModule.isEmpty() || !filterModule.get().isFiltered(item.getItemStack()))
+                    item.teleport(this.minion.getCenterLocation());
         } else {
+            // Add items to the inventory
             for (Item item : items) {
                 // TODO: Support for plugins that stack items
                 ItemStack itemStack = item.getItemStack();
+
                 // Don't pick up items that are filtered
                 if (filterModule.isPresent() && filterModule.get().isFiltered(itemStack))
                     continue;

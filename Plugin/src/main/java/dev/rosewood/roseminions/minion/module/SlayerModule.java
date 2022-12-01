@@ -24,11 +24,11 @@ import org.bukkit.entity.LivingEntity;
 @MinionModuleInfo(name = "slayer")
 public class SlayerModule extends MinionModule {
 
-    private static final SettingAccessor<Integer> RADIUS;
-    private static final SettingAccessor<Long> ATTACK_FREQUENCY;
-    private static final SettingAccessor<Boolean> ONLY_ATTACK_ENEMIES;
-    private static final SettingAccessor<Integer> DAMAGE_AMOUNT;
-    private static final SettingAccessor<Integer> NUMBER_OF_TARGETS;
+    public static final SettingAccessor<Integer> RADIUS;
+    public static final SettingAccessor<Long> ATTACK_FREQUENCY;
+    public static final SettingAccessor<Boolean> ONLY_ATTACK_ENEMIES;
+    public static final SettingAccessor<Integer> DAMAGE_AMOUNT;
+    public static final SettingAccessor<Integer> NUMBER_OF_TARGETS;
 
     private static final Set<EntityType> BLACKLIST_TYPES = EnumSet.of(EntityType.PLAYER, EntityType.ARMOR_STAND);
 
@@ -38,10 +38,11 @@ public class SlayerModule extends MinionModule {
         ONLY_ATTACK_ENEMIES = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.BOOLEAN, "only-attack-enemies", true, "Whether the minion will only attack enemies");
         DAMAGE_AMOUNT = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "damage-amount", 10, "How much damage the minion will deal to targets");
         NUMBER_OF_TARGETS = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "number-of-targets", 1, "How many targets the minion will attack at once");
+
         SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_TITLE, "Slayer Module");
         SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON, Material.IRON_SWORD);
         SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Slayer Module");
-        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."));
+        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastAttackTime;
