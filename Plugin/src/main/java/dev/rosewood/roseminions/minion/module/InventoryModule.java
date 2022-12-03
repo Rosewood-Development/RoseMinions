@@ -129,4 +129,33 @@ public class InventoryModule extends MinionModule {
         return clone;
     }
 
+    /**
+     * Attempts to remove a copy of an item from the inventory
+     *
+     * @param item The item to remove
+     * @return true if the item was removed, false if it was not
+     */
+    public boolean removeItem(ItemStack item) {
+        ItemStack clone = item.clone();
+
+        // Don't allow modifications while the GUI is open
+        if (this.guiContainer != null && this.guiContainer.hasViewers())
+            return false;
+
+        ItemStack[] contents = this.settings.get(INVENTORY_CONTENTS);
+        for (int i = 0; i < contents.length; i++) {
+            if (contents[i] != null && contents[i].isSimilar(clone)) {
+                int remaining = contents[i].getAmount() - clone.getAmount();
+                if (remaining <= 0) {
+                    contents[i] = null;
+                } else {
+                    contents[i].setAmount(remaining);
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }

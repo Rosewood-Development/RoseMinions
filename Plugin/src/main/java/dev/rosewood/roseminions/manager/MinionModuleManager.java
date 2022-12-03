@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
+import dev.rosewood.roseminions.minion.module.FarmerModule;
 import dev.rosewood.roseminions.minion.module.FilterModule;
 import dev.rosewood.roseminions.minion.module.FisherModule;
 import dev.rosewood.roseminions.minion.module.InventoryModule;
@@ -123,12 +124,13 @@ public class MinionModuleManager extends Manager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onMinionModuleRegistration(MinionModuleRegistrationEvent event) {
         event.registerModule(AppearanceModule.class);
-        event.registerModule(SlayerModule.class);
-        event.registerModule(MinerModule.class);
-        event.registerModule(FisherModule.class);
-        event.registerModule(ItemPickupModule.class);
-        event.registerModule(InventoryModule.class);
+        event.registerModule(FarmerModule.class);
         event.registerModule(FilterModule.class);
+        event.registerModule(FisherModule.class);
+        event.registerModule(InventoryModule.class);
+        event.registerModule(ItemPickupModule.class);
+        event.registerModule(MinerModule.class);
+        event.registerModule(SlayerModule.class);
     }
 
 }
