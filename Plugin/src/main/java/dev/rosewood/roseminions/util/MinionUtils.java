@@ -1,10 +1,19 @@
 package dev.rosewood.roseminions.util;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.model.ChunkLocation;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
+import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Boss;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -21,6 +30,10 @@ public final class MinionUtils {
     public static final String SECONDARY_COLOR = "<#ffaaff>";
 
     public static final Random RANDOM = new Random();
+
+    private static final Cache<ChunkLocation, ChunkSnapshot> chunkSnapshotCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(3, TimeUnit.SECONDS)
+            .build();
 
     private MinionUtils() {
 
@@ -39,6 +52,24 @@ public final class MinionUtils {
             case SLIME, MAGMA_CUBE -> true;
             default -> false;
         };
+    }
+
+    public static Material getLazyBlockMaterial(Location location) {
+        World world = location.getWorld();
+        if (world == null || location.getBlockY() < world.getMinHeight() || location.getBlockY() >= world.getMaxHeight())
+            return Material.AIR;
+
+        try {
+            ChunkLocation pair = new ChunkLocation(location.getWorld().getName(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+            return chunkSnapshotCache.get(pair, () -> {
+                Chunk chunk = location.getWorld().getChunkAt(location.getBlockX() >> 4, location.getBlockZ() >> 4);
+                return chunk.getChunkSnapshot();
+            }).getBlockType(location.getBlockX() & 15, location.getBlockY(), location.getBlockZ() & 15);
+        } catch (Exception e) {
+            RoseMinions.getInstance().getLogger().warning("Failed to fetch block type at " + location);
+            e.printStackTrace();
+            return Material.AIR;
+        }
     }
 
     /**
