@@ -30,6 +30,7 @@ import org.bukkit.inventory.ItemStack;
 public class FarmerModule extends MinionModule {
 
     private static final BiMap<Material, Material> FARMLAND_CROP_SEED_MATERIALS; // A Map of farmland crop materials to seed materials
+
     static {
         FARMLAND_CROP_SEED_MATERIALS = EnumHashBiMap.create(Material.class);
         FARMLAND_CROP_SEED_MATERIALS.put(Material.WHEAT, Material.WHEAT_SEEDS);
@@ -101,7 +102,7 @@ public class FarmerModule extends MinionModule {
 
         if (this.farmland.isEmpty())
             return;
-        
+
         // If the farmland index is greater than the farmland list size, reset it
         this.farmlandIndex++;
         if (this.farmlandIndex >= this.farmland.size())
@@ -216,12 +217,17 @@ public class FarmerModule extends MinionModule {
                 return true;
             }
 
+            this.farmland.add(block); // Might not be needed here, it may be able to be moved down
+
+            // If the soil is already hydrated, we don't need to do anything
+            if (blockData.getMoisture() == blockData.getMaximumMoisture()) {
+                return true;
+            }
+
             // Hydrate the soil
             blockData.setMoisture(blockData.getMaximumMoisture());
             block.setBlockData(blockData);
             block.getWorld().spawnParticle(Particle.WATER_SPLASH, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
-            this.farmland.add(block);
-
             return true;
         }
 
@@ -246,11 +252,12 @@ public class FarmerModule extends MinionModule {
                         case FARMLAND -> {
                             if (this.isPlantable(MinionUtils.getLazyBlockMaterial(location.clone().add(0, 1, 0)))) {
                                 Block block = location.getBlock();
-                                Farmland farmland = (Farmland) block.getBlockData();
-                                if (farmland.getMoisture() >= farmland.getMaximumMoisture() || !hydrateSoil) {
-                                    this.farmland.add(block);
-                                } else {
-                                    this.farmlandToHydrate.add(block);
+                                if (block.getBlockData() instanceof Farmland land) {
+                                    if (land.getMoisture() >= land.getMaximumMoisture() || !hydrateSoil) {
+                                        this.farmland.add(block);
+                                    } else {
+                                        this.farmlandToHydrate.add(block);
+                                    }
                                 }
                             }
                             break yLevel;
