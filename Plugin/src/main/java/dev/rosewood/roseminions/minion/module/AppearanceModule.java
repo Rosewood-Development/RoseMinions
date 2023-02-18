@@ -1,6 +1,9 @@
 package dev.rosewood.roseminions.minion.module;
 
 import dev.rosewood.guiframework.GuiFactory;
+import dev.rosewood.guiframework.framework.util.GuiUtil;
+import dev.rosewood.guiframework.gui.ClickAction;
+import dev.rosewood.guiframework.gui.GuiIcon;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
@@ -11,18 +14,21 @@ import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
-import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.conversations.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitTask;
+import java.util.List;
+import java.util.function.Consumer;
 
 @MinionModuleInfo(name = "appearance")
 public class AppearanceModule extends MinionModule {
@@ -88,9 +94,78 @@ public class AppearanceModule extends MinionModule {
     @Override
     protected void buildGui() {
         this.guiContainer = GuiFactory.createContainer();
+        int rows = Math.max(1, Math.min((int) Math.ceil(36 / 9.0), 3));
+        GuiSize editableSize = GuiSize.fromRows(rows);
+        GuiSize fullSize = GuiSize.fromRows(rows + 1);
 
-        GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
+        GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
                 .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+
+        // Fill inventory border with glass for now
+        ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
+        ItemMeta itemMeta = borderItem.getItemMeta();
+        if (itemMeta != null) {
+            itemMeta.setDisplayName(" ");
+            itemMeta.addItemFlags(ItemFlag.values());
+            borderItem.setItemMeta(itemMeta);
+        }
+
+        GuiUtil.fillRow(mainScreen, editableSize.getRows(), borderItem);
+
+//         Name
+        mainScreen.addButtonAt(10, GuiFactory.createButton()
+                .setIcon(Material.NAME_TAG)
+                .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Name"))
+                .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "The name of the minion"))
+                .setClickAction(event -> {
+                    event.getWhoClicked().sendMessage((HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Enter the new name of the minion:")));
+                    this.createConversation((Conversable) event.getWhoClicked(), newName -> {
+                        this.settings.set(DISPLAY_NAME, newName);
+                        this.updateEntity();
+                        this.update();
+
+                        event.getWhoClicked().sendMessage((HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "The name of the minion has been changed to " + MinionUtils.SECONDARY_COLOR + newName)));
+                    });
+
+                    return ClickAction.CLOSE;
+                })
+        );
+
+//         Small
+        mainScreen.addButtonAt(11, GuiFactory.createButton()
+                .setIcon(Material.ARMOR_STAND)
+                .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Small: " + MinionUtils.SECONDARY_COLOR + this.settings.get(SMALL))))
+                .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "Toggle the size of the minion"))
+                .setClickAction(event -> {
+                    this.settings.set(SMALL, !this.settings.get(SMALL));
+                    this.updateEntity();
+                    this.update();
+                    return ClickAction.CLOSE;
+                })
+        );
+
+//         Texture
+        GuiIcon textureIcon = GuiFactory.createIcon(Material.PLAYER_HEAD,
+                meta -> SkullUtils.setSkullTexture((SkullMeta) meta, this.settings.get(TEXTURE)));
+
+        mainScreen.addButtonAt(12, GuiFactory.createButton()
+                .setIconSupplier(() -> textureIcon)
+                .setIcon(Material.PLAYER_HEAD)
+                .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Texture"))
+                .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "The texture of the minion"))
+                .setClickAction(event -> {
+                    event.getWhoClicked().sendMessage(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Enter the new texture of the minion:"));
+                    this.createConversation((Conversable) event.getWhoClicked(), newTexture -> {
+                        this.settings.set(TEXTURE, newTexture);
+                        this.updateEntity();
+                        this.update();
+
+                        event.getWhoClicked().sendMessage(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Texture updated!"));
+                    });
+                    // TODO: Add waiting for input here
+                    return ClickAction.CLOSE;
+                })
+        );
 
         this.addBackButton(mainScreen);
 
@@ -131,4 +206,45 @@ public class AppearanceModule extends MinionModule {
         return centerLocation;
     }
 
+    /**
+     * Creates a conversation with the given conversable
+     *
+     * @param who    The conversable to create the conversation with
+     * @param output The output of the conversation
+     */
+    private void createConversation(Conversable who, Consumer<String> output) {
+        ConversationFactory factory = new ConversationFactory(this.guiFramework.getHookedPlugin());
+        factory.withTimeout(120); // 2 minutes
+        factory.withModality(true); // Suppresses chat messages
+        factory.withLocalEcho(false); // Suppresses the user's input (we don't want to see it
+//        factory.withInitialSessionData() // TODO: Add the default value as the initial session data
+        factory.withFirstPrompt(new StringPrompt() { // Create a new prompt
+            @Override
+            public String getPromptText(ConversationContext context) {
+                return context.getSessionData("input") == null ? "" : (String) context.getSessionData("input");
+            }
+
+            @Override
+            public Prompt acceptInput(ConversationContext context, String input) {
+                if (input != null) {
+                    context.setSessionData("input", input);
+                    return Prompt.END_OF_CONVERSATION;
+                }
+                return this;
+            }
+        });
+
+        factory.addConversationAbandonedListener(abandonedEvent -> {
+            if (abandonedEvent.gracefulExit()) {
+                Object newName = abandonedEvent.getContext().getSessionData("input");
+                if (newName == null)
+                    return;
+
+                // TODO: Add ability to cancel the conversation
+                output.accept((String) newName);
+            }
+        });
+
+        who.beginConversation(factory.buildConversation(who));
+    }
 }
