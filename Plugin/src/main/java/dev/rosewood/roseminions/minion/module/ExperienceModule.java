@@ -6,13 +6,18 @@ import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.rosegarden.utils.NMSUtil;
+import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
+import java.util.List;
+import java.util.function.Predicate;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -23,17 +28,16 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-
-import java.util.List;
-import java.util.function.Predicate;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.Nullable;
 
 @MinionModuleInfo(name = "experience")
 public class ExperienceModule extends MinionModule {
 
-    private static final SettingAccessor<Integer> STORED_XP;
-    private static final SettingAccessor<Integer> MAX_EXP;
-    private static final SettingAccessor<Long> UPDATE_FREQUENCY;
-    private static final SettingAccessor<Integer> RADIUS;
+    public static final SettingAccessor<Integer> STORED_XP;
+    public static final SettingAccessor<Integer> MAX_EXP;
+    public static final SettingAccessor<Long> UPDATE_FREQUENCY;
+    public static final SettingAccessor<Integer> RADIUS;
 
     static {
         STORED_XP = SettingsContainer.defineHiddenSetting(ExperienceModule.class, SettingSerializers.INTEGER, "stored-xp", 0);
@@ -54,9 +58,12 @@ public class ExperienceModule extends MinionModule {
 
     public ExperienceModule(Minion minion) {
         super(minion);
+
+        this.xpKey = new NamespacedKey(RoseMinions.getInstance(), "experience-orb");
     }
 
     private long lastUpdate;
+    private final NamespacedKey xpKey;
 
     @Override
     public void update() {
@@ -66,11 +73,19 @@ public class ExperienceModule extends MinionModule {
         this.lastUpdate = System.currentTimeMillis();
 
         // get nearby experience orbs
+        if (this.settings.get(STORED_XP) >= this.settings.get(MAX_EXP))
+            return;
+
         Predicate<Entity> predicate = entity -> entity.getType() == EntityType.EXPERIENCE_ORB;
 
         int radius = this.settings.get(RADIUS);
         this.minion.getWorld().getNearbyEntities(this.minion.getLocation(), radius, radius, radius, predicate).forEach(entity -> {
             ExperienceOrb orb = (ExperienceOrb) entity;
+
+            // adding this to the predicate doesn't work for some reason
+            if (orb.getPersistentDataContainer().has(this.xpKey, PersistentDataType.INTEGER)) {
+                return;
+            }
 
             // get the amount of xp
             int xp = orb.getExperience();
@@ -167,14 +182,22 @@ public class ExperienceModule extends MinionModule {
     }
 
     /**
-     * Withdraws the player's XP from the minion
-     *
-     * @param player The player
+     * Withdraws the player's XP from the minion and spawns an XP orb
      */
-    public int withdrawExp(Player player) {
+    public int withdrawExp(@Nullable Player player) {
         int storedExp = this.settings.get(STORED_XP);
 
-        player.giveExp(storedExp);
+        // If they have paper, we can just give them the exp
+        if (player != null && NMSUtil.isPaper()) {
+            player.giveExp(storedExp, true);
+            return storedExp;
+        }
+
+        // This is a fallback for when we don't have paper
+        this.minion.getWorld().spawn(this.minion.getCenterLocation(), ExperienceOrb.class, experienceOrb -> {
+            experienceOrb.setExperience(storedExp);
+            experienceOrb.getPersistentDataContainer().set(this.xpKey, PersistentDataType.INTEGER, 1);
+        });
         this.settings.set(STORED_XP, 0);
         return storedExp;
     }
