@@ -19,22 +19,22 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 @MinionModuleInfo(name = "shearer")
-public class ShearerMinion extends MinionModule {
+public class ShearerModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
     public static final SettingAccessor<Long> UPDATE_FREQUENCY;
 
     static {
-        RADIUS = SettingsContainer.defineSetting(ShearerMinion.class, SettingSerializers.INTEGER, "radius", 3, "The radius in which to shear sheep");
-        UPDATE_FREQUENCY = SettingsContainer.defineSetting(ShearerMinion.class, SettingSerializers.LONG, "update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)");
+        RADIUS = SettingsContainer.defineSetting(ShearerModule.class, SettingSerializers.INTEGER, "radius", 3, "The radius in which to shear sheep");
+        UPDATE_FREQUENCY = SettingsContainer.defineSetting(ShearerModule.class, SettingSerializers.LONG, "update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)");
 
-        SettingsContainer.redefineSetting(ShearerMinion.class, MinionModule.GUI_TITLE, "Shearer Module");
-        SettingsContainer.redefineSetting(ShearerMinion.class, MinionModule.GUI_ICON, Material.SHEARS);
-        SettingsContainer.redefineSetting(ShearerMinion.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Shearer Module");
-        SettingsContainer.redefineSetting(ShearerMinion.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_TITLE, "Shearer Module");
+        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_ICON, Material.SHEARS);
+        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Shearer Module");
+        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
-    public ShearerMinion(Minion minion) {
+    public ShearerModule(Minion minion) {
         super(minion);
 
         // worst code conceived

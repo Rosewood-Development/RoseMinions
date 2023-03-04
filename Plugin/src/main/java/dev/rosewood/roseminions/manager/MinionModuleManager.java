@@ -16,7 +16,7 @@ import dev.rosewood.roseminions.minion.module.ExperienceModule;
 import dev.rosewood.roseminions.minion.module.MinerModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.MinionModuleInfo;
-import dev.rosewood.roseminions.minion.module.ShearerMinion;
+import dev.rosewood.roseminions.minion.module.ShearerModule;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
@@ -135,7 +135,7 @@ public class MinionModuleManager extends Manager implements Listener {
         event.registerModule(InventoryModule.class);
         event.registerModule(ItemPickupModule.class);
         event.registerModule(MinerModule.class);
-        event.registerModule(ShearerMinion.class);
+        event.registerModule(ShearerModule.class);
         event.registerModule(SlayerModule.class);
     }
 
