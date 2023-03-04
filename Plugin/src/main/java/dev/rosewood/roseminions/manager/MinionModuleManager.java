@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
+import dev.rosewood.roseminions.minion.module.BeeKeeperModule;
 import dev.rosewood.roseminions.minion.module.FarmerModule;
 import dev.rosewood.roseminions.minion.module.FilterModule;
 import dev.rosewood.roseminions.minion.module.FisherModule;
@@ -15,6 +16,7 @@ import dev.rosewood.roseminions.minion.module.ExperienceModule;
 import dev.rosewood.roseminions.minion.module.MinerModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.MinionModuleInfo;
+import dev.rosewood.roseminions.minion.module.ShearerMinion;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
@@ -125,6 +127,7 @@ public class MinionModuleManager extends Manager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onMinionModuleRegistration(MinionModuleRegistrationEvent event) {
         event.registerModule(AppearanceModule.class);
+        event.registerModule(BeeKeeperModule.class);
         event.registerModule(ExperienceModule.class);
         event.registerModule(FarmerModule.class);
         event.registerModule(FilterModule.class);
@@ -132,6 +135,7 @@ public class MinionModuleManager extends Manager implements Listener {
         event.registerModule(InventoryModule.class);
         event.registerModule(ItemPickupModule.class);
         event.registerModule(MinerModule.class);
+        event.registerModule(ShearerMinion.class);
         event.registerModule(SlayerModule.class);
     }
 
