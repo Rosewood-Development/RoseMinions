@@ -18,13 +18,11 @@ public class BeaconModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
     public static final SettingAccessor<List<PotionEffect>> EFFECTS;
-    public static final SettingAccessor<Boolean> DISPLAY_BORDER;
     public static final SettingAccessor<Long> UPDATE_FREQUENCY;
 
     static {
         RADIUS = SettingsContainer.defineSetting(BeaconModule.class, SettingSerializers.INTEGER, "radius", 10, "The radius of the beacon");
         EFFECTS = SettingsContainer.defineSetting(BeaconModule.class, SettingSerializers.ofList(SettingSerializers.POTION_EFFECT), "effects", List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects of the beacon");
-        DISPLAY_BORDER = SettingsContainer.defineSetting(BeaconModule.class, SettingSerializers.BOOLEAN, "display-border", true, "Whether or not to display the border");
         UPDATE_FREQUENCY = SettingsContainer.defineSetting(BeaconModule.class, SettingSerializers.LONG, "update-frequency", 2500L, "How often the beacon will update (in milliseconds)");
 
         SettingsContainer.redefineSetting(BeaconModule.class, MinionModule.GUI_TITLE, "Beacon Module");
@@ -57,6 +55,8 @@ public class BeaconModule extends MinionModule {
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
                 .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+
+        // TODO: Add all potion effects to the GUI
 
         this.addBackButton(mainScreen);
 
