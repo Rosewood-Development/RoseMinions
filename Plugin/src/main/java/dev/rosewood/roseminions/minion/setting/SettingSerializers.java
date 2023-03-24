@@ -17,9 +17,12 @@ import java.util.function.Function;
 import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 @SuppressWarnings("unchecked")
 public final class SettingSerializers {
@@ -94,6 +97,8 @@ public final class SettingSerializers {
     //region Keyed Serializers
     public static final SettingSerializer<Material> MATERIAL = ofKeyed(Material.class, x -> Material.matchMaterial(x.getKey()));
     public static final SettingSerializer<Enchantment> ENCHANTMENT = ofKeyed(Enchantment.class, Enchantment::getByKey);
+    public static final SettingSerializer<PotionEffectType> POTION_EFFECT_TYPE = ofKeyed(PotionEffectType.class, PotionEffectType::getByKey);
+    public static final SettingSerializer<Sound> SOUND = ofKeyed(Sound.class, namespacedKey -> Sound.valueOf(namespacedKey.getKey()));
     //endregion
 
     //region Other Serializers
@@ -121,6 +126,64 @@ public final class SettingSerializers {
                 byte[] data = new byte[length];
                 x.readFully(data);
                 value.set(NMSAdapter.getHandler().deserializeItemStack(data));
+            });
+            return value.get();
+        }
+    };
+
+    public static final SettingSerializer<PotionEffect> POTION_EFFECT = new SettingSerializer<>(PotionEffect.class) {
+        @Override
+        public void write(CommentedConfigurationSection config, String key, PotionEffect value, String... comments) {
+            config.set(key + ".type", value.getType().getName(), comments);
+            config.set(key + ".duration", value.getDuration());
+            config.set(key + ".amplifier", value.getAmplifier());
+            config.set(key + ".ambient", value.isAmbient());
+            config.set(key + ".particles", value.hasParticles());
+            config.set(key + ".icon", value.hasIcon());
+        }
+
+        @Override
+        public byte[] write(PotionEffect value) {
+            return DataSerializable.write(x -> {
+                // write potion effect type name
+                x.writeUTF(value.getType().getName());
+                x.writeInt(value.getDuration());
+                x.writeInt(value.getAmplifier());
+                x.writeBoolean(value.isAmbient());
+                x.writeBoolean(value.hasParticles());
+                x.writeBoolean(value.hasIcon());
+            });
+        }
+
+        @Override
+        public PotionEffect read(ConfigurationSection config, String key) {
+            PotionEffectType potionEffectType = PotionEffectType.getByName(config.getString(key + ".type", ""));
+            if (potionEffectType == null)
+                throw new IllegalArgumentException("Invalid potion effect type name");
+
+            int duration = config.getInt(key + ".duration");
+            int amplifier = config.getInt(key + ".amplifier");
+            boolean ambient = config.getBoolean(key + ".ambient");
+            boolean particles = config.getBoolean(key + ".particles");
+            boolean icon = config.getBoolean(key + ".icon");
+
+            return new PotionEffect(potionEffectType, duration, amplifier, ambient, particles, icon);
+        }
+
+        @Override
+        public PotionEffect read(byte[] input) {
+            AtomicReference<PotionEffect> value = new AtomicReference<>();
+            DataSerializable.read(input, x -> {
+                PotionEffectType type = PotionEffectType.getByName(x.readUTF());
+                if (type == null)
+                    throw new IllegalArgumentException("Invalid potion effect type name");
+
+                int duration = x.readInt();
+                int amplifier = x.readInt();
+                boolean ambient = x.readBoolean();
+                boolean particles = x.readBoolean();
+                boolean icon = x.readBoolean();
+                value.set(new PotionEffect(type, duration, amplifier, ambient, particles, icon));
             });
             return value.get();
         }
