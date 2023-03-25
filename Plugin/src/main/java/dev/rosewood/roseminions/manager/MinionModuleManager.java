@@ -8,6 +8,7 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.module.BeaconModule;
 import dev.rosewood.roseminions.minion.module.BeeKeeperModule;
+import dev.rosewood.roseminions.minion.module.BreakerModule;
 import dev.rosewood.roseminions.minion.module.FarmerModule;
 import dev.rosewood.roseminions.minion.module.FilterModule;
 import dev.rosewood.roseminions.minion.module.FisherModule;
@@ -130,6 +131,7 @@ public class MinionModuleManager extends Manager implements Listener {
         event.registerModule(AppearanceModule.class);
         event.registerModule(BeaconModule.class);
         event.registerModule(BeeKeeperModule.class);
+        event.registerModule(BreakerModule.class);
         event.registerModule(ExperienceModule.class);
         event.registerModule(FarmerModule.class);
         event.registerModule(FilterModule.class);
