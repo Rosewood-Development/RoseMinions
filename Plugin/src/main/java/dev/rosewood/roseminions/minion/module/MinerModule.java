@@ -28,14 +28,21 @@ import java.util.Optional;
 @MinionModuleInfo(name = "miner")
 public class MinerModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> MINE_DISTANCE;
-    public static final SettingAccessor<BlockFace> MINE_DIRECTION;
-    public static final SettingAccessor<Long> MINE_FREQUENCY;
+    public static final SettingAccessor<BlockFace> MINING_DIRECTION;
+    public static final SettingAccessor<Integer> MINING_DISTANCE;
+    public static final SettingAccessor<Integer> MIN_MINING_DISTANCE;
+    public static final SettingAccessor<Integer> MAX_MINING_DISTANCE;
+    public static final SettingAccessor<Long> MINING_FREQUENCY;
+
+    public static final SettingAccessor<List<Material>> BLACKLISTED_BLOCKS;
 
     static {
-        MINE_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "mine-distance", 3, "The distance in which to mine blocks");
-        MINE_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofEnum(BlockFace.class), "mine-direction", BlockFace.SELF, "The direction in which to mine blocks");
-        MINE_FREQUENCY = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.LONG, "mine-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
+        MINING_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofEnum(BlockFace.class), "mine-direction", BlockFace.SELF, "The direction in which to mine blocks");
+        MINING_DISTANCE = SettingsContainer.defineHiddenSetting(MinerModule.class, SettingSerializers.INTEGER, "mining-distance", 1);
+        MIN_MINING_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "min-mining-distance", 1, "The minimum distance in which to mine blocks");
+        MAX_MINING_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "max-mining-distance", 5, "The maximum distance in which to mine blocks");
+        MINING_FREQUENCY = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.LONG, "mine-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
+        BLACKLISTED_BLOCKS = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine");
 
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
@@ -44,6 +51,7 @@ public class MinerModule extends MinionModule {
     }
 
     private long lastMineTime;
+
     // BlockFace & Textured Direction
     private final Map<BlockFace, String> directions = new LinkedHashMap<>() {{
         this.put(BlockFace.NORTH_WEST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1NDI2YTMzZGY1OGI0NjVmMDYwMWRkOGI5YmVjMzY5MGIyMTkzZDFmOTUwM2MyY2FhYjc4ZjZjMjQzOCJ9fX0=");
@@ -63,23 +71,23 @@ public class MinerModule extends MinionModule {
 
     @Override
     public void update() {
-        if (System.currentTimeMillis() - this.lastMineTime < this.settings.get(MINE_FREQUENCY))
+        if (System.currentTimeMillis() - this.lastMineTime < this.settings.get(MINING_FREQUENCY))
             return;
 
         this.lastMineTime = System.currentTimeMillis();
 
-        BlockFace direction = this.settings.get(MINE_DIRECTION);
+        BlockFace direction = this.settings.get(MINING_DIRECTION);
         if (direction == null || direction == BlockFace.SELF) // Don't try to mine self
             return;
 
-        Optional<FilterModule> filterModule = this.getModule(FilterModule.class);
+        int distance = this.settings.get(MINING_DISTANCE);
+
+        distance = Math.max(this.settings.get(MIN_MINING_DISTANCE), Math.min(distance, this.settings.get(MAX_MINING_DISTANCE)));
 
         // Get blocks in direction
-        for (int i = 1; i <= this.settings.get(MINE_DISTANCE); i++) {
-            Block block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINE_DIRECTION), i);
+        for (int i = 1; i <= distance; i++) {
+            Block block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINING_DIRECTION), i);
 
-            if (filterModule.isPresent() && !filterModule.get().isAllowed(new ItemStack(block.getType())))
-                continue;
 
             // TODO: Add option to either set pickaxe in game or define enchantments in config
             block.breakNaturally(new ItemStack(Material.DIAMOND_PICKAXE));
@@ -122,12 +130,11 @@ public class MinerModule extends MinionModule {
             if (texture == null)
                 continue;
 
-
             mainScreen.addButtonAt(slots.get(slotIndex), GuiFactory.createButton()
                     .setIcon(GuiFactory.createIcon(Material.PLAYER_HEAD, itemMeta -> SkullUtils.setSkullTexture((SkullMeta) itemMeta, texture)))
                     .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Mine " + face.name().toLowerCase().replace("_", " ")))
                     .setClickAction(event -> {
-                        this.settings.set(MINE_DIRECTION, face);
+                        this.settings.set(MINING_DIRECTION, face);
                         return ClickAction.CLOSE;
                     }));
 
