@@ -6,6 +6,15 @@ description: TBD
 author: Esophose
 softdepend:
   - PlaceholderAPI
+  - ShopGUIPlus
+  - EconomyShopGUI
+  - EssentialsX
+  - CMI
+  - BossShopPro
+  - Vault
+  - PlayerPoints
+  - Treasury
+  - TokenManager
 permissions:
   roseminions.basecommand:
     description: Allows using the RoseMinions commands
