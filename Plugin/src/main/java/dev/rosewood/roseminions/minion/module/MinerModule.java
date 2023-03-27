@@ -12,6 +12,12 @@ import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -20,11 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 @MinionModuleInfo(name = "miner")
 public class MinerModule extends MinionModule {
 
@@ -32,16 +33,18 @@ public class MinerModule extends MinionModule {
     public static final SettingAccessor<Integer> MINING_DISTANCE;
     public static final SettingAccessor<Integer> MIN_MINING_DISTANCE;
     public static final SettingAccessor<Integer> MAX_MINING_DISTANCE;
+    public static final SettingAccessor<Integer> MINING_HEIGHT;
     public static final SettingAccessor<Long> MINING_FREQUENCY;
 
     public static final SettingAccessor<List<Material>> BLACKLISTED_BLOCKS;
 
     static {
-        MINING_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofEnum(BlockFace.class), "mine-direction", BlockFace.SELF, "The direction in which to mine blocks");
+        MINING_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofEnum(BlockFace.class), "mining-direction", BlockFace.SELF, "The direction in which to mine blocks");
         MINING_DISTANCE = SettingsContainer.defineHiddenSetting(MinerModule.class, SettingSerializers.INTEGER, "mining-distance", 1);
         MIN_MINING_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "min-mining-distance", 1, "The minimum distance in which to mine blocks");
         MAX_MINING_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "max-mining-distance", 5, "The maximum distance in which to mine blocks");
-        MINING_FREQUENCY = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.LONG, "mine-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
+        MINING_HEIGHT = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "mining-height", 1, "The height in which to mine blocks up and down from the minion", "1 = only mine the same y level as the minion)");
+        MINING_FREQUENCY = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.LONG, "mining-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
         BLACKLISTED_BLOCKS = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine");
 
         SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
@@ -81,13 +84,30 @@ public class MinerModule extends MinionModule {
             return;
 
         int distance = this.settings.get(MINING_DISTANCE);
+        int height = this.settings.get(MINING_HEIGHT);
+        List<Material> blacklistedBlocks = this.settings.get(BLACKLISTED_BLOCKS);
 
         distance = Math.max(this.settings.get(MIN_MINING_DISTANCE), Math.min(distance, this.settings.get(MAX_MINING_DISTANCE)));
 
-        // Get blocks in direction
+        // Get blocks in direction and height
+        List<Block> toBreak = new ArrayList<>();
         for (int i = 1; i <= distance; i++) {
-            Block block = this.minion.getLocation().getBlock().getRelative(this.settings.get(MINING_DIRECTION), i);
+            Block block = this.minion.getLocation().getBlock().getRelative(direction, i);
+            for (int j = 1; j <= height; j++) {
+                Block relativeBlock = block.getRelative(BlockFace.UP, j);
+                toBreak.add(relativeBlock);
+            }
 
+            toBreak.add(block);
+        }
+
+        if (toBreak.isEmpty())
+            return;
+
+        // Break blocks
+        for (Block block : toBreak) {
+            if (block.getType().isAir() || blacklistedBlocks.contains(block.getType()))
+                continue;
 
             // TODO: Add option to either set pickaxe in game or define enchantments in config
             block.breakNaturally(new ItemStack(Material.DIAMOND_PICKAXE));
