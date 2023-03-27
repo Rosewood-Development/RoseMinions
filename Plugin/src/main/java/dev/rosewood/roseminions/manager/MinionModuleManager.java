@@ -123,7 +123,7 @@ public class MinionModuleManager extends Manager implements Listener {
         }
 
         if (changed)
-            config.save();
+            config.save(file);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
