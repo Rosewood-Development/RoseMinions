@@ -1,5 +1,6 @@
 package dev.rosewood.roseminions.minion.module;
 
+import com.google.common.collect.Iterables;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.framework.util.GuiUtil;
 import dev.rosewood.guiframework.gui.ClickAction;
@@ -12,25 +13,35 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.model.NotificationTicket;
+import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.conversations.*;
+import org.bukkit.conversations.Conversable;
+import org.bukkit.conversations.ConversationContext;
+import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.Prompt;
+import org.bukkit.conversations.StringPrompt;
+import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
-import java.util.List;
-import java.util.function.Consumer;
 
-@MinionModuleInfo(name = "appearance")
 public class AppearanceModule extends MinionModule {
 
     public static final SettingAccessor<Boolean> SMALL;
@@ -55,18 +66,48 @@ public class AppearanceModule extends MinionModule {
     private double heightOffset;
     private int nametagUpdateTicks;
 
+    private final Deque<NotificationTicket> notificationTickets;
+    private long nextTicketTime;
+
     public AppearanceModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.APPEARANCE);
 
         if (thetaUpdateTask == null)
             thetaUpdateTask = Bukkit.getScheduler().runTaskTimer(RoseMinions.getInstance(), () -> thetaTicks++, 0L, 1L);
+
+        this.notificationTickets = new LinkedList<>();
     }
 
     @Override
     public void update() {
         ArmorStand armorStand = this.minion.getDisplayEntity();
         Location centerLocation = this.getCenterVisibleLocation();
-        armorStand.teleport(centerLocation.clone().subtract(0, this.heightOffset, 0));
+        NMSAdapter.getHandler().setPositionRotation(armorStand, centerLocation.clone().subtract(0, this.heightOffset, 0));
+
+        if (System.currentTimeMillis() >= this.nextTicketTime) {
+            NotificationTicket notificationTicket = this.getNextNotificationTicket();
+            if (notificationTicket == null) {
+                this.resetNotificationTicketTimer(500);
+                // If we have no notifications, remove the notifications entity if it exists
+                for (Entity passenger : armorStand.getPassengers()) {
+                    armorStand.removePassenger(passenger);
+                    passenger.remove();
+                }
+            } else {
+                this.resetNotificationTicketTimer(notificationTicket.getDuration());
+
+                // If we don't have a notification entity, create one
+                Entity notificationEntity = Iterables.getFirst(armorStand.getPassengers(), null);
+                if (notificationEntity == null) {
+                    notificationEntity = this.createNotificationEntity();
+                    armorStand.addPassenger(notificationEntity);
+                }
+
+                // Update the notification entity
+                notificationEntity.setCustomName(HexUtils.colorify(notificationTicket.getMessage()));
+                notificationEntity.setCustomNameVisible(true);
+            }
+        }
     }
 
     @Override
@@ -197,6 +238,39 @@ public class AppearanceModule extends MinionModule {
         }
     }
 
+    public void registerNotificationTicket(NotificationTicket ticket) {
+        Bukkit.broadcastMessage("registered notification");
+        this.notificationTickets.addLast(ticket);
+    }
+
+    public void unregisterNotificationTicket(MinionModule minionModule, String id) {
+        this.notificationTickets.removeIf(ticket -> ticket.isFor(minionModule, id));
+    }
+
+    public void unregisterNotificationTickets(MinionModule minionModule) {
+        this.notificationTickets.removeIf(ticket -> ticket.isFor(minionModule));
+    }
+
+    /**
+     * Find the next ticket closest to the front of the list, move it to the front of the list, and return it.
+     *
+     * @return the next available notification ticket to display
+     */
+    private NotificationTicket getNextNotificationTicket() {
+        for (NotificationTicket ticket : this.notificationTickets) {
+            if (ticket.isVisible()) {
+                this.notificationTickets.remove(ticket);
+                this.notificationTickets.addFirst(ticket);
+                return ticket;
+            }
+        }
+        return null;
+    }
+
+    private void resetNotificationTicketTimer(long milliseconds) {
+        this.nextTicketTime = System.currentTimeMillis() + milliseconds;
+    }
+
     private Location getCenterVisibleLocation() {
         // Make the armor stand hover and spin in place around the location
         double theta = thetaTicks * this.settings.get(ROTATION_SPEED);
@@ -247,4 +321,27 @@ public class AppearanceModule extends MinionModule {
 
         who.beginConversation(factory.buildConversation(who));
     }
+
+    private Entity createNotificationEntity() {
+        return this.minion.getWorld().spawn(this.minion.getLocation(), AreaEffectCloud.class, entity -> {
+            //entity.setInvisible(true);
+            //entity.setVisible(false);
+            entity.setGravity(false);
+            //entity.setSmall(true);
+            entity.setSilent(true);
+            entity.setInvulnerable(true);
+            entity.setRadius(0.5F);
+            entity.setParticle(Particle.BLOCK_CRACK, Material.AIR.createBlockData());
+            entity.clearCustomEffects();
+            //entity.setCanPickupItems(false);
+            entity.setPersistent(true);
+            entity.getPersistentDataContainer().set(MinionUtils.MINION_NOTIFICATION_KEY, PersistentDataType.BYTE, (byte) 1);
+
+//            Arrays.stream(EquipmentSlot.values()).forEach(x -> {
+//                entity.addEquipmentLock(x, ArmorStand.LockType.ADDING_OR_CHANGING);
+//                entity.addEquipmentLock(x, ArmorStand.LockType.REMOVING_OR_CHANGING);
+//            });
+        });
+    }
+
 }

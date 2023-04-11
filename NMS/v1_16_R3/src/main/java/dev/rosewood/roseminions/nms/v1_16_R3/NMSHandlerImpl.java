@@ -7,7 +7,10 @@ import java.io.DataOutput;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.server.v1_16_R3.NBTCompressedStreamTools;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
 public class NMSHandlerImpl implements NMSHandler {
@@ -22,6 +25,11 @@ public class NMSHandlerImpl implements NMSHandler {
         AtomicReference<ItemStack> itemStack = new AtomicReference<>();
         DataSerializable.read(bytes, x -> itemStack.set(CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a(NBTCompressedStreamTools.a((DataInput) x)))));
         return itemStack.get();
+    }
+
+    @Override
+    public void setPositionRotation(Entity entity, Location location) {
+        ((CraftEntity) entity).getHandle().setPositionRotation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
     }
 
 }

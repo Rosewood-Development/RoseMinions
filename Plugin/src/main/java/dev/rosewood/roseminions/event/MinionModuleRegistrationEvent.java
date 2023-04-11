@@ -1,8 +1,12 @@
 package dev.rosewood.roseminions.event;
 
+import dev.rosewood.roseminions.manager.MinionModuleManager;
+import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.MinionModule;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -11,28 +15,28 @@ public class MinionModuleRegistrationEvent extends Event {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
-    private final Set<Class<? extends MinionModule>> registeredModules;
+    private final Map<String, MinionModuleManager.RegisteredMinionModule<?>> registeredModules;
 
     public MinionModuleRegistrationEvent() {
-        this.registeredModules = new HashSet<>();
+        this.registeredModules = new HashMap<>();
     }
 
     /**
      * Adds a module to be registered
      *
-     * @param moduleClass the class of the module to register
+     * @param name The name of the module being registered
      * @return true if registering the module overwrote an existing module, false otherwise
      */
-    public boolean registerModule(Class<? extends MinionModule> moduleClass) {
-        return this.registeredModules.add(moduleClass);
+    public <T extends MinionModule> boolean registerModule(String name, Function<Minion, T> moduleFactory, Class<T> moduleClass) {
+        return this.registeredModules.put(name, new MinionModuleManager.RegisteredMinionModule<>(name, moduleFactory, moduleClass)) != null;
     }
 
     /**
-     * @return the set of registered modules
+     * @return the map of registered modules
      */
     @NotNull
-    public Set<Class<? extends MinionModule>> getRegisteredModules() {
-        return this.registeredModules;
+    public Map<String, MinionModuleManager.RegisteredMinionModule<?>> getRegisteredModules() {
+        return Collections.unmodifiableMap(this.registeredModules);
     }
 
     @Override

@@ -31,7 +31,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
 
-@MinionModuleInfo(name = "experience")
 public class ExperienceModule extends MinionModule {
 
     public static final SettingAccessor<Integer> STORED_XP;
@@ -57,7 +56,7 @@ public class ExperienceModule extends MinionModule {
     }
 
     public ExperienceModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.EXPERIENCE);
 
         this.xpKey = new NamespacedKey(RoseMinions.getInstance(), "experience-orb");
     }

@@ -5,6 +5,7 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
+import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
@@ -141,6 +142,10 @@ public class MinionData {
             this.rank = rank;
             this.itemSettings = itemSettings;
             this.moduleData = moduleData;
+
+            // Ensure an "appearance" module always exists
+            if (!this.moduleData.containsKey("appearance"))
+                this.moduleData.put("appearance", new ModuleData("appearance", new SettingsContainer(AppearanceModule.class), new HashMap<>()));
         }
 
         public ItemStack getItemStack(boolean includeSettings) {

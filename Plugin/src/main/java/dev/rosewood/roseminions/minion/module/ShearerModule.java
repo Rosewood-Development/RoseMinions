@@ -8,6 +8,11 @@ import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -15,13 +20,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Sheep;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-
-@MinionModuleInfo(name = "shearer")
 public class ShearerModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
@@ -40,7 +38,7 @@ public class ShearerModule extends MinionModule {
     }
 
     public ShearerModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.SHEARER);
 
         // worst code conceived
         cachedWoolColors = new HashMap<>();

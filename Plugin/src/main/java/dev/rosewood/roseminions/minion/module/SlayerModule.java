@@ -21,7 +21,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 
-@MinionModuleInfo(name = "slayer")
 public class SlayerModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
@@ -48,7 +47,7 @@ public class SlayerModule extends MinionModule {
     private long lastAttackTime;
 
     public SlayerModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.SLAYER);
     }
 
     @Override

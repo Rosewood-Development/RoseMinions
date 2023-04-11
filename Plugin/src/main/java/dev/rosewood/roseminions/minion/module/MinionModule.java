@@ -39,6 +39,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     }
 
     protected final Minion minion;
+    protected final String moduleName;
     protected final SettingsContainer settings;
     protected final Map<Class<? extends MinionModule>, MinionModule> submodules;
     protected Modular parentModular;
@@ -46,8 +47,9 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     protected final GuiFramework guiFramework;
     protected GuiContainer guiContainer;
 
-    public MinionModule(Minion minion) {
+    public MinionModule(Minion minion, String moduleName) {
         this.minion = minion;
+        this.moduleName = moduleName.toLowerCase();
         this.settings = new SettingsContainer(this.getClass());
         this.submodules = new LinkedHashMap<>();
         this.parentModular = minion;
@@ -97,14 +99,14 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     public void deserialize(byte[] input) {
         DataSerializable.read(input, inputStream -> {
             byte[] settingsData = new byte[inputStream.readInt()];
-            inputStream.read(settingsData);
+            inputStream.readFully(settingsData);
             SettingHolder.super.deserialize(settingsData);
 
             int submodulesSize = inputStream.readInt();
             for (int i = 0; i < submodulesSize; i++) {
                 String name = inputStream.readUTF();
                 byte[] submoduleData = new byte[inputStream.readInt()];
-                inputStream.read(submoduleData);
+                inputStream.readFully(submoduleData);
 
                 // Find module with this name
                 Optional<MinionModule> module = this.submodules.values().stream()
@@ -143,10 +145,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     }
 
     public final String getName() {
-        MinionModuleInfo info = this.getClass().getAnnotation(MinionModuleInfo.class);
-        if (info == null)
-            throw new IllegalStateException("MinionModuleInfo annotation not found on " + this.getClass().getName());
-        return info.name().toLowerCase();
+        return this.moduleName;
     }
 
     public final void setSubModules(Map<Class<? extends MinionModule>, MinionModule> modules) {

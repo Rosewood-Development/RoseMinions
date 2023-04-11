@@ -19,4 +19,6 @@ public interface NMSHandler {
         throw new UnsupportedOperationException("getFishingLoot is not supported on this version of Minecraft");
     }
 
+    void setPositionRotation(Entity entity, Location location);
+
 }

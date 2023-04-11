@@ -5,15 +5,20 @@ import com.google.common.collect.EnumHashBiMap;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -26,7 +31,6 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.inventory.ItemStack;
 
-@MinionModuleInfo(name = "farmer")
 public class FarmerModule extends MinionModule {
 
     private static final BiMap<Material, Material> FARMLAND_CROP_SEED_MATERIALS; // A Map of farmland crop materials to seed materials
@@ -72,11 +76,13 @@ public class FarmerModule extends MinionModule {
     private int farmlandIndex;
 
     public FarmerModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.FARMER);
 
         this.farmland = new ArrayList<>();
         this.farmlandToTill = new ArrayList<>();
         this.farmlandToHydrate = new ArrayList<>();
+
+        Bukkit.getScheduler().runTask(RoseMinions.getInstance(), () -> this.getModule(AppearanceModule.class).ifPresent(x -> x.registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty))));
     }
 
     @Override

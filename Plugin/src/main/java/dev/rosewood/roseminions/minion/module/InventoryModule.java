@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-@MinionModuleInfo(name = "inventory")
 public class InventoryModule extends MinionModule {
 
     public static final SettingAccessor<Integer> INVENTORY_SIZE;
@@ -36,7 +35,7 @@ public class InventoryModule extends MinionModule {
     }
 
     public InventoryModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.INVENTORY);
     }
 
     @Override

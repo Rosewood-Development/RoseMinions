@@ -42,13 +42,18 @@ public class NMSHandlerImpl implements NMSHandler {
         LootContext context = new LootContext.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, new Vec3(location.getX(), location.getY(), location.getZ()))
                 .withParameter(LootContextParams.TOOL, CraftItemStack.asNMSCopy(fishingRod))
-                .withParameter(LootContextParams.THIS_ENTITY, ((CraftEntity) looter).getHandle()) // TODO: This is not the correct entity and needs to be a FishingHook
+                .withParameter(LootContextParams.THIS_ENTITY, ((CraftEntity) looter).getHandle()) // TODO: This is not the correct entity and needs to be a FishingHook, we might be able to just mock it though
                 .create(LootContextParamSets.FISHING);
 
         return level.getServer().getLootTables().get(resourceLocation).getRandomItems(context).stream()
                 .filter(x -> !x.isEmpty())
                 .map(CraftItemStack::asBukkitCopy)
                 .toList();
+    }
+
+    @Override
+    public void setPositionRotation(Entity entity, Location location) {
+        ((CraftEntity) entity).getHandle().absMoveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
     }
 
 }

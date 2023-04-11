@@ -16,7 +16,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 
-@MinionModuleInfo(name = "item_pickup")
 public class ItemPickupModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
@@ -35,7 +34,7 @@ public class ItemPickupModule extends MinionModule {
     private long lastPickupTime;
 
     public ItemPickupModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.ITEM_PICKUP);
     }
 
     @Override

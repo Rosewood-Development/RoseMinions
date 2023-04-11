@@ -51,4 +51,9 @@ public class NMSHandlerImpl implements NMSHandler {
                 .toList();
     }
 
+    @Override
+    public void setPositionRotation(Entity entity, Location location) {
+        ((CraftEntity) entity).getHandle().absMoveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+    }
+
 }

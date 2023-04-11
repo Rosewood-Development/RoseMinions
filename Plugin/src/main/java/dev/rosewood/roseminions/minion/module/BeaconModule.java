@@ -13,7 +13,6 @@ import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-@MinionModuleInfo(name = "beacon")
 public class BeaconModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
@@ -34,7 +33,7 @@ public class BeaconModule extends MinionModule {
     private long lastUpdate;
 
     public BeaconModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.BEACON);
     }
 
     @Override

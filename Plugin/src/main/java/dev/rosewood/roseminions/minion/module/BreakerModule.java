@@ -9,14 +9,12 @@ import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
-@MinionModuleInfo(name = "breaker")
 public class BreakerModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
@@ -47,7 +45,7 @@ public class BreakerModule extends MinionModule {
     private int currentBlockIndex;
 
     public BreakerModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.BREAKER);
 
         this.blocks = new ArrayList<>();
     }

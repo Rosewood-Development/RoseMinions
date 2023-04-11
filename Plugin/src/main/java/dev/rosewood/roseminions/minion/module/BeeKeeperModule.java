@@ -18,7 +18,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Beehive;
 import org.bukkit.inventory.ItemStack;
 
-@MinionModuleInfo(name = "bee_keeper")
 public class BeeKeeperModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
@@ -45,7 +44,7 @@ public class BeeKeeperModule extends MinionModule {
     private int hiveIndex;
 
     public BeeKeeperModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.BEE_KEEPER);
 
         this.hives = new ArrayList<>();
     }

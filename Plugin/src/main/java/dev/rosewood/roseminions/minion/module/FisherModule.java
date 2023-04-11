@@ -25,7 +25,6 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-@MinionModuleInfo(name = "fisher")
 public class FisherModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
@@ -60,7 +59,7 @@ public class FisherModule extends MinionModule {
     private long reelInTime;
 
     public FisherModule(Minion minion) {
-        super(minion);
+        super(minion, DefaultMinionModules.FISHER);
 
         this.lastEventTime = System.currentTimeMillis();
     }

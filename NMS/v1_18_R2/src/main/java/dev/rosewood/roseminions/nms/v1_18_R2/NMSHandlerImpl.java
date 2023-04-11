@@ -5,7 +5,10 @@ import dev.rosewood.roseminions.nms.NMSHandler;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_18_R2.inventory.CraftItemStack;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
 public class NMSHandlerImpl implements NMSHandler {
@@ -20,6 +23,11 @@ public class NMSHandlerImpl implements NMSHandler {
         AtomicReference<ItemStack> itemStack = new AtomicReference<>();
         DataSerializable.read(bytes, x -> itemStack.set(CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.of(NbtIo.read(x)))));
         return itemStack.get();
+    }
+
+    @Override
+    public void setPositionRotation(Entity entity, Location location) {
+        ((CraftEntity) entity).getHandle().absMoveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
     }
 
 }
