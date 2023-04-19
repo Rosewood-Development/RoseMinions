@@ -3,7 +3,7 @@ main: dev.rosewood.roseminions.RoseMinions
 version: '@version@'
 api-version: '1.13'
 description: TBD
-author: Esophose
+authors: [Esophose, Oribuin]
 softdepend:
   - PlaceholderAPI
   - ShopGUIPlus

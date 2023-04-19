@@ -1,6 +1,7 @@
 package dev.rosewood.roseminions.nms;
 
 import java.util.List;
+import dev.rosewood.roseminions.nms.hologram.Hologram;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
@@ -20,5 +21,14 @@ public interface NMSHandler {
     }
 
     void setPositionRotation(Entity entity, Location location);
+
+    /**
+     * Creates a hologram at the given location with the given text
+     *
+     * @param location The location to create the hologram at
+     * @param text The text to display on the hologram
+     * @return The hologram created
+     */
+    Hologram createHologram(Location location, List<String> text);
 
 }

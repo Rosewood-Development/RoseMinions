@@ -54,7 +54,6 @@ public class BeeKeeperModule extends MinionModule {
 
         if (System.currentTimeMillis() - this.lastHiveCheckTime > this.settings.get(FARM_UPDATE_FREQUENCY)) {
             this.lastHiveCheckTime = System.currentTimeMillis();
-            System.out.println("Updating hives");
             this.updateHoney();
         }
 

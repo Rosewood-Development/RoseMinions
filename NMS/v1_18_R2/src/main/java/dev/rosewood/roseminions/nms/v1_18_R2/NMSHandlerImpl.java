@@ -2,7 +2,9 @@ package dev.rosewood.roseminions.nms.v1_18_R2;
 
 import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.nms.NMSHandler;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import dev.rosewood.roseminions.nms.hologram.Hologram;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import org.bukkit.Location;
@@ -28,6 +30,11 @@ public class NMSHandlerImpl implements NMSHandler {
     @Override
     public void setPositionRotation(Entity entity, Location location) {
         ((CraftEntity) entity).getHandle().absMoveTo(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+    }
+
+    @Override
+    public Hologram createHologram(Location location, List<String> text) {
+        return null;
     }
 
 }

@@ -2,6 +2,7 @@ package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.roseminions.model.DataSerializable;
+import dev.rosewood.roseminions.model.MinionConversation;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.bukkit.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -100,6 +102,54 @@ public final class SettingSerializers {
     public static final SettingSerializer<PotionEffectType> POTION_EFFECT_TYPE = ofKeyed(PotionEffectType.class, PotionEffectType::getByKey);
     public static final SettingSerializer<Sound> SOUND = ofKeyed(Sound.class, namespacedKey -> Sound.valueOf(namespacedKey.getKey()));
     //endregion
+
+    // Minion Serializers
+    public static final SettingSerializer<MinionConversation> CONVERSATION = new SettingSerializer<>(MinionConversation.class) {
+        @Override
+        public void write(CommentedConfigurationSection config, String key, MinionConversation value, String... comments) {
+            config.set(key, null, comments);
+            config.set(key + ".chance", value.chance());
+            config.set(key + ".participants", value.participants());
+            config.set(key + ".radius", value.radius());
+            for (int i = 0; i < value.messages().size(); i++) {
+                config.set(key + ".messages." + (i + 1), value.messages().get(i));
+            }
+        }
+
+        @Override
+        public byte[] write(MinionConversation value) {
+            return DataSerializable.write(x -> x.writeObject(value));
+        }
+
+        @Override
+        public MinionConversation read(ConfigurationSection config, String key) {
+            // Get each message in the conversation
+            ConfigurationSection messagesSection = config.getConfigurationSection(key + ".messages");
+            if (messagesSection == null)
+                return null;
+
+            // Get the messages from the section
+            List<String> messages = messagesSection.getKeys(false).stream()
+                    .map(messagesSection::getString)
+                    .collect(Collectors.toList());
+
+            // Create the conversation
+            return new MinionConversation(
+                    config.getInt(key + ".participants"),
+                    config.getDouble(key + ".chance"),
+                    config.getInt(key + ".radius"),
+                    messages
+            );
+        }
+
+        @Override
+        public MinionConversation read(byte[] input) {
+            AtomicReference<MinionConversation> conversation = new AtomicReference<>();
+            DataSerializable.read(input, x -> conversation.set((MinionConversation) x.readObject()));
+            return conversation.get();
+        }
+    };
+    // endregion
 
     //region Other Serializers
     public static final SettingSerializer<String> STRING = new SettingSerializer<>(String.class, Function.identity(), Function.identity()) {

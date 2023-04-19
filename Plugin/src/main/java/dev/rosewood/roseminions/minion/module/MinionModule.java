@@ -58,6 +58,12 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
 
     protected abstract void buildGui();
 
+    public void unload() {
+        this.kickOutViewers(); // Close all viewers
+
+        // Unload functionality
+    }
+
     @Override
     public final void openGui(Player player) {
         if (this.guiContainer == null || !this.guiFramework.getGuiManager().getActiveGuis().contains(this.guiContainer))

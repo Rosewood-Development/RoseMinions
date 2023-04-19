@@ -5,6 +5,7 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.ConfigurationManager.Setting;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,6 +67,8 @@ public class MinionManager extends Manager {
             return;
 
         Minion minion = optionalMinion.get();
+        minion.getModules().forEach(MinionModule::unload); // Unload modules
+
         this.loadedMinions.remove(minion);
 
         PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();

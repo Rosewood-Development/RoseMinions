@@ -199,6 +199,10 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
         return Optional.ofNullable((T) this.modules.get(moduleClass));
     }
 
+    public List<MinionModule> getModules() {
+        return new ArrayList<>(this.modules.values());
+    }
+
     public ArmorStand getDisplayEntity() {
         return this.displayEntity.get();
     }
