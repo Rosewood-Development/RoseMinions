@@ -21,7 +21,9 @@ public class MinionDataArgumentHandler extends RoseCommandArgumentHandler<Minion
         String input = argumentParser.next();
         MinionData value = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(input);
         if (value == null)
-            throw new HandledArgumentException("argument-handler-minion-data", StringPlaceholders.single("input", input));
+            throw new HandledArgumentException("argument-handler-minion-data", StringPlaceholders.of("input", input));
+
+        argumentParser.setContextValue(MinionData.class, value);
         return value;
     }
 

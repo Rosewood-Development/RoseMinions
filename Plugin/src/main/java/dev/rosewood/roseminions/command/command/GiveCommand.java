@@ -6,8 +6,12 @@ import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.Optional;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.minion.MinionData;
+import dev.rosewood.roseminions.minion.MinionRank;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class GiveCommand extends RoseCommand {
 
@@ -16,21 +20,33 @@ public class GiveCommand extends RoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Player player, MinionData minionType, @Optional Integer rank) {
-        if (rank == null)
-            rank = 0;
+    public void execute(CommandContext context, Player player, MinionData minionType, MinionRank rank, @Optional Integer amount) {
+        LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-        if (rank < 0 || rank > minionType.getMaxRank()) {
+        if (rank.getRank() < 0 || rank.getRank() > minionType.getMaxRank()) {
             if (minionType.getMaxRank() == 0) {
-                context.getSender().sendMessage("There are no ranks available for that minion type.");
+                locale.sendMessage(player, "command-give-no-ranks");
             } else {
-                context.getSender().sendMessage("Invalid rank! Must be between 0 and " + minionType.getMaxRank());
+                locale.sendMessage(player, "command-give-invalid-rank", StringPlaceholders.of("max", minionType.getMaxRank()));
             }
+
             return;
         }
 
-        player.getInventory().addItem(minionType.getRank(rank).getItemStack(true));
-        player.sendMessage("You have been given a " + minionType.getId() + " minion.");
+        if (amount == null || amount < 1) {
+            amount = 1;
+        }
+
+        ItemStack itemStack = minionType.getRank(rank.getRank()).getItemStack(true).clone();
+        itemStack.setAmount(amount);
+
+        player.getInventory().addItem(itemStack);
+        locale.sendMessage(player, "command-give-success", StringPlaceholders.builder("minion", minionType.getId())
+                .add("amount", amount)
+                .add("rank", rank)
+                .add("player", player.getName())
+                .build()
+        );
     }
 
     @Override
