@@ -103,7 +103,7 @@ public class InventoryModule extends MinionModule {
         // Don't allow modifications while the GUI is open
         if (this.guiContainer != null && this.guiContainer.hasViewers())
             return clone;
-        
+
         int maxStackSize = clone.getMaxStackSize();
 
         // Try to add to existing stacks or fill a new slot

@@ -1,35 +1,27 @@
 package dev.rosewood.roseminions.minion;
 
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
-import dev.rosewood.rosegarden.utils.HexUtils;
-import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
-import dev.rosewood.roseminions.minion.module.AppearanceModule;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import dev.rosewood.roseminions.util.MinionUtils;
-import dev.rosewood.roseminions.util.nms.SkullUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.bukkit.Material;
+
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 public class MinionData {
 
     private final String id;
     private final List<MinionRank> ranks;
+    private final MinionItem item;
 
     public MinionData(CommentedFileConfiguration config) {
         this.ranks = new ArrayList<>();
+        this.item = new MinionItem();
 
         String id = config.getString("id");
         if (id == null)
@@ -90,7 +82,7 @@ public class MinionData {
             }
         });
 
-        return new MinionRank(rank, itemSettings, moduleData);
+        return new MinionRank(rank, this, itemSettings, moduleData);
     }
 
     private Map<String, ModuleData> getModules(ConfigurationSection section, MinionModuleManager minionModuleManager) {
@@ -132,91 +124,8 @@ public class MinionData {
         return this.ranks.get(rank);
     }
 
-    public class MinionRank {
-
-        private final int rank;
-        private final SettingsContainer itemSettings;
-        private final Map<String, ModuleData> moduleData;
-
-        public MinionRank(int rank, SettingsContainer itemSettings, Map<String, ModuleData> moduleData) {
-            this.rank = rank;
-            this.itemSettings = itemSettings;
-            this.moduleData = moduleData;
-
-            // Ensure an "appearance" module always exists
-            if (!this.moduleData.containsKey("appearance"))
-                this.moduleData.put("appearance", new ModuleData("appearance", new SettingsContainer(AppearanceModule.class), new HashMap<>()));
-        }
-
-        public ItemStack getItemStack(boolean includeSettings) {
-            StringPlaceholders placeholders = StringPlaceholders.builder("rank", this.rank).build();
-            ItemStack itemStack = new ItemStack(Material.PLAYER_HEAD);
-            SkullMeta itemMeta = (SkullMeta) itemStack.getItemMeta();
-            if (itemMeta != null) {
-                itemMeta.setDisplayName(HexUtils.colorify(placeholders.apply(this.itemSettings.get(MinionItem.DISPLAY_NAME))));
-                itemMeta.setLore(this.itemSettings.get(MinionItem.LORE).stream().map(x -> HexUtils.colorify(placeholders.apply(x))).toList());
-                SkullUtils.setSkullTexture(itemMeta, this.itemSettings.get(MinionItem.TEXTURE));
-
-                if (includeSettings) {
-                    PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-                    pdc.set(MinionUtils.MINION_NEW_TYPE_KEY, PersistentDataType.STRING, MinionData.this.id);
-                    pdc.set(MinionUtils.MINION_NEW_RANK_KEY, PersistentDataType.INTEGER, this.rank);
-                }
-
-                itemStack.setItemMeta(itemMeta);
-            }
-
-            return itemStack;
-        }
-
-        public SettingsContainer getItemSettings() {
-            return this.itemSettings;
-        }
-
-        public Map<String, ModuleData> getModuleData() {
-            return this.moduleData;
-        }
-
-    }
-
-    public static class MinionItem {
-
-        public static final SettingAccessor<String> DISPLAY_NAME;
-        public static final SettingAccessor<List<String>> LORE;
-        public static final SettingAccessor<String> TEXTURE;
-
-        static {
-            DISPLAY_NAME = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.STRING, "display-name", "&cMissing display-name");
-            LORE = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.ofList(SettingSerializers.STRING), "lore", List.of("", "<#c0ffee>Missing lore"));
-            TEXTURE = SettingsContainer.defineSetting(MinionItem.class, SettingSerializers.STRING, "texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=");
-        }
-
-    }
-
-    public record ModuleData(String id, SettingsContainer settings, Map<String, ModuleData> subModules) {
-
-        public ModuleData copy() {
-            return new ModuleData(this.id, this.settings.copy(), this.copySubModules());
-        }
-
-        private Map<String, ModuleData> copySubModules() {
-            Map<String, ModuleData> subModules = new HashMap<>();
-            this.subModules.forEach((id, data) -> subModules.put(id, data.copy()));
-            return subModules;
-        }
-
-        public void merge(ModuleData data) {
-            this.settings.merge(data.settings);
-            data.subModules().forEach((id, subData) -> {
-                ModuleData existingData = this.subModules.get(id);
-                if (existingData != null) {
-                    existingData.merge(subData);
-                } else {
-                    this.subModules.put(id, subData.copy());
-                }
-            });
-        }
-
+    public MinionItem getItem() {
+        return item;
     }
 
 }

@@ -17,10 +17,6 @@ import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,6 +37,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
+
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class AppearanceModule extends MinionModule {
 
@@ -113,6 +114,9 @@ public class AppearanceModule extends MinionModule {
     @Override
     public void updateAsync() {
         ArmorStand armorStand = this.minion.getDisplayEntity();
+        if (armorStand == null)
+            return;
+
         this.nametagUpdateTicks = (this.nametagUpdateTicks + 1) % 2;
         if (this.nametagUpdateTicks == 0) {
             String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
@@ -233,8 +237,7 @@ public class AppearanceModule extends MinionModule {
             SkullUtils.setSkullTexture(skullMeta, this.settings.get(TEXTURE));
             skullItem.setItemMeta(itemMeta);
             EntityEquipment equipment = armorStand.getEquipment();
-            if (equipment != null)
-                equipment.setItem(EquipmentSlot.HEAD, skullItem);
+            equipment.setItem(EquipmentSlot.HEAD, skullItem);
         }
     }
 
