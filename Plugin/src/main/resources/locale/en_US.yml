@@ -29,9 +29,9 @@ command-reload-reloaded: '&eConfiguration and locale files were reloaded.'
 
 # Give Command
 command-give-description: Gives a minion to a player
-command-give-success: You have given %amount% %minion% minion(s) to %player%.
-command-give-no-ranks: There are no ranks available for that minion type.
-command-give-invalid-rank: Invalid rank, must be between 0 and %max%.
+command-give-success: '&eYou have given &b%amount% %minion% &eminion(s) to &b%player%.'
+command-give-no-ranks: '&cThere are no ranks available for that minion type.'
+command-give-invalid-rank: '&cInvalid rank, must be between 0 and %max%.'
 
 # Argument Handler Error Messages
 argument-handler-enum: '%enum% type [%input%] does not exist'
