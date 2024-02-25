@@ -2,7 +2,6 @@ package dev.rosewood.roseminions;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
-import dev.rosewood.rosegarden.utils.ClassUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
 import dev.rosewood.roseminions.listener.MinionPickupListener;
@@ -38,9 +37,6 @@ public class RoseMinions extends RosePlugin {
         super(-1, 14807, ConfigurationManager.class, null, LocaleManager.class, CommandManager.class);
 
         instance = this;
-
-        // Force all RoseMinions classes in the jar to initialize
-        ClassUtils.getClassesOf(this, "dev.rosewood.roseminions", Object.class);
     }
 
     @Override

@@ -5,10 +5,15 @@ import com.mojang.authlib.properties.Property;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Base64;
 import java.util.UUID;
 import me.arcaniax.hdb.api.HeadDatabaseAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 
 public final class SkullUtils {
 
@@ -35,27 +40,42 @@ public final class SkullUtils {
                 return;
         }
 
-        GameProfile profile = new GameProfile(UUID.nameUUIDFromBytes(texture.getBytes()), "");
-        profile.getProperties().put("textures", new Property("textures", texture));
+        if (NMSUtil.getVersionNumber() >= 18) {
+            PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
+            PlayerTextures textures = profile.getTextures();
 
-        try {
-            if (NMSUtil.getVersionNumber() > 15) {
-                if (method_SkullMeta_setProfile == null) {
-                    method_SkullMeta_setProfile = skullMeta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
-                    method_SkullMeta_setProfile.setAccessible(true);
-                }
+            String decodedTextureJson = new String(Base64.getDecoder().decode(texture));
+            String decodedTextureUrl = decodedTextureJson.substring(28, decodedTextureJson.length() - 4);
 
-                method_SkullMeta_setProfile.invoke(skullMeta, profile);
-            } else {
-                if (field_SkullMeta_profile == null) {
-                    field_SkullMeta_profile = skullMeta.getClass().getDeclaredField("profile");
-                    field_SkullMeta_profile.setAccessible(true);
-                }
-
-                field_SkullMeta_profile.set(skullMeta, profile);
+            try {
+                textures.setSkin(new URL(decodedTextureUrl));
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
             }
-        } catch (ReflectiveOperationException e) {
-            e.printStackTrace();
+            skullMeta.setOwnerProfile(profile);
+        } else {
+            GameProfile profile = new GameProfile(UUID.nameUUIDFromBytes(texture.getBytes()), "");
+            profile.getProperties().put("textures", new Property("textures", texture));
+
+            try {
+                if (NMSUtil.getVersionNumber() > 15) {
+                    if (method_SkullMeta_setProfile == null) {
+                        method_SkullMeta_setProfile = skullMeta.getClass().getDeclaredMethod("setProfile", GameProfile.class);
+                        method_SkullMeta_setProfile.setAccessible(true);
+                    }
+
+                    method_SkullMeta_setProfile.invoke(skullMeta, profile);
+                } else {
+                    if (field_SkullMeta_profile == null) {
+                        field_SkullMeta_profile = skullMeta.getClass().getDeclaredField("profile");
+                        field_SkullMeta_profile.setAccessible(true);
+                    }
+
+                    field_SkullMeta_profile.set(skullMeta, profile);
+                }
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
         }
     }
 

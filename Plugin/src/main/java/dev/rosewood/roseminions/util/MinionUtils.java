@@ -65,7 +65,7 @@ public final class MinionUtils {
             return chunkSnapshotCache.get(pair, () -> {
                 Chunk chunk = location.getWorld().getChunkAt(location.getBlockX() >> 4, location.getBlockZ() >> 4);
                 return chunk.getChunkSnapshot();
-            }).getBlockType(location.getBlockX() & 15, location.getBlockY(), location.getBlockZ() & 15);
+            }).getBlockType(location.getBlockX() & 0xF, location.getBlockY(), location.getBlockZ() & 0xF);
         } catch (Exception e) {
             RoseMinions.getInstance().getLogger().warning("Failed to fetch block type at " + location);
             e.printStackTrace();
