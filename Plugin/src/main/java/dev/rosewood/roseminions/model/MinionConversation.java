@@ -3,10 +3,9 @@ package dev.rosewood.roseminions.model;
 import java.util.List;
 
 /**
- * @param id           Unique ID for the conversation
  * @param participants Number of Participants in the conversation
- * @param messages     Ordered messages for each participant
- * @param chance       Chance for the conversation to start
+ * @param messages Ordered messages for each participant
+ * @param chance Chance for the conversation to start
  */
 public record MinionConversation(int participants, double chance, int radius, List<String> messages) {
 
@@ -17,7 +16,7 @@ public record MinionConversation(int participants, double chance, int radius, Li
         if (participants < 1)
             throw new IllegalArgumentException("You need to have at least 1 participant");
 
-        if (messages.size() < 1)
+        if (messages.isEmpty())
             throw new IllegalArgumentException("Messages must have at least 1 message");
 
     }

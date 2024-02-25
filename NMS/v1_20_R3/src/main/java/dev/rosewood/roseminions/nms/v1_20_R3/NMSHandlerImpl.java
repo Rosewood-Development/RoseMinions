@@ -1,18 +1,19 @@
-package dev.rosewood.roseminions.nms.v1_17_R1;
+package dev.rosewood.roseminions.nms.v1_20_R3;
 
 import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import dev.rosewood.roseminions.nms.util.ReflectionUtils;
-import dev.rosewood.roseminions.nms.v1_17_R1.hologram.HologramImpl;
+import dev.rosewood.roseminions.nms.v1_20_R3.hologram.HologramImpl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
+import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
@@ -38,6 +39,25 @@ public class NMSHandlerImpl implements NMSHandler {
         AtomicReference<ItemStack> itemStack = new AtomicReference<>();
         DataSerializable.read(bytes, x -> itemStack.set(CraftItemStack.asBukkitCopy(net.minecraft.world.item.ItemStack.of(NbtIo.read(x)))));
         return itemStack.get();
+    }
+
+    @Override
+    public List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod) {
+        // TODO: Fix the fishing loot table stuff
+        return List.of(new ItemStack(Material.COD));
+//        ServerLevel level = ((CraftWorld) looter.getWorld()).getHandle();
+//        ResourceLocation resourceLocation = CraftNamespacedKey.toMinecraft(LootTables.FISHING.getKey());
+//        LootParams params = new LootParams(level, level.getServer().getLootData(), level.getServer().getLootData().);
+//        LootContext context = new LootContext.Builder(new LootParams(level, level.getServer().getLootData(), level.getServer().getLootData().)
+//                .withParameter(LootContextParams.ORIGIN, new Vec3(location.getX(), location.getY(), location.getZ()))
+//                .withParameter(LootContextParams.TOOL, CraftItemStack.asNMSCopy(fishingRod))
+//                .withParameter(LootContextParams.THIS_ENTITY, ((CraftEntity) looter).getHandle()) // TODO: This is not the correct entity and needs to be a FishingHook
+//                .create(LootContextParamSets.FISHING);
+//
+//        return level.getServer().getLootTables().get(resourceLocation).getRandomItems(context).stream()
+//                .filter(x -> !x.isEmpty())
+//                .map(CraftItemStack::asBukkitCopy)
+//                .toList();
     }
 
     @Override
