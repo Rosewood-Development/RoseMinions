@@ -6,24 +6,24 @@ import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentHandler;
 import dev.rosewood.rosegarden.command.framework.RoseCommandArgumentInfo;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
-import dev.rosewood.roseminions.minion.MinionData;
+import dev.rosewood.roseminions.minion.config.MinionConfig;
 import java.util.Collection;
 import java.util.List;
 
-public class MinionDataArgumentHandler extends RoseCommandArgumentHandler<MinionData> {
+public class MinionDataArgumentHandler extends RoseCommandArgumentHandler<MinionConfig> {
 
     public MinionDataArgumentHandler(RosePlugin rosePlugin) {
-        super(rosePlugin, MinionData.class);
+        super(rosePlugin, MinionConfig.class);
     }
 
     @Override
-    protected MinionData handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
+    protected MinionConfig handleInternal(RoseCommandArgumentInfo argumentInfo, ArgumentParser argumentParser) {
         String input = argumentParser.next();
-        MinionData value = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(input);
+        MinionConfig value = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(input);
         if (value == null)
             throw new HandledArgumentException("argument-handler-minion-data", StringPlaceholders.of("input", input));
 
-        argumentParser.setContextValue(MinionData.class, value);
+        argumentParser.setContextValue(MinionConfig.class, value);
         return value;
     }
 

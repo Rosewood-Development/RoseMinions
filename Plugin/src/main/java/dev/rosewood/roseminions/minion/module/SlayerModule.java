@@ -5,8 +5,7 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -32,16 +31,16 @@ public class SlayerModule extends MinionModule {
     private static final Set<EntityType> BLACKLIST_TYPES = EnumSet.of(EntityType.PLAYER, EntityType.ARMOR_STAND);
 
     static {
-        RADIUS = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "radius", 3, "How far away the minion will search for targets");
-        ATTACK_FREQUENCY = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.LONG, "attack-frequency", 1000L, "How often the minion will attack (in milliseconds)");
-        ONLY_ATTACK_ENEMIES = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.BOOLEAN, "only-attack-enemies", true, "Whether the minion will only attack enemies");
-        DAMAGE_AMOUNT = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "damage-amount", 10, "How much damage the minion will deal to targets");
-        NUMBER_OF_TARGETS = SettingsContainer.defineSetting(SlayerModule.class, SettingSerializers.INTEGER, "number-of-targets", 1, "How many targets the minion will attack at once");
+        RADIUS = SettingsRegistry.defineInteger(SlayerModule.class, "radius", 3, "How far away the minion will search for targets");
+        ATTACK_FREQUENCY = SettingsRegistry.defineLong(SlayerModule.class, "attack-frequency", 1000L, "How often the minion will attack (in milliseconds)");
+        ONLY_ATTACK_ENEMIES = SettingsRegistry.defineBoolean(SlayerModule.class, "only-attack-enemies", true, "Whether the minion will only attack enemies");
+        DAMAGE_AMOUNT = SettingsRegistry.defineInteger(SlayerModule.class, "damage-amount", 10, "How much damage the minion will deal to targets");
+        NUMBER_OF_TARGETS = SettingsRegistry.defineInteger(SlayerModule.class, "number-of-targets", 1, "How many targets the minion will attack at once");
 
-        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_TITLE, "Slayer Module");
-        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON, Material.IRON_SWORD);
-        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Slayer Module");
-        SettingsContainer.redefineSetting(SlayerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(SlayerModule.class, MinionModule.GUI_TITLE, "Slayer Module");
+        SettingsRegistry.redefineEnum(SlayerModule.class, MinionModule.GUI_ICON, Material.IRON_SWORD);
+        SettingsRegistry.redefineString(SlayerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Slayer Module");
+        SettingsRegistry.redefineStringList(SlayerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastAttackTime;

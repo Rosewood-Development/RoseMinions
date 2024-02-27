@@ -11,24 +11,20 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
+import dev.rosewood.roseminions.minion.config.MinionConfig;
+import dev.rosewood.roseminions.minion.config.MinionItem;
+import dev.rosewood.roseminions.minion.config.ModuleConfig;
+import dev.rosewood.roseminions.minion.config.RankConfig;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
+import dev.rosewood.roseminions.minion.module.DefaultMinionModules;
 import dev.rosewood.roseminions.minion.module.MinionModule;
+import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
 import dev.rosewood.roseminions.model.Updatable;
+import dev.rosewood.roseminions.util.EntitySpawnUtil;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
-import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -39,6 +35,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
 
@@ -51,17 +57,19 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     };
     private final Map<Class<? extends MinionModule>, MinionModule> modules;
     private final GuiFramework guiFramework;
-    private MinionData minionData;
+    private MinionConfig minionConfig;
     private int rank;
     private Reference<ArmorStand> displayEntity;
     private UUID owner;
     private Location location;
     private GuiContainer guiContainer;
+    private final AppearanceModule appearanceModule;
 
     private Minion(ArmorStand displayEntity) {
         this.modules = new LinkedHashMap<>();
         this.displayEntity = new WeakReference<>(displayEntity);
         this.guiFramework = GuiFramework.instantiate(RoseMinions.getInstance());
+        this.appearanceModule = new AppearanceModule(this);
     }
 
     /**
@@ -85,13 +93,13 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     /**
      * Used for creating a new minion
      */
-    public Minion(MinionData minionData, int rank, UUID owner, Location location) {
+    public Minion(MinionConfig minionConfig, int rank, UUID owner, Location location) {
         this(null);
 
-        this.minionData = minionData;
+        this.minionConfig = minionConfig;
         this.rank = rank;
         this.owner = owner;
-        this.location = new Location(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        this.location = location.clone();
         this.loadRankData();
     }
 
@@ -100,15 +108,15 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
         ArmorStand displayEntity = this.displayEntity.get();
         if (displayEntity == null || !displayEntity.isValid()) {
             this.displayEntity = new WeakReference<>(this.createDisplayEntity());
-            this.getModule(AppearanceModule.class).ifPresent(AppearanceModule::updateEntity);
+            this.appearanceModule.updateEntity();
         }
 
-        this.modules.values().forEach(MinionModule::update);
+        this.getModules().forEach(MinionModule::update);
     }
 
     @Override
     public void updateAsync() {
-        this.modules.values().forEach(MinionModule::updateAsync);
+        this.getModules().forEach(MinionModule::updateAsync);
     }
 
     @Override
@@ -130,7 +138,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     public byte[] serialize() {
         return DataSerializable.write(outputStream -> {
             // Write minion data
-            outputStream.writeUTF(this.minionData.getId());
+            outputStream.writeUTF(this.minionConfig.getId());
             outputStream.writeInt(this.rank);
             outputStream.writeLong(this.owner.getMostSignificantBits());
             outputStream.writeLong(this.owner.getLeastSignificantBits());
@@ -140,8 +148,9 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
             outputStream.writeInt(this.location.getBlockZ());
 
             // Write module data
-            outputStream.writeInt(this.modules.size());
-            for (MinionModule module : this.modules.values()) {
+            List<MinionModule> modules = this.getModules();
+            outputStream.writeInt(modules.size());
+            for (MinionModule module : modules) {
                 byte[] moduleData = module.serialize();
                 outputStream.writeUTF(module.getName());
                 outputStream.writeInt(moduleData.length);
@@ -154,8 +163,8 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     public void deserialize(byte[] input) {
         DataSerializable.read(input, inputStream -> {
             String typeId = inputStream.readUTF();
-            this.minionData = RoseMinions.getInstance().getManager(MinionTypeManager.class).getMinionData(typeId);
-            if (this.minionData == null)
+            this.minionConfig = RoseMinions.getInstance().getManager(MinionTypeManager.class).getMinionData(typeId);
+            if (this.minionConfig == null)
                 throw new IllegalStateException("Minion type " + typeId + " no longer exists");
 
             this.rank = inputStream.readInt();
@@ -174,24 +183,23 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
             int moduleCount = inputStream.readInt();
             for (int i = 0; i < moduleCount; i++) {
                 String name = inputStream.readUTF();
-                int moduleDataLength = inputStream.readInt();
-                byte[] moduleData = new byte[moduleDataLength];
-                inputStream.readFully(moduleData);
+                int length = inputStream.readInt();
+                byte[] data = new byte[length];
+                inputStream.readFully(data);
 
                 // Find module with this name
-                Optional<MinionModule> module = this.modules.values().stream()
+                Optional<MinionModule> module = this.getModules().stream()
                         .filter(x -> x.getName().equals(name))
                         .findFirst();
 
                 if (module.isPresent()) {
-                    module.get().deserialize(moduleData);
+                    module.get().deserialize(data);
                 } else {
                     RoseMinions.getInstance().getLogger().warning("Skipped loading module " + name + " for minion at " + this.location + " because the module no longer exists");
                 }
             }
         });
     }
-
 
     private void buildGui() {
         this.guiContainer = GuiFactory.createContainer();
@@ -209,25 +217,24 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
         GuiSize size = GuiSize.fromRows(rows);
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, size)
-                .setTitle(ChatColor.stripColor(HexUtils.colorify(this.getRankData().getItemSettings().get(this.minionData.getItem().getDisplayName()))));
+                .setTitle(ChatColor.stripColor(HexUtils.colorify(this.getRankData().itemSettings().get(MinionItem.DISPLAY_NAME))));
 
         // Add the appearance item
-        this.getModule(AppearanceModule.class).ifPresent(module -> {
-            ItemStack appearanceItem = new ItemStack(module.getSettings().get(MinionModule.GUI_ICON));
-            ItemMeta meta = appearanceItem.getItemMeta();
-            if (meta instanceof SkullMeta skullMeta) {
-                SkullUtils.setSkullTexture(skullMeta, this.getRankData().getItemSettings().get(this.minionData.getItem().getTexture()));
-                appearanceItem.setItemMeta(skullMeta);
-            }
+        SettingsContainer appearanceSettings = this.appearanceModule.getSettings();
+        ItemStack appearanceItem = new ItemStack(appearanceSettings.get(MinionModule.GUI_ICON));
+        ItemMeta meta = appearanceItem.getItemMeta();
+        if (meta instanceof SkullMeta skullMeta) {
+            SkullUtils.setSkullTexture(skullMeta, this.getRankData().itemSettings().get(MinionItem.TEXTURE));
+            appearanceItem.setItemMeta(skullMeta);
+        }
 
-            mainScreen.addButtonAt(10, GuiFactory.createButton(appearanceItem)
-                    .setName(HexUtils.colorify(module.getSettings().get(MinionModule.GUI_ICON_NAME)))
-                    .setLore(module.getSettings().get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList())
-                    .setClickAction(event -> {
-                        this.getModule(AppearanceModule.class).ifPresent(x -> x.openGui((Player) event.getWhoClicked()));
-                        return ClickAction.NOTHING;
-                    }));
-        });
+        mainScreen.addButtonAt(10, GuiFactory.createButton(appearanceItem)
+                .setName(HexUtils.colorify(appearanceSettings.get(MinionModule.GUI_ICON_NAME)))
+                .setLore(appearanceSettings.get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList())
+                .setClickAction(event -> {
+                    this.appearanceModule.openGui((Player) event.getWhoClicked());
+                    return ClickAction.NOTHING;
+                }));
 
         int moduleIndex = 0;
         for (MinionModule module : modules) {
@@ -250,17 +257,28 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
 
     private void loadRankData() {
         MinionModuleManager minionModuleManager = RoseMinions.getInstance().getManager(MinionModuleManager.class);
-        MinionRank rank = this.minionData.getRank(this.rank);
-        this.modules.putAll(this.loadModules(rank.getModuleData(), minionModuleManager));
+        RankConfig rank = this.minionConfig.getRank(this.rank);
+
+        Map<String, ModuleConfig> moduleData = rank.moduleData();
+        ModuleConfig appearanceModuleConfig = moduleData.get(DefaultMinionModules.APPEARANCE);
+        if (appearanceModuleConfig != null) {
+            this.appearanceModule.getSettings().setDefaults(appearanceModuleConfig.settings());
+            this.appearanceModule.updateEntity();
+        }
+
+        this.modules.putAll(this.loadModules(moduleData, minionModuleManager));
     }
 
-    private Map<Class<? extends MinionModule>, MinionModule> loadModules(Map<String, ModuleData> inputData, MinionModuleManager minionModuleManager) {
+    private Map<Class<? extends MinionModule>, MinionModule> loadModules(Map<String, ModuleConfig> inputData, MinionModuleManager minionModuleManager) {
         Map<Class<? extends MinionModule>, MinionModule> modules = new LinkedHashMap<>();
         inputData.forEach((name, data) -> {
+            if (name.equals(DefaultMinionModules.APPEARANCE)) // Appearance modules are only allowed at top level
+                return;
+
             MinionModule module = minionModuleManager.createModule(name, this);
             if (module == null)
                 throw new IllegalStateException("Failed to create module " + name + "!");
-            module.getSettings().merge(data.settings());
+            module.getSettings().setDefaults(data.settings());
             Map<Class<? extends MinionModule>, MinionModule> submodules = this.loadModules(data.subModules(), minionModuleManager);
             module.setSubModules(submodules);
             modules.put(module.getClass(), module);
@@ -269,7 +287,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     }
 
     private ArmorStand createDisplayEntity() {
-        return this.location.getWorld().spawn(this.getCenterLocation(), ArmorStand.class, entity -> {
+        return EntitySpawnUtil.spawn(this.getCenterLocation(), ArmorStand.class, entity -> {
             entity.setVisible(false);
             entity.setGravity(false);
             entity.setSmall(true);
@@ -285,24 +303,30 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public <T extends MinionModule> Optional<T> getModule(Class<T> moduleClass) {
+        if (moduleClass == AppearanceModule.class)
+            return Optional.of((T) this.appearanceModule);
         return Optional.ofNullable((T) this.modules.get(moduleClass));
     }
 
     public List<MinionModule> getModules() {
-        return new ArrayList<>(this.modules.values());
+        List<MinionModule> modules = new ArrayList<>(this.modules.size() + 1);
+        modules.add(this.appearanceModule);
+        modules.addAll(this.modules.values());
+        return modules;
     }
 
     public ArmorStand getDisplayEntity() {
         return this.displayEntity.get();
     }
 
-    public MinionData getTypeData() {
-        return this.minionData;
+    public MinionConfig getTypeData() {
+        return this.minionConfig;
     }
 
-    public MinionRank getRankData() {
-        return this.minionData.getRank(this.rank);
+    public RankConfig getRankData() {
+        return this.minionConfig.getRank(this.rank);
     }
 
     public int getRank() {

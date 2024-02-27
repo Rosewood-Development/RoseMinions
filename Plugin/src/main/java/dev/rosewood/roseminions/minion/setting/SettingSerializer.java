@@ -12,17 +12,17 @@ import org.bukkit.configuration.ConfigurationSection;
 
 public abstract class SettingSerializer<T> {
 
-    protected final Class<?> type;
+    protected final Class<T> type;
     private final Function<T, String> toStringFunction;
     private final Function<String, T> fromStringFunction;
 
-    public SettingSerializer(Class<?> type, Function<T, String> toStringFunction, Function<String, T> fromStringFunction) {
+    public SettingSerializer(Class<T> type, Function<T, String> toStringFunction, Function<String, T> fromStringFunction) {
         this.type = type;
         this.toStringFunction = toStringFunction;
         this.fromStringFunction = fromStringFunction;
     }
 
-    public SettingSerializer(Class<?> type) {
+    public SettingSerializer(Class<T> type) {
         this(type, null, null);
     }
 
@@ -54,14 +54,18 @@ public abstract class SettingSerializer<T> {
 
     public final String stringify(T value) {
         if (this.toStringFunction == null)
-            throw new UnsupportedOperationException("stringify not implemented");
+            throw new UnsupportedOperationException("stringify not implemented, check isStringificationAllowed() first");
         return this.toStringFunction.apply(value);
     }
 
     public final T parseString(String value) {
         if (this.fromStringFunction == null)
-            throw new UnsupportedOperationException("parseString not implemented");
+            throw new UnsupportedOperationException("parseString not implemented, check isStringificationAllowed() first");
         return this.fromStringFunction.apply(value);
+    }
+
+    public Class<T> getType() {
+        return this.type;
     }
 
     public String getTypeName() {

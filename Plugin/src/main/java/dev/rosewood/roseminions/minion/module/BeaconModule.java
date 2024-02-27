@@ -6,7 +6,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
 import org.bukkit.Material;
@@ -20,14 +20,14 @@ public class BeaconModule extends MinionModule {
     public static final SettingAccessor<Long> UPDATE_FREQUENCY;
 
     static {
-        RADIUS = SettingsContainer.defineSetting(BeaconModule.class, SettingSerializers.INTEGER, "radius", 10, "The radius of the beacon");
-        EFFECTS = SettingsContainer.defineSetting(BeaconModule.class, SettingSerializers.ofList(SettingSerializers.POTION_EFFECT), "effects", List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects of the beacon");
-        UPDATE_FREQUENCY = SettingsContainer.defineSetting(BeaconModule.class, SettingSerializers.LONG, "update-frequency", 2500L, "How often the beacon will update (in milliseconds)");
+        RADIUS = SettingsRegistry.defineInteger(BeaconModule.class, "radius", 10, "The radius of the beacon");
+        EFFECTS = SettingsRegistry.defineSetting(BeaconModule.class, SettingSerializers.ofList(SettingSerializers.POTION_EFFECT), "effects", () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects of the beacon");
+        UPDATE_FREQUENCY = SettingsRegistry.defineLong(BeaconModule.class, "update-frequency", 2500L, "How often the beacon will update (in milliseconds)");
 
-        SettingsContainer.redefineSetting(BeaconModule.class, MinionModule.GUI_TITLE, "Beacon Module");
-        SettingsContainer.redefineSetting(BeaconModule.class, MinionModule.GUI_ICON, Material.BEACON);
-        SettingsContainer.redefineSetting(BeaconModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Beacon Module");
-        SettingsContainer.redefineSetting(BeaconModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to create a beacon.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(BeaconModule.class, MinionModule.GUI_TITLE, "Beacon Module");
+        SettingsRegistry.redefineEnum(BeaconModule.class, MinionModule.GUI_ICON, Material.BEACON);
+        SettingsRegistry.redefineString(BeaconModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Beacon Module");
+        SettingsRegistry.redefineStringList(BeaconModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to create a beacon.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastUpdate;

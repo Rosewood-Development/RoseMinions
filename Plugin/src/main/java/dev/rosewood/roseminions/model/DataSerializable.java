@@ -19,7 +19,7 @@ public interface DataSerializable {
     byte[] serialize();
 
     /**
-     * Deserializes this object from a byte array
+     * Deserializes the byte array into this object
      *
      * @param input the byte array
      */

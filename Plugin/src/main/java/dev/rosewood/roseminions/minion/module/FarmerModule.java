@@ -6,18 +6,15 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -53,19 +50,19 @@ public class FarmerModule extends MinionModule {
     public static final SettingAccessor<Boolean> BONEMEAL_CROPS;
 
     static {
-        RADIUS = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.INTEGER, "radius", 3, "How far away the minion will farm");
-        FARM_FREQUENCY = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.LONG, "farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)");
-        FARMLAND_UPDATE_FREQUENCY = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.LONG, "farmland-update-frequency", 10000L, "How often the minion will manage farmland (in milliseconds)");
-        TILL_SOIL = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.BOOLEAN, "till-soil", true, "Whether the minion will till");
-        HYDRATE_SOIL = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.BOOLEAN, "hydrate-soil", true, "Whether the minion will hydrate farmland");
-        HARVEST_CROPS = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.BOOLEAN, "harvest-crops", true, "Whether the minion will harvest crops");
-        PLANT_SEEDS = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.BOOLEAN, "plant-seeds", true, "Whether the minion will plant seeds");
-        BONEMEAL_CROPS = SettingsContainer.defineSetting(FarmerModule.class, SettingSerializers.BOOLEAN, "bonemeal-crops", true, "Whether the minion will bonemeal crops");
+        RADIUS = SettingsRegistry.defineInteger(FarmerModule.class,"radius", 3, "How far away the minion will farm");
+        FARM_FREQUENCY = SettingsRegistry.defineLong(FarmerModule.class, "farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)");
+        FARMLAND_UPDATE_FREQUENCY = SettingsRegistry.defineLong(FarmerModule.class, "farmland-update-frequency", 10000L, "How often the minion will manage farmland (in milliseconds)");
+        TILL_SOIL = SettingsRegistry.defineBoolean(FarmerModule.class, "till-soil", true, "Whether the minion will till");
+        HYDRATE_SOIL = SettingsRegistry.defineBoolean(FarmerModule.class, "hydrate-soil", true, "Whether the minion will hydrate farmland");
+        HARVEST_CROPS = SettingsRegistry.defineBoolean(FarmerModule.class, "harvest-crops", true, "Whether the minion will harvest crops");
+        PLANT_SEEDS = SettingsRegistry.defineBoolean(FarmerModule.class, "plant-seeds", true, "Whether the minion will plant seeds");
+        BONEMEAL_CROPS = SettingsRegistry.defineBoolean(FarmerModule.class, "bonemeal-crops", true, "Whether the minion will bonemeal crops");
 
-        SettingsContainer.redefineSetting(FarmerModule.class, MinionModule.GUI_TITLE, "Farmer Module");
-        SettingsContainer.redefineSetting(FarmerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_HOE);
-        SettingsContainer.redefineSetting(FarmerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Farmer Module");
-        SettingsContainer.redefineSetting(FarmerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to farm nearby crops.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(FarmerModule.class, MinionModule.GUI_TITLE, "Farmer Module");
+        SettingsRegistry.redefineEnum(FarmerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_HOE);
+        SettingsRegistry.redefineString(FarmerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Farmer Module");
+        SettingsRegistry.redefineStringList(FarmerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to farm nearby crops.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastFarmlandCheckTime;
@@ -82,7 +79,7 @@ public class FarmerModule extends MinionModule {
         this.farmlandToTill = new ArrayList<>();
         this.farmlandToHydrate = new ArrayList<>();
 
-        Bukkit.getScheduler().runTask(RoseMinions.getInstance(), () -> this.getModule(AppearanceModule.class).ifPresent(x -> x.registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty))));
+        this.getModule(AppearanceModule.class).ifPresent(x -> x.registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty)));
     }
 
     @Override
@@ -198,9 +195,9 @@ public class FarmerModule extends MinionModule {
                     block.getWorld().playSound(block.getLocation(), Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1);
                     block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
 
-                    // Slightly hydrate the soil to prevent it from drying out immediately
+                    // Hydrate the soil to prevent it from drying out immediately
                     Farmland farmland = (Farmland) block.getBlockData();
-                    farmland.setMoisture(farmland.getMaximumMoisture() / 2);
+                    farmland.setMoisture(farmland.getMaximumMoisture());
                     block.setBlockData(farmland);
 
                     if (this.settings.get(HYDRATE_SOIL)) {

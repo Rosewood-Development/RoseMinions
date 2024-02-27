@@ -10,8 +10,8 @@ import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingHolder;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
@@ -32,10 +32,10 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     public static final SettingAccessor<List<String>> GUI_ICON_LORE;
 
     static {
-        GUI_TITLE = SettingsContainer.defineSetting(MinionModule.class, SettingSerializers.STRING, "gui-title", "GUI Title", "The title of the GUI");
-        GUI_ICON = SettingsContainer.defineSetting(MinionModule.class, SettingSerializers.MATERIAL, "gui-icon", Material.BARRIER, "The icon to use for this module in the minion GUI");
-        GUI_ICON_NAME = SettingsContainer.defineSetting(MinionModule.class, SettingSerializers.STRING, "gui-icon-name", "Module", "The name to use for this module in the minion GUI");
-        GUI_ICON_LORE = SettingsContainer.defineSetting(MinionModule.class, SettingSerializers.ofList(SettingSerializers.STRING), "gui-icon-lore", List.of("", MinionUtils.SECONDARY_COLOR + "A minion module.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."), "The lore to use for this module in the minion GUI");
+        GUI_TITLE = SettingsRegistry.defineString(MinionModule.class, "gui-title", "GUI Title", "The title of the GUI");
+        GUI_ICON = SettingsRegistry.defineEnum(MinionModule.class, "gui-icon", Material.BARRIER, "The icon to use for this module in the minion GUI");
+        GUI_ICON_NAME = SettingsRegistry.defineString(MinionModule.class, "gui-icon-name", "Module", "The name to use for this module in the minion GUI");
+        GUI_ICON_LORE = SettingsRegistry.defineStringList(MinionModule.class, "gui-icon-lore", List.of("", MinionUtils.SECONDARY_COLOR + "A minion module.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."), "The lore to use for this module in the minion GUI");
     }
 
     protected final Minion minion;
@@ -62,6 +62,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
         this.kickOutViewers(); // Close all viewers
 
         // Unload functionality
+        this.submodules.values().forEach(MinionModule::unload);
     }
 
     @Override

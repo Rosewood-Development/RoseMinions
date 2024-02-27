@@ -5,6 +5,8 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.MinionItem;
+import dev.rosewood.roseminions.minion.config.SettingsContainerConfig;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.module.BeaconModule;
 import dev.rosewood.roseminions.minion.module.BeeKeeperModule;
@@ -22,7 +24,7 @@ import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.ShearerModule;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +45,13 @@ public class MinionModuleManager extends Manager implements Listener {
         this.registeredModules = new HashMap<>();
 
         Bukkit.getPluginManager().registerEvents(this, this.rosePlugin);
+
+        // Some classes that store settings other than modules need to be statically initialized
+        try {
+            Class.forName(MinionItem.class.getName());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
     }
 
     @Override
@@ -83,15 +92,11 @@ public class MinionModuleManager extends Manager implements Listener {
         return this.registeredModules.containsKey(name.toLowerCase());
     }
 
-    public SettingsContainer getSectionSettings(String name, ConfigurationSection section) {
+    public SettingsContainerConfig getSectionSettings(String name, ConfigurationSection section) {
         RegisteredMinionModule<?> registeredModule = this.registeredModules.get(name);
-        if (registeredModule == null)
-            return null;
-
-        SettingsContainer settingsContainer = new SettingsContainer(registeredModule.moduleClass());
-        settingsContainer.loadDefaultsFromConfig(section);
-
-        return settingsContainer;
+        if (registeredModule != null)
+            return new SettingsContainerConfig(registeredModule.moduleClass(), section);
+        return null;
     }
 
     private void createAndLoadModuleFile(String name, RegisteredMinionModule<?> registeredModule) {
@@ -103,7 +108,13 @@ public class MinionModuleManager extends Manager implements Listener {
         boolean changed = !file.exists();
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        for (SettingAccessor<?> accessor : SettingsContainer.REGISTERED_SETTINGS.get(registeredModule.moduleClass())) {
+        try {
+            Class.forName(registeredModule.moduleClass().getName());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
+
+        for (SettingAccessor<?> accessor : SettingsRegistry.REGISTERED_SETTINGS.get(registeredModule.moduleClass())) {
             if (!config.contains(accessor.getKey())) {
                 accessor.write(config);
                 changed = true;

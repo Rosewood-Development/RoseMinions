@@ -4,7 +4,7 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.MinionData;
+import dev.rosewood.roseminions.minion.config.MinionConfig;
 import dev.rosewood.roseminions.util.MinionUtils;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
@@ -48,18 +48,18 @@ public class MinionPlaceListener implements Listener {
             if (minionRank == null)
                 return;
 
-            MinionData minionData = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(minionId);
-            if (minionData == null) {
+            MinionConfig minionConfig = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(minionId);
+            if (minionConfig == null) {
                 event.getPlayer().sendMessage("Invalid minion ID: " + minionId);
                 return;
             }
 
-            if (minionRank < 0 || minionRank > minionData.getMaxRank()) {
+            if (minionRank < 0 || minionRank > minionConfig.getMaxRank()) {
                 event.getPlayer().sendMessage("Invalid minion rank: " + minionRank);
                 return;
             }
 
-            Minion minion = new Minion(minionData, minionRank, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation());
+            Minion minion = new Minion(minionConfig, minionRank, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation());
             minionManager.registerMinion(minion);
         } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY)) {
             event.setCancelled(true);
@@ -72,8 +72,7 @@ public class MinionPlaceListener implements Listener {
             minionManager.registerMinion(minion);
         }
 
-        if (event.getPlayer().getGameMode() != org.bukkit.GameMode.CREATIVE)
-            itemStack.setAmount(itemStack.getAmount() - 1);
+        itemStack.setAmount(itemStack.getAmount() - 1);
     }
 
 }

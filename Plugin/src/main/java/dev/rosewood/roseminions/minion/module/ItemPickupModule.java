@@ -5,8 +5,7 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
 import java.util.Optional;
@@ -22,13 +21,13 @@ public class ItemPickupModule extends MinionModule {
     public static final SettingAccessor<Long> PICKUP_FREQUENCY;
 
     static {
-        RADIUS = SettingsContainer.defineSetting(ItemPickupModule.class, SettingSerializers.INTEGER, "radius", 5, "The radius in which to pick up items");
-        PICKUP_FREQUENCY = SettingsContainer.defineSetting(ItemPickupModule.class, SettingSerializers.LONG, "pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)");
+        RADIUS = SettingsRegistry.defineInteger(ItemPickupModule.class, "radius", 5, "The radius in which to pick up items");
+        PICKUP_FREQUENCY = SettingsRegistry.defineLong(ItemPickupModule.class, "pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)");
 
-        SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_TITLE, "Item Pickup Module");
-        SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON, Material.HOPPER);
-        SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Item Pickup Module");
-        SettingsContainer.redefineSetting(ItemPickupModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(ItemPickupModule.class, MinionModule.GUI_TITLE, "Item Pickup Module");
+        SettingsRegistry.redefineEnum(ItemPickupModule.class, MinionModule.GUI_ICON, Material.HOPPER);
+        SettingsRegistry.redefineString(ItemPickupModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Item Pickup Module");
+        SettingsRegistry.redefineStringList(ItemPickupModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastPickupTime;

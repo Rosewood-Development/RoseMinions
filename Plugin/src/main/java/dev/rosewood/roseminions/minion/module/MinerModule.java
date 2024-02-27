@@ -9,13 +9,13 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -36,33 +36,34 @@ public class MinerModule extends MinionModule {
     public static final SettingAccessor<List<Material>> BLACKLISTED_BLOCKS;
 
     static {
-        MINING_DIRECTION = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofEnum(BlockFace.class), "mining-direction", BlockFace.SELF, "The direction in which to mine blocks");
-        MINING_DISTANCE = SettingsContainer.defineHiddenSetting(MinerModule.class, SettingSerializers.INTEGER, "mining-distance", 1);
-        MIN_MINING_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "min-mining-distance", 1, "The minimum distance in which to mine blocks");
-        MAX_MINING_DISTANCE = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "max-mining-distance", 5, "The maximum distance in which to mine blocks");
-        MINING_HEIGHT = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.INTEGER, "mining-height", 1, "The height in which to mine blocks up and down from the minion", "1 = only mine the same y level as the minion)");
-        MINING_FREQUENCY = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.LONG, "mining-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
-        BLACKLISTED_BLOCKS = SettingsContainer.defineSetting(MinerModule.class, SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine");
+        MINING_DIRECTION = SettingsRegistry.defineEnum(MinerModule.class, "mining-direction", BlockFace.SELF, "The direction in which to mine blocks");
+        MINING_DISTANCE = SettingsRegistry.defineHiddenSetting(MinerModule.class, SettingSerializers.INTEGER, "mining-distance", () -> 1);
+        MIN_MINING_DISTANCE = SettingsRegistry.defineInteger(MinerModule.class, "min-mining-distance", 1, "The minimum distance in which to mine blocks");
+        MAX_MINING_DISTANCE = SettingsRegistry.defineInteger(MinerModule.class, "max-mining-distance", 5, "The maximum distance in which to mine blocks");
+        MINING_HEIGHT = SettingsRegistry.defineInteger(MinerModule.class, "mining-height", 1, "The height in which to mine blocks up and down from the minion", "1 = only mine the same y level as the minion)");
+        MINING_FREQUENCY = SettingsRegistry.defineLong(MinerModule.class, "mining-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
+        BLACKLISTED_BLOCKS = SettingsRegistry.defineSetting(MinerModule.class, SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", () -> List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine");
 
-        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
-        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
-        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Miner Module");
-        SettingsContainer.redefineSetting(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
+        SettingsRegistry.redefineEnum(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
+        SettingsRegistry.redefineString(MinerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Miner Module");
+        SettingsRegistry.redefineStringList(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastMineTime;
 
     // BlockFace & Textured Direction
-    private final Map<BlockFace, String> directions = new LinkedHashMap<>() {{
-        this.put(BlockFace.NORTH_WEST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1NDI2YTMzZGY1OGI0NjVmMDYwMWRkOGI5YmVjMzY5MGIyMTkzZDFmOTUwM2MyY2FhYjc4ZjZjMjQzOCJ9fX0=");
-        this.put(BlockFace.NORTH, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzA0MGZlODM2YTZjMmZiZDJjN2E5YzhlYzZiZTUxNzRmZGRmMWFjMjBmNTVlMzY2MTU2ZmE1ZjcxMmUxMCJ9fX0=");
-        this.put(BlockFace.NORTH_EAST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTBlMGE0ZDQ4Y2Q4MjlhNmQ1ODY4OTA5ZDY0M2ZhNGFmZmQzOWU4YWU2Y2FhZjZlYzc5NjA5Y2Y3NjQ5YjFjIn19fQ==");
-        this.put(BlockFace.WEST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==");
-        this.put(BlockFace.EAST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NGQxNzhlZDIyYmYifX19");
-        this.put(BlockFace.SOUTH_WEST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzU0Y2U4MTU3ZTcxZGNkNWI2YjE2NzRhYzViZDU1NDkwNzAyMDI3YzY3NWU1Y2RjZWFjNTVkMmZiYmQ1YSJ9fX0=");
-        this.put(BlockFace.SOUTH, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzQzNzM0NmQ4YmRhNzhkNTI1ZDE5ZjU0MGE5NWU0ZTc5ZGFlZGE3OTVjYmM1YTEzMjU2MjM2MzEyY2YifX19");
-        this.put(BlockFace.SOUTH_EAST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzVjYmRiMjg5OTFhMTZlYjJjNzkzNDc0ZWY3ZDBmNDU4YTVkMTNmZmZjMjgzYzRkNzRkOTI5OTQxYmIxOTg5In19fQ==");
-    }};
+    private static final int[] SLOT_MAPPING = { 0, 1, 2, 9, 11, 18, 19, 20 };
+    private static final Map<BlockFace, String> DIRECTION_TEXTURES = Map.of(
+        BlockFace.NORTH_WEST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1NDI2YTMzZGY1OGI0NjVmMDYwMWRkOGI5YmVjMzY5MGIyMTkzZDFmOTUwM2MyY2FhYjc4ZjZjMjQzOCJ9fX0=",
+        BlockFace.NORTH, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzA0MGZlODM2YTZjMmZiZDJjN2E5YzhlYzZiZTUxNzRmZGRmMWFjMjBmNTVlMzY2MTU2ZmE1ZjcxMmUxMCJ9fX0=",
+        BlockFace.NORTH_EAST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTBlMGE0ZDQ4Y2Q4MjlhNmQ1ODY4OTA5ZDY0M2ZhNGFmZmQzOWU4YWU2Y2FhZjZlYzc5NjA5Y2Y3NjQ5YjFjIn19fQ==",
+        BlockFace.WEST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==",
+        BlockFace.EAST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NGQxNzhlZDIyYmYifX19",
+        BlockFace.SOUTH_WEST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzU0Y2U4MTU3ZTcxZGNkNWI2YjE2NzRhYzViZDU1NDkwNzAyMDI3YzY3NWU1Y2RjZWFjNTVkMmZiYmQ1YSJ9fX0=",
+        BlockFace.SOUTH, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzQzNzM0NmQ4YmRhNzhkNTI1ZDE5ZjU0MGE5NWU0ZTc5ZGFlZGE3OTVjYmM1YTEzMjU2MjM2MzEyY2YifX19",
+        BlockFace.SOUTH_EAST, "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzVjYmRiMjg5OTFhMTZlYjJjNzkzNDc0ZWY3ZDBmNDU4YTVkMTNmZmZjMjgzYzRkNzRkOTI5OTQxYmIxOTg5In19fQ=="
+    );
 
     public MinerModule(Minion minion) {
         super(minion, DefaultMinionModules.MINER);
@@ -137,26 +138,15 @@ public class MinerModule extends MinionModule {
         // TODO: Add option for players to set a custom mining distance (implement min/max distance)
         // TODO (maybe) a uno wild card that randomly switches direction all the time for chaos
 
-        // Mayhaps find a better way to do this
         // Compass direction selector
-        List<Integer> slots = List.of(0, 1, 2, 9, 11, 18, 19, 20);
-        int slotIndex = 0;
-        for (BlockFace face : this.directions.keySet()) {
-            String texture = this.directions.getOrDefault(face, null);
-            if (texture == null)
-                continue;
-
-            mainScreen.addButtonAt(slots.get(slotIndex), GuiFactory.createButton()
-                    .setIcon(GuiFactory.createIcon(Material.PLAYER_HEAD, itemMeta -> SkullUtils.setSkullTexture((SkullMeta) itemMeta, texture)))
-                    .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Mine " + face.name().toLowerCase().replace("_", " ")))
-                    .setClickAction(event -> {
-                        this.settings.set(MINING_DIRECTION, face);
-                        return ClickAction.CLOSE;
-                    }));
-
-            slotIndex++;
-
-        }
+        AtomicInteger slotIndex = new AtomicInteger(0);
+        DIRECTION_TEXTURES.forEach((face, texture) -> mainScreen.addButtonAt(SLOT_MAPPING[slotIndex.getAndIncrement()], GuiFactory.createButton()
+                .setIcon(GuiFactory.createIcon(Material.PLAYER_HEAD, itemMeta -> SkullUtils.setSkullTexture((SkullMeta) itemMeta, texture)))
+                .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Mine " + face.name().toLowerCase().replace("_", " ")))
+                .setClickAction(event -> {
+                    this.settings.set(MINING_DIRECTION, face);
+                    return ClickAction.CLOSE;
+                })));
 
         this.addBackButton(mainScreen);
         this.guiContainer.addScreen(mainScreen);

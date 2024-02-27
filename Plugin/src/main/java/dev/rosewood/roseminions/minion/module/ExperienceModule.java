@@ -11,7 +11,8 @@ import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
+import dev.rosewood.roseminions.util.EntitySpawnUtil;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
 import java.util.List;
@@ -39,15 +40,15 @@ public class ExperienceModule extends MinionModule {
     public static final SettingAccessor<Integer> RADIUS;
 
     static {
-        STORED_XP = SettingsContainer.defineHiddenSetting(ExperienceModule.class, SettingSerializers.INTEGER, "stored-xp", 0);
-        MAX_EXP = SettingsContainer.defineSetting(ExperienceModule.class, SettingSerializers.INTEGER, "max-exp", 30970, "The maximum amount of XP the minion can store", "");
-        UPDATE_FREQUENCY = SettingsContainer.defineSetting(ExperienceModule.class, SettingSerializers.LONG, "update-frequency", 3000L, "How often the minion will update (in milliseconds)");
-        RADIUS = SettingsContainer.defineSetting(ExperienceModule.class, SettingSerializers.INTEGER, "radius", 5, "The radius for the minion to search for items");
+        STORED_XP = SettingsRegistry.defineHiddenSetting(ExperienceModule.class, SettingSerializers.INTEGER, "stored-xp", () -> 0);
+        MAX_EXP = SettingsRegistry.defineInteger(ExperienceModule.class, "max-exp", 30970, "The maximum amount of XP the minion can store", "");
+        UPDATE_FREQUENCY = SettingsRegistry.defineLong(ExperienceModule.class, "update-frequency", 3000L, "How often the minion will update (in milliseconds)");
+        RADIUS = SettingsRegistry.defineInteger(ExperienceModule.class, "radius", 5, "The radius for the minion to search for items");
 
-        SettingsContainer.redefineSetting(ExperienceModule.class, MinionModule.GUI_TITLE, "Experience Module");
-        SettingsContainer.redefineSetting(ExperienceModule.class, MinionModule.GUI_ICON, Material.EXPERIENCE_BOTTLE);
-        SettingsContainer.redefineSetting(ExperienceModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Experience Module");
-        SettingsContainer.redefineSetting(ExperienceModule.class, MinionModule.GUI_ICON_LORE, List.of(
+        SettingsRegistry.redefineString(ExperienceModule.class, MinionModule.GUI_TITLE, "Experience Module");
+        SettingsRegistry.redefineEnum(ExperienceModule.class, MinionModule.GUI_ICON, Material.EXPERIENCE_BOTTLE);
+        SettingsRegistry.redefineString(ExperienceModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Experience Module");
+        SettingsRegistry.redefineStringList(ExperienceModule.class, MinionModule.GUI_ICON_LORE, List.of(
                 "", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect XP",
                 MinionUtils.SECONDARY_COLOR + "and store it for later use.",
                 "",
@@ -193,7 +194,7 @@ public class ExperienceModule extends MinionModule {
         }
 
         // This is a fallback for when we don't have paper
-        this.minion.getWorld().spawn(this.minion.getCenterLocation(), ExperienceOrb.class, experienceOrb -> {
+        EntitySpawnUtil.spawn(this.minion.getCenterLocation(), ExperienceOrb.class, experienceOrb -> {
             experienceOrb.setExperience(storedExp);
             experienceOrb.getPersistentDataContainer().set(this.xpKey, PersistentDataType.INTEGER, 1);
         });

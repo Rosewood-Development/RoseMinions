@@ -6,8 +6,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,16 +25,15 @@ public class BeeKeeperModule extends MinionModule {
     public static final SettingAccessor<Boolean> USE_BOTTLES;
 
     static {
-        RADIUS = SettingsContainer.defineSetting(BeeKeeperModule.class, SettingSerializers.INTEGER, "radius", 3, "The radius for the beekeeper to search for bee hives");
-        FARMING_FREQUENCY = SettingsContainer.defineSetting(BeeKeeperModule.class, SettingSerializers.LONG, "farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)");
-        FARM_UPDATE_FREQUENCY = SettingsContainer.defineSetting(BeeKeeperModule.class, SettingSerializers.LONG, "farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)");
-        USE_BOTTLES = SettingsContainer.defineSetting(BeeKeeperModule.class, SettingSerializers.BOOLEAN, "use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey");
+        RADIUS = SettingsRegistry.defineInteger(BeeKeeperModule.class, "radius", 3, "The radius for the beekeeper to search for bee hives");
+        FARMING_FREQUENCY = SettingsRegistry.defineLong(BeeKeeperModule.class, "farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)");
+        FARM_UPDATE_FREQUENCY = SettingsRegistry.defineLong(BeeKeeperModule.class, "farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)");
+        USE_BOTTLES = SettingsRegistry.defineBoolean(BeeKeeperModule.class, "use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey");
 
-        SettingsContainer.redefineSetting(BeeKeeperModule.class, MinionModule.GUI_TITLE, "Bee Keeper Module");
-        SettingsContainer.redefineSetting(BeeKeeperModule.class, MinionModule.GUI_ICON, Material.BEE_NEST);
-        SettingsContainer.redefineSetting(BeeKeeperModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Bee Keeper Module");
-        SettingsContainer.redefineSetting(BeeKeeperModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey from bee hives.", MinionUtils.SECONDARY_COLOR + "Click to open."));
-
+        SettingsRegistry.redefineString(BeeKeeperModule.class, MinionModule.GUI_TITLE, "Bee Keeper Module");
+        SettingsRegistry.redefineEnum(BeeKeeperModule.class, MinionModule.GUI_ICON, Material.BEE_NEST);
+        SettingsRegistry.redefineString(BeeKeeperModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Bee Keeper Module");
+        SettingsRegistry.redefineStringList(BeeKeeperModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey from bee hives.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastHiveCheckTime;

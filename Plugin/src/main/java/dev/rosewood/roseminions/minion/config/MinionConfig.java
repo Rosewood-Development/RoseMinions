@@ -1,27 +1,25 @@
-package dev.rosewood.roseminions.minion;
+package dev.rosewood.roseminions.minion.config;
 
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.bukkit.configuration.ConfigurationSection;
 
-public class MinionData {
+/**
+ * Represents a loaded configuration file for a minion
+ */
+public class MinionConfig {
 
     private final String id;
-    private final List<MinionRank> ranks;
-    private final MinionItem item;
+    private final List<RankConfig> ranks;
 
-    public MinionData(CommentedFileConfiguration config) {
+    public MinionConfig(CommentedFileConfiguration config) {
         this.ranks = new ArrayList<>();
-        this.item = new MinionItem();
 
         String id = config.getString("id");
         if (id == null)
@@ -54,27 +52,29 @@ public class MinionData {
         }
     }
 
-    private MinionRank loadRank(int rank, ConfigurationSection section) {
-        SettingsContainer itemSettings;
-        Map<String, ModuleData> moduleData = new HashMap<>();
+    private RankConfig loadRank(int rank, ConfigurationSection section) {
+        Map<String, ModuleConfig> moduleData = new HashMap<>();
 
         // Load settings from previous rank
+        SettingsContainerConfig previousRankItemSettings = null;
         if (rank > 0) {
-            MinionRank previousRank = this.ranks.get(rank - 1);
-            itemSettings = previousRank.getItemSettings().copy();
-            previousRank.getModuleData().forEach((module, data) -> moduleData.put(module, data.copy()));
-        } else {
-            itemSettings = new SettingsContainer(MinionItem.class);
+            RankConfig previousRank = this.ranks.get(rank - 1);
+            previousRankItemSettings = previousRank.itemSettings().copy();
+            previousRank.moduleData().forEach((module, data) -> moduleData.put(module, data.copy()));
         }
 
         ConfigurationSection itemSection = section.getConfigurationSection("item");
-        if (itemSection != null)
-            itemSettings.loadDefaultsFromConfig(itemSection);
+        SettingsContainerConfig itemSettings = new SettingsContainerConfig(MinionItem.class, itemSection);
+
+        if (previousRankItemSettings != null) {
+            previousRankItemSettings.merge(itemSettings);
+            itemSettings = previousRankItemSettings;
+        }
 
         MinionModuleManager minionModuleManager = RoseMinions.getInstance().getManager(MinionModuleManager.class);
         ConfigurationSection modulesSection = section.getConfigurationSection("modules");
         this.getModules(modulesSection, minionModuleManager).values().forEach(data -> {
-            ModuleData existingData = moduleData.get(data.id());
+            ModuleConfig existingData = moduleData.get(data.id());
             if (existingData != null) {
                 existingData.merge(data);
             } else {
@@ -82,14 +82,14 @@ public class MinionData {
             }
         });
 
-        return new MinionRank(rank, this, itemSettings, moduleData);
+        return new RankConfig(rank, itemSettings, moduleData);
     }
 
-    private Map<String, ModuleData> getModules(ConfigurationSection section, MinionModuleManager minionModuleManager) {
+    private Map<String, ModuleConfig> getModules(ConfigurationSection section, MinionModuleManager minionModuleManager) {
         if (section == null)
             return new HashMap<>();
 
-        Map<String, ModuleData> moduleData = new HashMap<>();
+        Map<String, ModuleConfig> moduleData = new HashMap<>();
         for (String key : section.getKeys(false)) {
             key = key.toLowerCase();
             if (!minionModuleManager.isValidModule(key)) {
@@ -103,9 +103,9 @@ public class MinionData {
                 continue;
             }
 
-            SettingsContainer settingsContainer = minionModuleManager.getSectionSettings(key, moduleSection);
-            Map<String, ModuleData> submodules = this.getModules(moduleSection.getConfigurationSection("sub-modules"), minionModuleManager);
-            moduleData.put(key, new ModuleData(key, settingsContainer, submodules));
+            SettingsContainerConfig settingsContainer = minionModuleManager.getSectionSettings(key, moduleSection);
+            Map<String, ModuleConfig> submodules = this.getModules(moduleSection.getConfigurationSection("sub-modules"), minionModuleManager);
+            moduleData.put(key, new ModuleConfig(key, settingsContainer, submodules));
         }
         return moduleData;
     }
@@ -118,14 +118,10 @@ public class MinionData {
         return this.ranks.size() - 1;
     }
 
-    public MinionRank getRank(int rank) {
+    public RankConfig getRank(int rank) {
         if (rank < 0 || rank >= this.ranks.size())
             throw new IllegalArgumentException("Invalid rank " + rank + " for minion " + this.id);
         return this.ranks.get(rank);
-    }
-
-    public MinionItem getItem() {
-        return item;
     }
 
 }

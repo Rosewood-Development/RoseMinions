@@ -1,15 +1,11 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
+import dev.rosewood.roseminions.minion.config.SettingsContainerConfig;
 import dev.rosewood.roseminions.model.DataSerializable;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.configuration.ConfigurationSection;
 
 public class SettingsContainer implements DataSerializable {
-
-    public static final Multimap<Class<?>, SettingAccessor<?>> REGISTERED_SETTINGS = MultimapBuilder.hashKeys().arrayListValues().build();
 
     private final Class<?> clazz;
     private final Map<String, SettingItem<?>> settings;
@@ -21,37 +17,30 @@ public class SettingsContainer implements DataSerializable {
         this.loadDefaults(this.clazz);
     }
 
-    public static <T> SettingAccessor<T> defineSetting(Class<?> clazz, SettingSerializer<T> serializer, String name, T defaultValue, String... comments) {
-        String key = name.toLowerCase();
-        SettingAccessor<T> accessor = new SettingAccessor<>(serializer, key, defaultValue, comments);
-        if (REGISTERED_SETTINGS.containsEntry(clazz, accessor))
-            throw new IllegalArgumentException("Setting " + accessor.getKey() + " is already defined for class " + clazz.getSimpleName());
+    public SettingsContainer(SettingsContainerConfig config) {
+        this(config.getSettingsClass());
 
-        REGISTERED_SETTINGS.put(clazz, accessor);
-        return accessor;
+        config.getSettingDefaultValueSuppliers().forEach((key, supplier) -> {
+            SettingItem<?> settingItem = this.settings.get(key);
+            if (settingItem != null) {
+                SettingItem<?> newSettingItem = new SettingItem<>(settingItem.getAccessor(), forceCast(supplier.get()));
+                this.settings.put(key, newSettingItem);
+            }
+        });
     }
 
-    public static <T> SettingAccessor<T> defineHiddenSetting(Class<?> clazz, SettingSerializer<T> serializer, String name, T defaultValue) {
-        String key = name.toLowerCase();
-        SettingAccessor<T> accessor = new SettingAccessor<>(serializer, key, defaultValue);
-        if (REGISTERED_SETTINGS.containsEntry(clazz, accessor))
-            throw new IllegalArgumentException("Setting " + accessor.getKey() + " is already defined for class " + clazz.getSimpleName());
-
-        REGISTERED_SETTINGS.put(clazz, accessor);
-        return accessor;
-    }
-
-    public static <C, T> void redefineSetting(Class<C> clazz, SettingAccessor<T> accessor, T defaultValue) {
-        REGISTERED_SETTINGS.put(clazz, accessor.copy(defaultValue));
+    @SuppressWarnings("unchecked")
+    private static <T, R> R forceCast(T value) {
+        return (R) value;
     }
 
     public <T> void loadDefaults(Class<T> clazz) {
-        for (SettingAccessor<?> accessor : REGISTERED_SETTINGS.get(clazz))
+        for (SettingAccessor<?> accessor : SettingsRegistry.REGISTERED_SETTINGS.get(clazz))
             this.loadDefault(accessor);
     }
 
     public <T> void loadDefault(SettingAccessor<T> accessor) {
-        SettingItem<T> settingItem = new SettingItem<>(accessor.getSerializer(), accessor.getDefaultValue());
+        SettingItem<T> settingItem = new SettingItem<>(accessor, accessor.getDefaultValue());
         this.settings.put(accessor.getKey(), settingItem);
     }
 
@@ -69,25 +58,6 @@ public class SettingsContainer implements DataSerializable {
         settingItem.setValue(value);
     }
 
-    public <T> void loadDefaultsFromConfig(ConfigurationSection section) {
-        for (SettingAccessor<?> accessor : REGISTERED_SETTINGS.get(this.clazz)) {
-            @SuppressWarnings("unchecked")
-            SettingAccessor<T> typedAccessor = (SettingAccessor<T>) accessor;
-            if (!typedAccessor.isHidden() && section.contains(typedAccessor.getKey())) {
-                SettingItem<T> settingItem = new SettingItem<>(typedAccessor.getSerializer(), typedAccessor.read(section));
-                this.settings.put(accessor.getKey(), settingItem);
-            }
-        }
-    }
-
-    public void merge(SettingsContainer other) {
-        for (Map.Entry<String, SettingItem<?>> entry : other.settings.entrySet()) {
-            SettingItem<?> item = entry.getValue();
-            if (this.settings.containsKey(entry.getKey()))
-                this.settings.put(entry.getKey(), item.copy());
-        }
-    }
-
     private <T> SettingItem<T> getItem(SettingAccessor<T> accessor) {
         return this.getItem(accessor.getKey());
     }
@@ -97,19 +67,13 @@ public class SettingsContainer implements DataSerializable {
         return (SettingItem<T>) this.settings.get(key);
     }
 
-    public SettingsContainer copy() {
-        SettingsContainer copy = new SettingsContainer(this.clazz);
-        copy.merge(this);
-        return copy;
-    }
-
     @Override
     public byte[] serialize() {
         return DataSerializable.write(outputStream -> {
             // Only write settings that have changed from their default values
             Map<String, SettingItem<?>> changedSettings = this.settings.entrySet()
                     .stream()
-                    .filter(entry -> !entry.getValue().isDefaultValue())
+                    .filter(entry -> entry.getValue().isModified())
                     .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
             outputStream.writeInt(changedSettings.size());
             for (Map.Entry<String, SettingItem<?>> entry : changedSettings.entrySet()) {
@@ -137,53 +101,14 @@ public class SettingsContainer implements DataSerializable {
         });
     }
 
-    public static class SettingItem<T> implements DataSerializable {
-
-        private final SettingSerializer<T> serializer;
-        private T value;
-        private boolean modified;
-
-        public SettingItem(SettingSerializer<T> serializer, T value) {
-            this.serializer = serializer;
-            this.value = value;
-        }
-
-        public T getValue() {
-            return this.value;
-        }
-
-        public void setValue(T value) {
-            this.value = value;
-            this.modified = true;
-        }
-
-        public SettingItem<T> copy() {
-            return new SettingItem<>(this.serializer, this.value);
-        }
-
-        public boolean isDefaultValue() {
-            return !this.modified;
-        }
-
-        @Override
-        public byte[] serialize() {
-            return DataSerializable.write(outputStream -> {
-                byte[] valueBytes = this.serializer.write(this.value);
-                outputStream.writeInt(valueBytes.length);
-                outputStream.write(valueBytes);
-            });
-        }
-
-        @Override
-        public void deserialize(byte[] input) {
-            DataSerializable.read(input, inputStream -> {
-                int valueLength = inputStream.readInt();
-                byte[] valueBytes = new byte[valueLength];
-                inputStream.readFully(valueBytes);
-                this.value = this.serializer.read(valueBytes);
-            });
-        }
-
+    public void setDefaults(SettingsContainerConfig settings) {
+        settings.getSettingDefaultValueSuppliers().forEach((key, supplier) -> {
+            SettingItem<?> settingItem = this.settings.get(key);
+            if (settingItem != null) {
+                SettingItem<?> newSettingItem = new SettingItem<>(settingItem.getAccessor(), forceCast(supplier.get()));
+                this.settings.put(key, newSettingItem);
+            }
+        });
     }
 
 }

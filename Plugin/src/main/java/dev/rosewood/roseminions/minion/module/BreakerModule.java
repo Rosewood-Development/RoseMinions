@@ -6,7 +6,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,20 +23,17 @@ public class BreakerModule extends MinionModule {
     public static final SettingAccessor<Integer> MAX_BLOCKS;
     public static final SettingAccessor<Material[]> BLOCKS_TO_BREAK;
 
-    // Material[] materials = new Material[] { Material.STONE, Material.DIRT, Material.GRASS_BLOCK };
-
     static {
-        RADIUS = SettingsContainer.defineSetting(BreakerModule.class, SettingSerializers.INTEGER, "radius", 5, "The radius in which to break blocks");
-        BREAK_FREQUENCY = SettingsContainer.defineSetting(BreakerModule.class, SettingSerializers.LONG, "break-frequency", 1000L, "How often blocks will be broken (in milliseconds)");
-        BLOCKS_UPDATE_FREQUENCY = SettingsContainer.defineSetting(BreakerModule.class, SettingSerializers.LONG, "blocks-update-frequency", 15000L, "Frequency between checking for new blocks. (in milliseconds)");
-        MAX_BLOCKS = SettingsContainer.defineSetting(BreakerModule.class, SettingSerializers.INTEGER, "max-blocks", 5, "The maximum number of blocks to break at once");
-        BLOCKS_TO_BREAK = SettingsContainer.defineHiddenSetting(BreakerModule.class, SettingSerializers.ofArray(SettingSerializers.MATERIAL), "blocks-to-break", new Material[]{Material.STONE, Material.DIRT, Material.GRASS_BLOCK});
+        RADIUS = SettingsRegistry.defineInteger(BreakerModule.class, "radius", 5, "The radius in which to break blocks");
+        BREAK_FREQUENCY = SettingsRegistry.defineLong(BreakerModule.class, "break-frequency", 1000L, "How often blocks will be broken (in milliseconds)");
+        BLOCKS_UPDATE_FREQUENCY = SettingsRegistry.defineLong(BreakerModule.class, "blocks-update-frequency", 15000L, "Frequency between checking for new blocks. (in milliseconds)");
+        MAX_BLOCKS = SettingsRegistry.defineInteger(BreakerModule.class, "max-blocks", 5, "The maximum number of blocks to break at once");
+        BLOCKS_TO_BREAK = SettingsRegistry.defineHiddenSetting(BreakerModule.class, SettingSerializers.ofArray(SettingSerializers.MATERIAL), "blocks-to-break", () -> new Material[]{Material.STONE, Material.DIRT, Material.GRASS_BLOCK});
 
-        SettingsContainer.redefineSetting(BreakerModule.class, MinionModule.GUI_TITLE, "Breaker Module");
-        SettingsContainer.redefineSetting(BreakerModule.class, MinionModule.GUI_ICON, Material.TNT);
-        SettingsContainer.redefineSetting(BreakerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Breaker Module");
-        SettingsContainer.redefineSetting(BreakerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Breaks blocks in a radius", MinionUtils.SECONDARY_COLOR + "around the minion."));
-
+        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_TITLE, "Breaker Module");
+        SettingsRegistry.redefineEnum(BreakerModule.class, MinionModule.GUI_ICON, Material.TNT);
+        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Breaker Module");
+        SettingsRegistry.redefineStringList(BreakerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Breaks blocks in a radius", MinionUtils.SECONDARY_COLOR + "around the minion."));
     }
 
     private long lastBreakTime;

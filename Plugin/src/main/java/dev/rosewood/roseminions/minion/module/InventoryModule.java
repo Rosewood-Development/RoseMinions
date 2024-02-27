@@ -10,7 +10,7 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Arrays;
 import java.util.List;
@@ -25,13 +25,13 @@ public class InventoryModule extends MinionModule {
     public static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS;
 
     static {
-        INVENTORY_SIZE = SettingsContainer.defineSetting(InventoryModule.class, SettingSerializers.INTEGER, "inventory-size", 27, "How many individual items can be stored");
-        INVENTORY_CONTENTS = SettingsContainer.defineHiddenSetting(InventoryModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "inventory-contents", new ItemStack[27]);
+        INVENTORY_SIZE = SettingsRegistry.defineInteger(InventoryModule.class, "inventory-size", 27, "How many individual items can be stored");
+        INVENTORY_CONTENTS = SettingsRegistry.defineSetting(InventoryModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "inventory-contents", () -> new ItemStack[27]);
 
-        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_TITLE, "Inventory Module");
-        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON, Material.CHEST);
-        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Inventory Module");
-        SettingsContainer.redefineSetting(InventoryModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(InventoryModule.class, MinionModule.GUI_TITLE, "Inventory Module");
+        SettingsRegistry.redefineEnum(InventoryModule.class, MinionModule.GUI_ICON, Material.CHEST);
+        SettingsRegistry.redefineString(InventoryModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Inventory Module");
+        SettingsRegistry.redefineStringList(InventoryModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     public InventoryModule(Minion minion) {

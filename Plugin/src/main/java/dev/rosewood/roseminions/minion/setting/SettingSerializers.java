@@ -111,9 +111,8 @@ public final class SettingSerializers {
             config.set(key + ".chance", value.chance());
             config.set(key + ".participants", value.participants());
             config.set(key + ".radius", value.radius());
-            for (int i = 0; i < value.messages().size(); i++) {
+            for (int i = 0; i < value.messages().size(); i++)
                 config.set(key + ".messages." + (i + 1), value.messages().get(i));
-            }
         }
 
         @Override

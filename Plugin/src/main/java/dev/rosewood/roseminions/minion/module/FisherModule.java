@@ -6,7 +6,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
@@ -37,19 +37,19 @@ public class FisherModule extends MinionModule {
     public static final SettingAccessor<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS;
 
     static {
-        RADIUS = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.INTEGER, "radius", 5, "How far away the minion will search for water");
-        FISH_MIN_DELAY = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.LONG, "fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)");
-        FISH_MAX_DELAY = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.LONG, "fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)");
-        FISH_LURE_DELAY_OFFSET = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.LONG, "fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)");
-        REEL_IN_MIN_DELAY = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.LONG, "reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
-        REEL_IN_MAX_DELAY = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.LONG, "reel-in-max-delay", 4000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
-        WATER_LOOKUP_ATTEMPTS = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.INTEGER, "water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up");
-        TOOL_ENCHANTMENTS = SettingsContainer.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", Map.of(Enchantment.LUCK, 3, Enchantment.LURE, 3), "The enchantments to apply to the fishing rod");
+        RADIUS = SettingsRegistry.defineInteger(FisherModule.class, "radius", 5, "How far away the minion will search for water");
+        FISH_MIN_DELAY = SettingsRegistry.defineLong(FisherModule.class, "fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)");
+        FISH_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)");
+        FISH_LURE_DELAY_OFFSET = SettingsRegistry.defineLong(FisherModule.class, "fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)");
+        REEL_IN_MIN_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
+        REEL_IN_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-max-delay", 4000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
+        WATER_LOOKUP_ATTEMPTS = SettingsRegistry.defineInteger(FisherModule.class, "water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up");
+        TOOL_ENCHANTMENTS = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(Enchantment.LUCK, 3, Enchantment.LURE, 3), "The enchantments to apply to the fishing rod");
 
-        SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_TITLE, "Fisher Module");
-        SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_ICON, Material.FISHING_ROD);
-        SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Fisher Module");
-        SettingsContainer.redefineSetting(FisherModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(FisherModule.class, MinionModule.GUI_TITLE, "Fisher Module");
+        SettingsRegistry.redefineEnum(FisherModule.class, MinionModule.GUI_ICON, Material.FISHING_ROD);
+        SettingsRegistry.redefineString(FisherModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Fisher Module");
+        SettingsRegistry.redefineStringList(FisherModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private long lastEventTime;

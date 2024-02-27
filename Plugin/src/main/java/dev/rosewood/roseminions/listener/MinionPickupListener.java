@@ -54,7 +54,7 @@ public class MinionPickupListener implements Listener {
             byte[] data = minion.serialize();
             minionManager.destroyMinion(minion);
 
-            ItemStack itemStack = minion.getRankData().getItemStack(false);
+            ItemStack itemStack = minion.getRankData().getDisplayItemStack();
             ItemMeta itemMeta = itemStack.getItemMeta();
             if (itemMeta == null)
                 throw new IllegalStateException("ItemStack does not have any ItemMeta");

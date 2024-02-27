@@ -5,8 +5,7 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,14 +26,14 @@ public class ShearerModule extends MinionModule {
     public static final SettingAccessor<Integer> MAX_SHEEP;
 
     static {
-        RADIUS = SettingsContainer.defineSetting(ShearerModule.class, SettingSerializers.INTEGER, "radius", 3, "The radius in which to shear sheep");
-        UPDATE_FREQUENCY = SettingsContainer.defineSetting(ShearerModule.class, SettingSerializers.LONG, "update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)");
-        MAX_SHEEP = SettingsContainer.defineSetting(ShearerModule.class, SettingSerializers.INTEGER, "max-sheep", 5, "The maximum number of sheep that can be sheared at once");
+        RADIUS = SettingsRegistry.defineInteger(ShearerModule.class, "radius", 3, "The radius in which to shear sheep");
+        UPDATE_FREQUENCY = SettingsRegistry.defineLong(ShearerModule.class, "update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)");
+        MAX_SHEEP = SettingsRegistry.defineInteger(ShearerModule.class, "max-sheep", 5, "The maximum number of sheep that can be sheared at once");
 
-        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_TITLE, "Shearer Module");
-        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_ICON, Material.SHEARS);
-        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Shearer Module");
-        SettingsContainer.redefineSetting(ShearerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(ShearerModule.class, MinionModule.GUI_TITLE, "Shearer Module");
+        SettingsRegistry.redefineEnum(ShearerModule.class, MinionModule.GUI_ICON, Material.SHEARS);
+        SettingsRegistry.redefineString(ShearerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Shearer Module");
+        SettingsRegistry.redefineStringList(ShearerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     public ShearerModule(Minion minion) {

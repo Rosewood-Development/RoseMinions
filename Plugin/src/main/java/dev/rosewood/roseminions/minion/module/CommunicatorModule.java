@@ -10,19 +10,19 @@ import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.MinionConversation;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class CommunicatorModule extends MinionModule {
 
@@ -31,16 +31,16 @@ public class CommunicatorModule extends MinionModule {
     public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS;
 
     static {
-        CONVERSATION_FREQUENCY = SettingsContainer.defineSetting(CommunicatorModule.class, SettingSerializers.LONG, "conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)");
-        MESSAGE_FREQUENCY = SettingsContainer.defineSetting(CommunicatorModule.class, SettingSerializers.LONG, "message-frequency", 3000L, "How often a message will be sent (in milliseconds)");
-        CONVERSATIONS = SettingsContainer.defineSetting(CommunicatorModule.class, SettingSerializers.ofList(SettingSerializers.CONVERSATION), "conversations", List.of(
+        CONVERSATION_FREQUENCY = SettingsRegistry.defineLong(CommunicatorModule.class, "conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)");
+        MESSAGE_FREQUENCY = SettingsRegistry.defineLong(CommunicatorModule.class, "message-frequency", 3000L, "How often a message will be sent (in milliseconds)");
+        CONVERSATIONS = SettingsRegistry.defineSetting(CommunicatorModule.class, SettingSerializers.ofList(SettingSerializers.CONVERSATION), "conversations", () ->List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
         ), "The conversations that the minion can have");
 
-        SettingsContainer.redefineSetting(CommunicatorModule.class, MinionModule.GUI_TITLE, "Communicator Module");
-        SettingsContainer.redefineSetting(CommunicatorModule.class, MinionModule.GUI_ICON, Material.COMMAND_BLOCK);
-        SettingsContainer.redefineSetting(CommunicatorModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Communicator Module");
-        SettingsContainer.redefineSetting(CommunicatorModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to have", MinionUtils.SECONDARY_COLOR + "conversations with other minions."));
+        SettingsRegistry.redefineString(CommunicatorModule.class, MinionModule.GUI_TITLE, "Communicator Module");
+        SettingsRegistry.redefineEnum(CommunicatorModule.class, MinionModule.GUI_ICON, Material.COMMAND_BLOCK);
+        SettingsRegistry.redefineString(CommunicatorModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Communicator Module");
+        SettingsRegistry.redefineStringList(CommunicatorModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to have", MinionUtils.SECONDARY_COLOR + "conversations with other minions."));
     }
 
     public long lastConversation; // The last time the minion started a conversation

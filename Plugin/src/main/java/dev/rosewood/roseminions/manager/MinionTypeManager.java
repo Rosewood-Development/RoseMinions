@@ -3,7 +3,7 @@ package dev.rosewood.roseminions.manager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
-import dev.rosewood.roseminions.minion.MinionData;
+import dev.rosewood.roseminions.minion.config.MinionConfig;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,7 +14,7 @@ public class MinionTypeManager extends Manager {
 
     private static final String DIRECTORY = "minions";
 
-    private final Map<String, MinionData> minionTypes;
+    private final Map<String, MinionConfig> minionTypes;
 
     public MinionTypeManager(RosePlugin rosePlugin) {
         super(rosePlugin);
@@ -43,8 +43,8 @@ public class MinionTypeManager extends Manager {
 
             try {
                 CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
-                MinionData minionData = new MinionData(config);
-                this.minionTypes.put(minionData.getId(), minionData);
+                MinionConfig minionConfig = new MinionConfig(config);
+                this.minionTypes.put(minionConfig.getId(), minionConfig);
             } catch (Exception e) {
                 this.rosePlugin.getLogger().warning("Failed to load minion type from file " + file.getName());
                 e.printStackTrace();
@@ -57,7 +57,7 @@ public class MinionTypeManager extends Manager {
         this.minionTypes.clear();
     }
 
-    public MinionData getMinionData(String id) {
+    public MinionConfig getMinionData(String id) {
         return this.minionTypes.get(id.toLowerCase());
     }
 

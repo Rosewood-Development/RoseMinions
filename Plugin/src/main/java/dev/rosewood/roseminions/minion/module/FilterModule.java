@@ -10,7 +10,7 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Arrays;
 import java.util.List;
@@ -27,15 +27,15 @@ public class FilterModule extends MinionModule {
     public static final SettingAccessor<Boolean> MATCH_NBT;
 
     static {
-        INVENTORY_SIZE = SettingsContainer.defineSetting(FilterModule.class, SettingSerializers.INTEGER, "inventory-size", 27, "How many individual items can be stored");
-        FILTER_ITEMS = SettingsContainer.defineHiddenSetting(FilterModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "filter-items", new ItemStack[27]);
-        FILTER_TYPE = SettingsContainer.defineSetting(FilterModule.class, SettingSerializers.ofEnum(FilterType.class), "filter-type", FilterType.BLACKLIST, "The type of filter");
-        MATCH_NBT = SettingsContainer.defineSetting(FilterModule.class, SettingSerializers.BOOLEAN, "match-nbt", false, "Whether or not to match NBT data");
+        INVENTORY_SIZE = SettingsRegistry.defineInteger(FilterModule.class, "inventory-size", 27, "How many individual items can be stored for filtering");
+        FILTER_ITEMS = SettingsRegistry.defineHiddenSetting(FilterModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "filter-items", () -> new ItemStack[27]);
+        FILTER_TYPE = SettingsRegistry.defineEnum(FilterModule.class, "filter-type", FilterType.BLACKLIST, "The type of filter");
+        MATCH_NBT = SettingsRegistry.defineBoolean(FilterModule.class, "match-nbt", false, "Whether or not to match NBT data");
 
-        SettingsContainer.redefineSetting(FilterModule.class, MinionModule.GUI_TITLE, "Filter Module");
-        SettingsContainer.redefineSetting(FilterModule.class, MinionModule.GUI_ICON, Material.COMPARATOR);
-        SettingsContainer.redefineSetting(FilterModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Filter Module");
-        SettingsContainer.redefineSetting(FilterModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(FilterModule.class, MinionModule.GUI_TITLE, "Filter Module");
+        SettingsRegistry.redefineEnum(FilterModule.class, MinionModule.GUI_ICON, Material.COMPARATOR);
+        SettingsRegistry.redefineString(FilterModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Filter Module");
+        SettingsRegistry.redefineStringList(FilterModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     public FilterModule(Minion minion) {

@@ -11,12 +11,16 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.nms.NMSAdapter;
+import dev.rosewood.roseminions.util.EntitySpawnUtil;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -38,11 +42,6 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Consumer;
-
 public class AppearanceModule extends MinionModule {
 
     public static final SettingAccessor<Boolean> SMALL;
@@ -51,15 +50,15 @@ public class AppearanceModule extends MinionModule {
     public static final SettingAccessor<Double> ROTATION_SPEED;
 
     static {
-        SMALL = SettingsContainer.defineSetting(AppearanceModule.class, SettingSerializers.BOOLEAN, "small", true, "If the skull should be small");
-        TEXTURE = SettingsContainer.defineSetting(AppearanceModule.class, SettingSerializers.STRING, "texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull");
-        DISPLAY_NAME = SettingsContainer.defineSetting(AppearanceModule.class, SettingSerializers.STRING, "display-name", "<r#5:0.5>Default Minion", "The display name of the skull");
-        ROTATION_SPEED = SettingsContainer.defineSetting(AppearanceModule.class, SettingSerializers.DOUBLE, "rotation-speed", 0.05, "The speed at which the skull should rotate");
+        SMALL = SettingsRegistry.defineBoolean(AppearanceModule.class, "small", true, "If the skull should be small");
+        TEXTURE = SettingsRegistry.defineString(AppearanceModule.class, "texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull");
+        DISPLAY_NAME = SettingsRegistry.defineString(AppearanceModule.class, "display-name", "<r#5:0.5>Default Minion", "The display name of the skull");
+        ROTATION_SPEED = SettingsRegistry.defineDouble(AppearanceModule.class, "rotation-speed", 0.05, "The speed at which the skull should rotate");
 
-        SettingsContainer.redefineSetting(AppearanceModule.class, MinionModule.GUI_TITLE, "Minion Appearance");
-        SettingsContainer.redefineSetting(AppearanceModule.class, MinionModule.GUI_ICON, Material.PLAYER_HEAD);
-        SettingsContainer.redefineSetting(AppearanceModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Minion Appearance");
-        SettingsContainer.redefineSetting(AppearanceModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        SettingsRegistry.redefineString(AppearanceModule.class, MinionModule.GUI_TITLE, "Minion Appearance");
+        SettingsRegistry.redefineEnum(AppearanceModule.class, MinionModule.GUI_ICON, Material.PLAYER_HEAD);
+        SettingsRegistry.redefineString(AppearanceModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Minion Appearance");
+        SettingsRegistry.redefineStringList(AppearanceModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
     private static BukkitTask thetaUpdateTask;
@@ -131,6 +130,20 @@ public class AppearanceModule extends MinionModule {
     }
 
     @Override
+    public void unload() {
+        super.unload();
+
+        // Remove notification entity
+        ArmorStand armorStand = this.minion.getDisplayEntity();
+        if (armorStand != null) {
+            for (Entity passenger : armorStand.getPassengers()) {
+                armorStand.removePassenger(passenger);
+                passenger.remove();
+            }
+        }
+    }
+
+    @Override
     public void deserialize(byte[] input) {
         super.deserialize(input);
         this.updateEntity();
@@ -157,7 +170,7 @@ public class AppearanceModule extends MinionModule {
 
         GuiUtil.fillRow(mainScreen, editableSize.getRows(), borderItem);
 
-//         Name
+        // Name
         mainScreen.addButtonAt(10, GuiFactory.createButton()
                 .setIcon(Material.NAME_TAG)
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Name"))
@@ -176,7 +189,7 @@ public class AppearanceModule extends MinionModule {
                 })
         );
 
-//         Small
+        // Size
         mainScreen.addButtonAt(11, GuiFactory.createButton()
                 .setIcon(Material.ARMOR_STAND)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Small: " + MinionUtils.SECONDARY_COLOR + this.settings.get(SMALL))))
@@ -189,7 +202,7 @@ public class AppearanceModule extends MinionModule {
                 })
         );
 
-//         Texture
+        // Texture
         GuiIcon textureIcon = GuiFactory.createIcon(Material.PLAYER_HEAD,
                 meta -> SkullUtils.setSkullTexture((SkullMeta) meta, this.settings.get(TEXTURE)));
 
@@ -242,7 +255,6 @@ public class AppearanceModule extends MinionModule {
     }
 
     public void registerNotificationTicket(NotificationTicket ticket) {
-        Bukkit.broadcastMessage("registered notification");
         this.notificationTickets.addLast(ticket);
     }
 
@@ -326,7 +338,7 @@ public class AppearanceModule extends MinionModule {
     }
 
     private Entity createNotificationEntity() {
-        return this.minion.getWorld().spawn(this.minion.getLocation(), AreaEffectCloud.class, entity -> {
+        return EntitySpawnUtil.spawn(this.minion.getLocation(), AreaEffectCloud.class, entity -> {
             //entity.setInvisible(true);
             //entity.setVisible(false);
             entity.setGravity(false);
