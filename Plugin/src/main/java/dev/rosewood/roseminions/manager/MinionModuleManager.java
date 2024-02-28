@@ -21,6 +21,7 @@ import dev.rosewood.roseminions.minion.module.InventoryModule;
 import dev.rosewood.roseminions.minion.module.ItemPickupModule;
 import dev.rosewood.roseminions.minion.module.MinerModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
+import dev.rosewood.roseminions.minion.module.PlacerModule;
 import dev.rosewood.roseminions.minion.module.ShearerModule;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
@@ -140,6 +141,7 @@ public class MinionModuleManager extends Manager implements Listener {
         event.registerModule(DefaultMinionModules.INVENTORY, InventoryModule::new, InventoryModule.class);
         event.registerModule(DefaultMinionModules.ITEM_PICKUP, ItemPickupModule::new, ItemPickupModule.class);
         event.registerModule(DefaultMinionModules.MINER, MinerModule::new, MinerModule.class);
+        event.registerModule(DefaultMinionModules.PLACER, PlacerModule::new, PlacerModule.class);
         event.registerModule(DefaultMinionModules.SHEARER, ShearerModule::new, ShearerModule.class);
         event.registerModule(DefaultMinionModules.SLAYER, SlayerModule::new, SlayerModule.class);
     }

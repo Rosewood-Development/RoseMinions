@@ -14,6 +14,7 @@ public final class DefaultMinionModules {
     public static final String INVENTORY = "inventory";
     public static final String ITEM_PICKUP = "item_pickup";
     public static final String MINER = "miner";
+    public static final String PLACER = "placer";
     public static final String SHEARER = "shearer";
     public static final String SLAYER = "slayer";
 
