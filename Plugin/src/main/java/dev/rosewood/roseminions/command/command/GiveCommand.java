@@ -24,17 +24,17 @@ public class GiveCommand extends RoseCommand {
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Player player, MinionConfig minionType, RankConfig rank, @Optional Integer amount) {
+    public void execute(CommandContext context, Player player, MinionConfig minionType, @Optional RankConfig rank, @Optional Integer amount) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-        if (rank.rank() < 0 || rank.rank() > minionType.getMaxRank()) {
-            if (minionType.getMaxRank() == 0) {
-                locale.sendMessage(player, "command-give-no-ranks");
+        // Default to rank 0 if none provided
+        if (rank == null) {
+            if (minionType.getMaxRank() >= 0) {
+                rank = minionType.getRank(0);
             } else {
-                locale.sendMessage(player, "command-give-invalid-rank", StringPlaceholders.of("max", minionType.getMaxRank()));
+                locale.sendMessage(player, "command-give-no-ranks");
+                return;
             }
-
-            return;
         }
 
         if (amount == null || amount < 1)

@@ -213,7 +213,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
         modules.subList(0, Math.min(5, modules.size())).sort(Comparator.comparing(MinionModule::getName).reversed());
 
         // Find the GUI size based on how many modules there are
-        int rows = 1 + (int) Math.ceil(MODULE_SLOT_FILL_ORDER[modules.size() - 1] / 9.0);
+        int rows = 1 + (int) Math.ceil(MODULE_SLOT_FILL_ORDER[Math.max(0, modules.size() - 1)] / 9.0);
         GuiSize size = GuiSize.fromRows(rows);
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, size)
@@ -315,6 +315,17 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
         modules.add(this.appearanceModule);
         modules.addAll(this.modules.values());
         return modules;
+    }
+
+    /**
+     * Gets the appearance module.
+     * <br/>
+     * Equivalent to {@code getModule(AppearanceModule.class)}
+     *
+     * @return The appearance module
+     */
+    public AppearanceModule getAppearanceModule() {
+        return this.appearanceModule;
     }
 
     public ArmorStand getDisplayEntity() {

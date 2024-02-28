@@ -81,7 +81,8 @@ public final class MinionUtils {
      * @param inventoryAccessor The setting accessor for the inventory
      */
     public static void snapInventorySize(SettingsContainer settings, SettingAccessor<Integer> sizeAccessor, SettingAccessor<ItemStack[]> inventoryAccessor) {
-        int inventorySize = settings.get(sizeAccessor);
+        int originalSize = settings.get(sizeAccessor);
+        int inventorySize = originalSize;
         if (inventorySize % 9 != 0) {
             if (inventorySize < 9) {
                 inventorySize = 9;
@@ -95,7 +96,7 @@ public final class MinionUtils {
         if (inventorySize > 27)
             inventorySize = (int) Math.ceil(inventorySize / 27.0) * 27;
 
-        if (inventorySize != settings.get(sizeAccessor))
+        if (inventorySize != originalSize)
             settings.set(sizeAccessor, inventorySize);
 
         // Adjust the inventory size if needed

@@ -8,9 +8,8 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.config.MinionConfig;
 import dev.rosewood.roseminions.minion.config.RankConfig;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class MinionRankArgumentHandler extends RoseCommandArgumentHandler<RankConfig> {
 
@@ -48,16 +47,11 @@ public class MinionRankArgumentHandler extends RoseCommandArgumentHandler<RankCo
 
         MinionConfig minionConfig = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(input);
         if (minionConfig == null)
-            throw new IllegalStateException("MinionRank argument handler requires a MinionData context value");
+            return List.of();
 
-        int max = minionConfig.getMaxRank();
-        List<String> suggestions = new ArrayList<>();
-
-        for (int i = 0; i < max + 1; i++) {
-            suggestions.add(String.valueOf(i));
-        }
-
-        return suggestions;
+        return IntStream.rangeClosed(0, minionConfig.getMaxRank())
+                .mapToObj(String::valueOf)
+                .toList();
     }
 
 }

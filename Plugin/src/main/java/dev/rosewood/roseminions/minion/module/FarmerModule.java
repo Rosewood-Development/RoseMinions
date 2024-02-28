@@ -79,7 +79,7 @@ public class FarmerModule extends MinionModule {
         this.farmlandToTill = new ArrayList<>();
         this.farmlandToHydrate = new ArrayList<>();
 
-        this.getModule(AppearanceModule.class).ifPresent(x -> x.registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty)));
+        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty));
     }
 
     @Override

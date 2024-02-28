@@ -76,6 +76,7 @@ public class AppearanceModule extends MinionModule {
             thetaUpdateTask = Bukkit.getScheduler().runTaskTimer(RoseMinions.getInstance(), () -> thetaTicks++, 0L, 1L);
 
         this.notificationTickets = new LinkedList<>();
+        this.nextTicketTime = System.currentTimeMillis() + 1000; // Wait a second before starting notifications
     }
 
     @Override

@@ -4,6 +4,7 @@ import dev.rosewood.roseminions.minion.config.SettingsContainerConfig;
 import dev.rosewood.roseminions.model.DataSerializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class SettingsContainer implements DataSerializable {
 
@@ -102,12 +103,15 @@ public class SettingsContainer implements DataSerializable {
     }
 
     public void setDefaults(SettingsContainerConfig settings) {
-        settings.getSettingDefaultValueSuppliers().forEach((key, supplier) -> {
-            SettingItem<?> settingItem = this.settings.get(key);
-            if (settingItem != null) {
-                SettingItem<?> newSettingItem = new SettingItem<>(settingItem.getAccessor(), forceCast(supplier.get()));
-                this.settings.put(key, newSettingItem);
-            }
+        Map<String, Supplier<?>> defaultSettingSuppliers = settings.getSettingDefaultValueSuppliers();
+        SettingsRegistry.REGISTERED_SETTINGS.get(this.clazz).forEach(settingAccessor -> {
+            String key = settingAccessor.getKey();
+            Supplier<?> supplier = defaultSettingSuppliers.get(key);
+            if (supplier == null)
+                return;
+
+            SettingItem<?> newSettingItem = new SettingItem<>(settingAccessor, forceCast(supplier.get()));
+            this.settings.put(key, newSettingItem);
         });
     }
 
