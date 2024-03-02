@@ -15,14 +15,15 @@ import dev.rosewood.roseminions.model.MinionConversation;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import dev.rosewood.roseminions.util.MinionUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CommunicatorModule extends MinionModule {
 
@@ -43,15 +44,15 @@ public class CommunicatorModule extends MinionModule {
         SettingsRegistry.redefineStringList(CommunicatorModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to have", MinionUtils.SECONDARY_COLOR + "conversations with other minions."));
     }
 
-    public long lastConversation; // The last time the minion started a conversation
-    public long lastMessage; // The last time the minion sent a message, TODO: Maybe make holograms display for x2 the message frequency
+    private long lastConversation; // The last time the minion started a conversation
+    private long lastMessage; // The last time the minion sent a message, TODO: Maybe make holograms display for x2 the message frequency
+    private int messageIndex; // The last message index
+    private boolean isParticipating; // Whether the minion is participating in a conversation
 
-    // Active minions in conversation
-    public MinionConversation active; // The current conversation
-    public List<Minion> participants; // All participants in the conversation TODO: Fix participants not working, Fix randomization of speakers
-    public Minion lastSpeaker; // The last minion to speak
-    public int lastMessageIndex; // The last message index
-    public Hologram hologram; // The hologram for the conversation
+    private MinionConversation active; // The current conversation
+    private List<Minion> participants; // All participants in the conversation TODO: Fix participants not working, Fix randomization of speakers
+    private Minion lastSpeaker; // The last minion to speak
+    private Hologram hologram; // The hologram for the conversation
 
     public CommunicatorModule(Minion minion) {
         super(minion, DefaultMinionModules.COMMUNICATOR);
@@ -61,7 +62,7 @@ public class CommunicatorModule extends MinionModule {
         // Add a delay before the minion can start a conversation
         this.lastConversation = System.currentTimeMillis() + this.settings.get(CONVERSATION_FREQUENCY);
         this.participants = new ArrayList<>();
-        this.lastMessageIndex = -1;
+        this.isParticipating = false;
     }
 
     @Override
@@ -69,107 +70,87 @@ public class CommunicatorModule extends MinionModule {
         super.unload();
 
         // Reset all minions in the conversation to their original display names
-        this.resetConversation();
-        this.updateCommunicators(true);
+        this.endConversation();
+        this.setParticipating(true);
     }
 
     @Override
     public void update() {
+        if (this.isParticipating && this.active == null) return;
+
         if (System.currentTimeMillis() - this.lastMessage <= this.settings.get(MESSAGE_FREQUENCY))
             return;
 
         this.lastMessage = System.currentTimeMillis();
 
-        if (this.active == null) {
-            if (System.currentTimeMillis() - this.lastConversation <= this.settings.get(CONVERSATION_FREQUENCY))
+        // Don't have a minion start a new conversation if it is already participating in one
+        // Allow the primary participant to continue the conversation
+
+        // Check if there is an active conversation going on
+        if (this.active != null) {
+            int messageIndex = this.messageIndex++;
+
+            System.out.println("[Conversation Active] The message index is: " + messageIndex + " and the message size is: " + this.active.messages().size());
+
+            // End the conversation if there are no more messages
+            if (messageIndex >= this.active.messages().size()) {
+                System.out.println("Ending conversation");
+                this.endConversation();
                 return;
-
-            this.lastConversation = System.currentTimeMillis();
-
-            this.active = this.getRandomConversation();
-            if (this.active == null)
-                return;
-
-            // This could be a bit funky, but it should work
-            while (this.active.participants() > this.getNearbyMinions(this.active.radius()).size() + 1) {
-                this.active = this.getRandomConversation();
-                if (this.active == null)
-                    return;
             }
 
-            this.participants = this.getNearbyMinions(this.active.radius());
-            this.lastConversation = System.currentTimeMillis();
-            this.lastMessageIndex = -1; // Reset the last message index
-        }
-
-        // Get the next message in the conversation, if there is none then end the conversation
-        int nextMessageIndex = ++this.lastMessageIndex;
-        if (this.active.messages().size() <= nextMessageIndex) {
-            this.active = null; // Set the active conversation to null
-            this.participants.clear(); // Clear the participants
-            this.lastMessageIndex = 0; // Reset the last message index
-            this.lastSpeaker = null; // Set the last speaker to null
-
-            // Remove the hologram
-            if (this.hologram != null)
-                this.hologram.getWatchers().forEach(hologram::removeWatcher);
-
-            this.hologram = null;
-
-            // TODO: Reset all minions in the conversation to their original display names
+            Minion newSpeaker = this.getNewSpeaker();
+            String toSend = this.active.messages().get(messageIndex);
+            this.updateHologram(newSpeaker, toSend);
+            System.out.println("[Conversation Active] The new speaker has been assigned");
             return;
         }
 
-        String nextMessage = this.active.messages().get(nextMessageIndex);
+        // Select a new conversation to have.
+        if (System.currentTimeMillis() - this.lastConversation <= this.settings.get(CONVERSATION_FREQUENCY))
+            return;
 
-        // Get the next speaker in the conversation, try and not repeat the last speaker if possible
-        if (this.participants.size() < 1)
-            return; // There are no participants in the conversation
+        this.lastConversation = System.currentTimeMillis();
 
-        this.lastSpeaker = this.participants.get(this.lastSpeaker == null ? 0 : this.lastSpeaker == this.participants.get(this.participants.size() - 1)
-                ? 0 : this.participants.indexOf(this.lastSpeaker) + 1);
-
-        // Create the hologram
-        Location location = this.lastSpeaker == this.minion ? this.minion.getCenterLocation() : this.lastSpeaker.getCenterLocation();
-        location.add(0, 0.75, 0); // Add 0.75 to the Y axis
-
-        if (this.hologram == null || location != this.hologram.getLocation()) {
-            if (this.hologram != null) // Remove the hologram from all players
-                this.hologram.getWatchers().forEach(hologram::removeWatcher);
-
-            this.hologram = NMSAdapter.getHandler().createHologram(location, List.of(HexUtils.colorify(nextMessage)));
-        } else {
-            this.hologram.setText(List.of(HexUtils.colorify(nextMessage)));
+        // Check if there are any conversations that can be started
+        MinionConversation conversation = this.getRandomConversation();
+        if (conversation == null) {
+            System.out.println("[Conversation Starting] No conversations could be started");
+            return;
         }
 
-        // Get all players within 15 blocks of the minion
-        List<Player> nearbyPlayers = this.minion.getWorld().getNearbyPlayers(this.minion.getCenterLocation(), 15)
-                .stream()
-                .filter(player -> hologram == null || !hologram.getWatchers().contains(player))
-                .toList();
+        this.active = conversation;
+        this.participants = this.getNearbyMinions(conversation.radius());
+        this.messageIndex = 0; // Reset the last message index
+        this.lastMessage = System.currentTimeMillis();
+        this.lastSpeaker = this.minion;
 
-        if (this.hologram != null)
-            nearbyPlayers.forEach(this.hologram::addWatcher);
-
-        // Update the other minions nearby
-        this.updateCommunicators(false);
+        System.out.println("Creating a new conversation with " + this.participants.size() + " participants");
+        System.out.println("Conversation is being started at: " + String.format(
+                "%s,%s,%s",
+                this.minion.getLocation().getX(),
+                this.minion.getLocation().getY(),
+                this.minion.getLocation().getZ()
+        ));
+        this.updateHologram(this.minion, this.active.messages().get(messageIndex));
+        this.involveParticipants(true);
     }
 
     @Override
     protected void buildGui() {
         this.guiContainer = GuiFactory.createContainer();
 
-        GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_FOUR)
+        GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
                 .setTitle(this.settings.get(GUI_TITLE));
 
         mainScreen.addButtonAt(0, GuiFactory.createButton(new ItemStack(Material.BIRCH_SIGN))
                 .setName(HexUtils.colorify("<g:#F7971E:#FFD200>Start Conversation"))
                 .setClickAction(inventoryClickEvent -> {
-                    this.resetConversation();
+                    this.endConversation();
+                    this.involveParticipants(false);
+
                     this.lastConversation = 0;
-
-                    this.updateCommunicators(false);
-
+                    this.lastMessage = 0;
                     return ClickAction.CLOSE;
                 }));
 
@@ -182,46 +163,100 @@ public class CommunicatorModule extends MinionModule {
     /**
      * Update all the other minions that are in the conversation (Prevent conversations from overlapping)
      */
-    private void updateCommunicators(boolean reset) {
-        for (Minion minion : this.participants) {
-            if (minion == this.minion)
-                continue;
+    private void involveParticipants(boolean isParticipating) {
+        this.participants.forEach(x -> {
+            if (x.getDisplayEntity().getEntityId() == this.minion.getDisplayEntity().getEntityId())
+                return;
 
-            minion.getModule(CommunicatorModule.class).ifPresent(communicatorModule -> {
-                // TODO: Maybe move this to a separate method
-                if (reset) {
-                    this.resetConversation(); // Reset the conversation
-                    return;
-                }
+            x.getModule(CommunicatorModule.class).ifPresent(module -> module.setParticipating(isParticipating));
+        });
+    }
 
-                // Update the other minions
-                communicatorModule.active = this.active;
-                communicatorModule.lastConversation = this.lastConversation;
-                communicatorModule.lastMessage = this.lastMessage;
-                communicatorModule.lastSpeaker = this.lastSpeaker;
 
-                if (communicatorModule.hologram != null)
-                    communicatorModule.hologram.getWatchers().forEach(communicatorModule.hologram::removeWatcher);
+    /**
+     * Update the hologram with new text (If the hologram is null, create a new one)
+     *
+     * @param newText The new text for the hologram
+     */
+    public void updateHologram(Minion where, String newText) {
+        if (this.active == null) return;
 
-                communicatorModule.hologram = null;
-            });
+        Location holoLocation = where.getCenterLocation().clone().add(0, 0.75, 0);
+
+        // Only one participant in the conversation
+        if (this.active.participants() == 1 && this.hologram != null) {
+            this.hologram.setText(List.of(HexUtils.colorify(newText)));
+            this.addWatchers(where);
+
+            System.out.println("Updating the hologram with the message: " + newText + " and " + this.hologram.getWatchers().stream()
+                    .map(Player::getName)
+                    .collect(Collectors.toSet()) + " watching");
+            return;
         }
 
+        // Multiple participants in the conversation
+        if (this.hologram != null) {
+            // Delete the old hologram
+
+            System.out.println("Deleting the old hologram");
+            this.hologram.delete();
+            this.hologram = null;
+        }
+
+        System.out.println("Creating a new hologram at: " + String.format(
+                "%s,%s,%s",
+                holoLocation.getX(),
+                holoLocation.getY(),
+                holoLocation.getZ()
+        ) + " with the message: " + newText);
+
+        // Create a new hologram at the new location
+        this.hologram = NMSAdapter.getHandler().createHologram(holoLocation, List.of(HexUtils.colorify(newText)));
+        this.addWatchers(where);
     }
 
     /**
-     * Reset the conversation
+     * End the conversation
      */
-    public void resetConversation() {
+    public void endConversation() {
         this.active = null;
         this.participants.clear();
-        this.lastMessageIndex = 0;
+        this.messageIndex = 0;
         this.lastSpeaker = null;
+        this.involveParticipants(false);
 
-        if (this.hologram != null)
-            this.hologram.getWatchers().forEach(hologram::removeWatcher);
+        // Update the hologram
+        if (this.hologram != null) {
+            this.hologram.delete();
+            this.hologram = null;
+        }
+    }
 
-        this.hologram = null;
+    /**
+     * Get a new speaker for the conversation
+     *
+     * @return A new speaker
+     */
+    private Minion getNewSpeaker() {
+        if (this.participants.size() == 1)
+            return this.participants.get(0);
+
+        Minion newSpeaker = this.participants.get((int) (Math.random() * this.participants.size()));
+        if (newSpeaker == this.lastSpeaker)
+            return this.getNewSpeaker();
+
+        return newSpeaker;
+    }
+
+    /**
+     * Add all nearby players to the hologram's watchers
+     *
+     * @param minion The minion to add the watchers for
+     */
+    public void addWatchers(Minion minion) {
+        if (this.hologram == null) return;
+
+        minion.getWorld().getNearbyPlayers(minion.getLocation(), 25).forEach(this.hologram::addWatcher);
     }
 
     /**
@@ -230,19 +265,16 @@ public class CommunicatorModule extends MinionModule {
      * @return A random conversation
      */
     private MinionConversation getRandomConversation() {
-        List<MinionConversation> conversations = this.settings.get(CONVERSATIONS);
+        List<MinionConversation> conversations = new ArrayList<>(this.settings.get(CONVERSATIONS));
+        conversations.removeIf(conversation -> !conversation.testNearby(this.minion));
+
+        if (conversations.isEmpty())
+            return null;
 
         // Get a random conversation (each conversation has an individual chance) and return it
         double total = conversations.stream().mapToDouble(MinionConversation::chance).sum();
         double random = Math.random() * total;
-
-        for (MinionConversation conversation : conversations) {
-            random -= conversation.chance();
-            if (random <= 0)
-                return conversation;
-        }
-
-        return null;
+        return conversations.stream().reduce((a, b) -> random <= a.chance() ? a : b).orElse(null);
     }
 
     /**
@@ -260,5 +292,24 @@ public class CommunicatorModule extends MinionModule {
                 .flatMap(entity -> minionManager.getMinionFromEntity(entity).stream())
                 .collect(Collectors.toList());
     }
+
+    /**
+     * Check if the minion is already participating in a conversation
+     *
+     * @return true if the minion is participating
+     */
+    public boolean isParticipating() {
+        return this.isParticipating;
+    }
+
+    /**
+     * Set whether the minion is already participating in a conversation
+     *
+     * @param isParticipating Whether the minion is participating
+     */
+    public void setParticipating(boolean isParticipating) {
+        this.isParticipating = isParticipating;
+    }
+
 
 }

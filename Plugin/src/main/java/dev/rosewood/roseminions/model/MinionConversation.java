@@ -1,7 +1,10 @@
 package dev.rosewood.roseminions.model;
 
+import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingSerializerFactories;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import org.bukkit.entity.ArmorStand;
+
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +27,15 @@ public record MinionConversation(int participants,
 
         if (messages.isEmpty())
             throw new IllegalArgumentException("Messages must have at least 1 message");
+    }
+
+    /**
+     * Check whether the conversation can be started with the right amount of participants
+     *
+     * @return true if the conversation could be started
+     */
+    public boolean testNearby(Minion toStart) {
+        return toStart.getWorld().getNearbyEntitiesByType(ArmorStand.class, toStart.getLocation(), radius).size() >= participants;
     }
 
     public static void defineComplex(SettingSerializerFactories.ComplexSettingWriter writer) {
