@@ -18,7 +18,6 @@ import dev.rosewood.roseminions.util.MinionUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -83,18 +82,12 @@ public class CommunicatorModule extends MinionModule {
 
         this.lastMessage = System.currentTimeMillis();
 
-        // Don't have a minion start a new conversation if it is already participating in one
-        // Allow the primary participant to continue the conversation
-
         // Check if there is an active conversation going on
         if (this.active != null) {
-            int messageIndex = this.messageIndex++;
-
-            System.out.println("[Conversation Active] The message index is: " + messageIndex + " and the message size is: " + this.active.messages().size());
+            int messageIndex = ++this.messageIndex;
 
             // End the conversation if there are no more messages
             if (messageIndex >= this.active.messages().size()) {
-                System.out.println("Ending conversation");
                 this.endConversation();
                 return;
             }
@@ -102,7 +95,7 @@ public class CommunicatorModule extends MinionModule {
             Minion newSpeaker = this.getNewSpeaker();
             String toSend = this.active.messages().get(messageIndex);
             this.updateHologram(newSpeaker, toSend);
-            System.out.println("[Conversation Active] The new speaker has been assigned");
+            this.lastSpeaker = newSpeaker;
             return;
         }
 
@@ -114,10 +107,7 @@ public class CommunicatorModule extends MinionModule {
 
         // Check if there are any conversations that can be started
         MinionConversation conversation = this.getRandomConversation();
-        if (conversation == null) {
-            System.out.println("[Conversation Starting] No conversations could be started");
-            return;
-        }
+        if (conversation == null) return;
 
         this.active = conversation;
         this.participants = this.getNearbyMinions(conversation.radius());
@@ -125,13 +115,7 @@ public class CommunicatorModule extends MinionModule {
         this.lastMessage = System.currentTimeMillis();
         this.lastSpeaker = this.minion;
 
-        System.out.println("Creating a new conversation with " + this.participants.size() + " participants");
-        System.out.println("Conversation is being started at: " + String.format(
-                "%s,%s,%s",
-                this.minion.getLocation().getX(),
-                this.minion.getLocation().getY(),
-                this.minion.getLocation().getZ()
-        ));
+        // Get the first message and update the hologram
         this.updateHologram(this.minion, this.active.messages().get(messageIndex));
         this.involveParticipants(true);
     }
@@ -181,34 +165,21 @@ public class CommunicatorModule extends MinionModule {
     public void updateHologram(Minion where, String newText) {
         if (this.active == null) return;
 
-        Location holoLocation = where.getCenterLocation().clone().add(0, 0.75, 0);
+        Location holoLocation = where.getCenterLocation().clone().add(0, 1.25, 0);
 
         // Only one participant in the conversation
         if (this.active.participants() == 1 && this.hologram != null) {
             this.hologram.setText(List.of(HexUtils.colorify(newText)));
             this.addWatchers(where);
-
-            System.out.println("Updating the hologram with the message: " + newText + " and " + this.hologram.getWatchers().stream()
-                    .map(Player::getName)
-                    .collect(Collectors.toSet()) + " watching");
             return;
         }
 
         // Multiple participants in the conversation
+        // Delete the old hologram
         if (this.hologram != null) {
-            // Delete the old hologram
-
-            System.out.println("Deleting the old hologram");
             this.hologram.delete();
             this.hologram = null;
         }
-
-        System.out.println("Creating a new hologram at: " + String.format(
-                "%s,%s,%s",
-                holoLocation.getX(),
-                holoLocation.getY(),
-                holoLocation.getZ()
-        ) + " with the message: " + newText);
 
         // Create a new hologram at the new location
         this.hologram = NMSAdapter.getHandler().createHologram(holoLocation, List.of(HexUtils.colorify(newText)));
