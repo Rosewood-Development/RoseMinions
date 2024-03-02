@@ -5,7 +5,6 @@ import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.Optional;
-import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -50,7 +49,7 @@ public class MinionPickupListener implements Listener {
             return;
         }
 
-        if (player.isSneaking() && player.getInventory().getItemInMainHand().getType() == Material.AIR) {
+        if (player.isSneaking()) {
             byte[] data = minion.serialize();
             minionManager.destroyMinion(minion);
 
@@ -64,7 +63,12 @@ public class MinionPickupListener implements Listener {
             itemStack.setItemMeta(itemMeta);
 
             PlayerInventory inventory = player.getInventory();
-            inventory.setItem(inventory.getHeldItemSlot(), itemStack);
+            int heldSlot = inventory.getHeldItemSlot();
+            if (inventory.getItem(heldSlot) == null) {
+                inventory.setItem(inventory.getHeldItemSlot(), itemStack);
+            } else {
+                inventory.addItem(itemStack);
+            }
         } else {
             minion.openGui(player);
         }
