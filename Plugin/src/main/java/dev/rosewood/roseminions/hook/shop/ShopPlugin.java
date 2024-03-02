@@ -9,7 +9,6 @@ public enum ShopPlugin {
     SHOPGUIPLUS(ShopGUIPlusProvider::new),
     ECONOMYSHOPGUI(EconomyShopGUIProvider::new),
     // TODO: Add support for BossShopPro
-    ESSENTIALS(EssentialsShopProvider::new),
     CMI(CMIShopProvider::new);
 
     private final Lazy<ShopProvider> shopProvider;

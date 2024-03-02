@@ -19,68 +19,47 @@ public class BreakerModule extends MinionModule {
 
     public static final SettingAccessor<Integer> RADIUS;
     public static final SettingAccessor<Long> BREAK_FREQUENCY;
-    public static final SettingAccessor<Long> BLOCKS_UPDATE_FREQUENCY;
-    public static final SettingAccessor<Integer> MAX_BLOCKS;
-    public static final SettingAccessor<Material[]> BLOCKS_TO_BREAK;
+    public static final SettingAccessor<Material> TARGET_BLOCK;
 
     static {
-        RADIUS = SettingsRegistry.defineInteger(BreakerModule.class, "radius", 5, "The radius in which to break blocks");
+        RADIUS = SettingsRegistry.defineInteger(BreakerModule.class, "radius", 2, "The radius in which to break blocks");
         BREAK_FREQUENCY = SettingsRegistry.defineLong(BreakerModule.class, "break-frequency", 1000L, "How often blocks will be broken (in milliseconds)");
-        BLOCKS_UPDATE_FREQUENCY = SettingsRegistry.defineLong(BreakerModule.class, "blocks-update-frequency", 15000L, "Frequency between checking for new blocks. (in milliseconds)");
-        MAX_BLOCKS = SettingsRegistry.defineInteger(BreakerModule.class, "max-blocks", 5, "The maximum number of blocks to break at once");
-        BLOCKS_TO_BREAK = SettingsRegistry.defineHiddenSetting(BreakerModule.class, SettingSerializers.ofArray(SettingSerializers.MATERIAL), "blocks-to-break", () -> new Material[]{Material.STONE, Material.DIRT, Material.GRASS_BLOCK});
+        TARGET_BLOCK = SettingsRegistry.defineEnum(BreakerModule.class, "target-block", Material.COBBLESTONE, "The block to mine");
 
-        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_TITLE, "Breaker Module");
-        SettingsRegistry.redefineEnum(BreakerModule.class, MinionModule.GUI_ICON, Material.TNT);
-        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Breaker Module");
-        SettingsRegistry.redefineStringList(BreakerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Breaks blocks in a radius", MinionUtils.SECONDARY_COLOR + "around the minion."));
+        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_TITLE, "Miner Module");
+        SettingsRegistry.redefineEnum(BreakerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
+        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Miner Module");
+        SettingsRegistry.redefineStringList(BreakerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
-    private long lastBreakTime;
-    private long lastBlockCheckTime;
-    private final List<Block> blocks;
-    private int currentBlockIndex;
+    private long lastMineTime;
 
     public BreakerModule(Minion minion) {
         super(minion, DefaultMinionModules.BREAKER);
-
-        this.blocks = new ArrayList<>();
     }
 
     @Override
     public void update() {
-
-        if (System.currentTimeMillis() - this.lastBlockCheckTime > this.settings.get(BLOCKS_UPDATE_FREQUENCY)) {
-            this.lastBlockCheckTime = System.currentTimeMillis();
-            this.updateBreakableBlocks();
-        }
-
-        if (System.currentTimeMillis() - this.lastBreakTime <= this.settings.get(BREAK_FREQUENCY))
+        if (System.currentTimeMillis() - this.lastMineTime <= this.settings.get(BREAK_FREQUENCY))
             return;
 
-        this.lastBreakTime = System.currentTimeMillis();
-        if (this.blocks.isEmpty())
-            return;
+        this.lastMineTime = System.currentTimeMillis();
 
-        this.currentBlockIndex++;
-        if (this.currentBlockIndex >= this.blocks.size())
-            this.currentBlockIndex = 0;
+        Location loc = this.minion.getLocation();
+        int radius = this.settings.get(RADIUS);
 
-        int toBreak = this.settings.get(MAX_BLOCKS); // The number of blocks to break this tick
-        for (int i = 0; i < this.blocks.size(); i++) {
-            if (toBreak <= 0)
+        // TODO: Add option for block breaking to be uniform, not random
+        for (int i = 0; radius * radius > i; i++) {
+            int randomX = (int) (Math.random() * (radius * 2 + 1)) - radius;
+            int randomZ = (int) (Math.random() * (radius * 2 + 1)) - radius;
+
+            if (randomX == 0 && randomZ == 0) continue;
+            Block block = loc.clone().add(randomX, -1, randomZ).getBlock();
+
+            if (block.getType() == this.settings.get(TARGET_BLOCK)) {
+                block.breakNaturally();
                 break;
-
-            Block block = this.blocks.get(this.currentBlockIndex);
-            if (block.getType() == Material.AIR) {
-                this.currentBlockIndex++;
-                if (this.currentBlockIndex >= this.blocks.size())
-                    this.currentBlockIndex = 0;
-                continue;
             }
-
-            block.breakNaturally(new ItemStack(Material.DIAMOND_PICKAXE));
-            toBreak--;
         }
     }
 
@@ -93,46 +72,8 @@ public class BreakerModule extends MinionModule {
 
         this.addBackButton(mainScreen);
 
-        // TODO: Add editable section to define the blocks to break
         this.guiContainer.addScreen(mainScreen);
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
     }
-
-    private void updateBreakableBlocks() {
-        this.blocks.clear();
-
-        Location center = this.minion.getLocation();
-        List<Material> materials = List.of(this.settings.get(BLOCKS_TO_BREAK));
-        int radius = this.settings.get(RADIUS);
-
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    Location location = center.clone().add(x, y, z);
-                    Material material = MinionUtils.getLazyBlockMaterial(location);
-
-                    // Ignore air, water, and lava
-                    if (material.isAir() || material == Material.WATER || material == Material.LAVA)
-                        continue;
-
-                    if (materials.contains(material))
-                        this.blocks.add(location.getBlock());
-                }
-            }
-        }
-
-        this.sortBlocks();
-    }
-
-    private void sortBlocks() {
-        this.blocks.sort((o1, o2) -> {
-            if (o1.getX() == o2.getX()) {
-                return Integer.compare(o1.getZ(), o2.getZ());
-            } else {
-                return Integer.compare(o1.getX(), o2.getX());
-            }
-        });
-    }
-
 
 }

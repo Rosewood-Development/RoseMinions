@@ -3,17 +3,18 @@ package dev.rosewood.roseminions.util.nms;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import dev.rosewood.rosegarden.utils.NMSUtil;
+import me.arcaniax.hdb.api.HeadDatabaseAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Base64;
 import java.util.UUID;
-import me.arcaniax.hdb.api.HeadDatabaseAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
-import org.bukkit.profile.PlayerTextures;
 
 public final class SkullUtils {
 
@@ -28,7 +29,7 @@ public final class SkullUtils {
      * Applies a base64 encoded texture to an item's SkullMeta
      *
      * @param skullMeta The ItemMeta for the Skull
-     * @param texture The texture to apply to the skull
+     * @param texture   The texture to apply to the skull
      */
     public static void setSkullTexture(SkullMeta skullMeta, String texture) {
         if (texture == null || texture.isEmpty())
