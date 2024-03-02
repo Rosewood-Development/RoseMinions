@@ -6,7 +6,7 @@ import dev.rosewood.rosegarden.command.framework.RoseCommand;
 import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.roseminions.manager.MinionManager;
-import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -22,7 +22,7 @@ public class TestCommand extends RoseCommand {
         MinionManager minionManager = this.rosePlugin.getManager(MinionManager.class);
 
         // Remove active minions
-        new ArrayList<>(minionManager.getLoadedMinions()).forEach(minionManager::destroyMinion);
+        List.copyOf(minionManager.getLoadedMinions()).forEach(minionManager::destroyMinion);
 
         // Remove broken minions that are loaded
         Bukkit.getWorlds().stream()
@@ -48,7 +48,7 @@ public class TestCommand extends RoseCommand {
 
     @Override
     public boolean isPlayerOnly() {
-        return true;
+        return false;
     }
 
 }

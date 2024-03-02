@@ -31,34 +31,24 @@ public class MinionConfig {
         if (ranksSection == null)
             throw new IllegalArgumentException("Minion " + this.id + " does not have any ranks");
 
-        try {
-            Set<String> rankKeys = ranksSection.getKeys(false);
-            int[] rankIds = rankKeys.stream().mapToInt(Integer::parseInt).sorted().toArray();
-            if (rankIds.length == 0)
-                throw new IllegalArgumentException("Minion " + this.id + " does not have any ranks");
+        RankConfig previousRank = null;
+        Set<String> rankKeys = ranksSection.getKeys(false);
+        for (String rank : rankKeys) {
+            ConfigurationSection rankSection = ranksSection.getConfigurationSection(rank);
+            if (rankSection == null)
+                throw new IllegalArgumentException("Minion " + this.id + " has an invalid rank: " + rank);
 
-            if (rankIds[rankIds.length - 1] != rankIds.length - 1)
-                throw new IllegalArgumentException("Minion " + this.id + " is missing a rank number, must have " + rankIds.length + " total ranks starting at 0");
-
-            for (int rank : rankIds) {
-                ConfigurationSection rankSection = ranksSection.getConfigurationSection(String.valueOf(rank));
-                if (rankSection == null)
-                    throw new IllegalArgumentException("Minion " + this.id + " has an invalid rank number: " + rank);
-
-                this.ranks.add(rank, this.loadRank(rank, rankSection));
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Minion " + this.id + " has an invalid rank number");
+            previousRank = this.loadRank(previousRank, rank, rankSection);
+            this.ranks.add(previousRank);
         }
     }
 
-    private RankConfig loadRank(int rank, ConfigurationSection section) {
+    private RankConfig loadRank(RankConfig previousRank, String rank, ConfigurationSection section) {
         Map<String, ModuleConfig> moduleData = new HashMap<>();
 
         // Load settings from previous rank
         SettingsContainerConfig previousRankItemSettings = null;
-        if (rank > 0) {
-            RankConfig previousRank = this.ranks.get(rank - 1);
+        if (previousRank != null) {
             previousRankItemSettings = previousRank.itemSettings().copy();
             previousRank.moduleData().forEach((module, data) -> moduleData.put(module, data.copy()));
         }
@@ -114,14 +104,16 @@ public class MinionConfig {
         return this.id;
     }
 
-    public int getMaxRank() {
-        return this.ranks.size() - 1;
+    public RankConfig getDefaultRank() {
+        return this.ranks.get(0);
     }
 
-    public RankConfig getRank(int rank) {
-        if (rank < 0 || rank >= this.ranks.size())
-            throw new IllegalArgumentException("Invalid rank " + rank + " for minion " + this.id);
-        return this.ranks.get(rank);
+    public RankConfig getRank(String rank) {
+        return this.ranks.stream().filter(x -> x.rank().equalsIgnoreCase(rank)).findFirst().orElse(null);
+    }
+
+    public List<RankConfig> getRanks() {
+        return this.ranks;
     }
 
 }

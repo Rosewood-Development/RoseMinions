@@ -22,7 +22,7 @@ public class EntitiesLoadListener implements Listener {
         event.getEntities().stream()
                 .filter(x -> x.getType() == EntityType.ARMOR_STAND)
                 .map(x -> (ArmorStand) x)
-                .forEach(this.minionManager::loadMinion);
+                .forEach(this.minionManager::queueMinionLoad);
     }
 
     @EventHandler

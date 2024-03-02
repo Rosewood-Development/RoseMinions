@@ -94,8 +94,6 @@ public class ExperienceModule extends MinionModule {
             entity.getWorld().playSound(this.minion.getCenterLocation(), Sound.ENTITY_ITEM_PICKUP, 10, 0);
             entity.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 5, 0.5, 0.5, 0.5, 0, new Particle.DustOptions(org.bukkit.Color.fromRGB(0, 255, 0), 1));
         });
-
-
     }
 
     @Override

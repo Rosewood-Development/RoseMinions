@@ -44,18 +44,13 @@ public class MinionPlaceListener implements Listener {
             if (minionId == null)
                 return;
 
-            Integer minionRank = pdc.get(MinionUtils.MINION_NEW_RANK_KEY, PersistentDataType.INTEGER);
+            String minionRank = pdc.get(MinionUtils.MINION_NEW_RANK_KEY, PersistentDataType.STRING);
             if (minionRank == null)
                 return;
 
             MinionConfig minionConfig = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(minionId);
             if (minionConfig == null) {
                 event.getPlayer().sendMessage("Invalid minion ID: " + minionId);
-                return;
-            }
-
-            if (minionRank < 0 || minionRank > minionConfig.getMaxRank()) {
-                event.getPlayer().sendMessage("Invalid minion rank: " + minionRank);
                 return;
             }
 

@@ -2,6 +2,7 @@ package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.roseminions.minion.config.SettingsContainerConfig;
 import dev.rosewood.roseminions.model.DataSerializable;
+import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -24,15 +25,10 @@ public class SettingsContainer implements DataSerializable {
         config.getSettingDefaultValueSuppliers().forEach((key, supplier) -> {
             SettingItem<?> settingItem = this.settings.get(key);
             if (settingItem != null) {
-                SettingItem<?> newSettingItem = new SettingItem<>(settingItem.getAccessor(), forceCast(supplier.get()));
+                SettingItem<?> newSettingItem = new SettingItem<>(settingItem.getAccessor(), MinionUtils.forceCast(supplier.get()));
                 this.settings.put(key, newSettingItem);
             }
         });
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T, R> R forceCast(T value) {
-        return (R) value;
     }
 
     public <T> void loadDefaults(Class<T> clazz) {
@@ -110,7 +106,7 @@ public class SettingsContainer implements DataSerializable {
             if (supplier == null)
                 return;
 
-            SettingItem<?> newSettingItem = new SettingItem<>(settingAccessor, forceCast(supplier.get()));
+            SettingItem<?> newSettingItem = new SettingItem<>(settingAccessor, MinionUtils.forceCast(supplier.get()));
             this.settings.put(key, newSettingItem);
         });
     }

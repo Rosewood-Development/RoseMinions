@@ -27,15 +27,8 @@ public class GiveCommand extends RoseCommand {
     public void execute(CommandContext context, Player player, MinionConfig minionType, @Optional RankConfig rank, @Optional Integer amount) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
-        // Default to rank 0 if none provided
-        if (rank == null) {
-            if (minionType.getMaxRank() >= 0) {
-                rank = minionType.getRank(0);
-            } else {
-                locale.sendMessage(player, "command-give-no-ranks");
-                return;
-            }
-        }
+        if (rank == null)
+            rank = minionType.getDefaultRank();
 
         if (amount == null || amount < 1)
             amount = 1;
@@ -45,7 +38,7 @@ public class GiveCommand extends RoseCommand {
         if (itemMeta != null) {
             PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
             pdc.set(MinionUtils.MINION_NEW_TYPE_KEY, PersistentDataType.STRING, minionType.getId());
-            pdc.set(MinionUtils.MINION_NEW_RANK_KEY, PersistentDataType.INTEGER, rank.rank());
+            pdc.set(MinionUtils.MINION_NEW_RANK_KEY, PersistentDataType.STRING, rank.rank());
             itemStack.setItemMeta(itemMeta);
         }
 

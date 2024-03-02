@@ -58,7 +58,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     private final Map<Class<? extends MinionModule>, MinionModule> modules;
     private final GuiFramework guiFramework;
     private MinionConfig minionConfig;
-    private int rank;
+    private String rank;
     private Reference<ArmorStand> displayEntity;
     private UUID owner;
     private Location location;
@@ -93,7 +93,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     /**
      * Used for creating a new minion
      */
-    public Minion(MinionConfig minionConfig, int rank, UUID owner, Location location) {
+    public Minion(MinionConfig minionConfig, String rank, UUID owner, Location location) {
         this(null);
 
         this.minionConfig = minionConfig;
@@ -139,7 +139,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
         return DataSerializable.write(outputStream -> {
             // Write minion data
             outputStream.writeUTF(this.minionConfig.getId());
-            outputStream.writeInt(this.rank);
+            outputStream.writeUTF(this.rank);
             outputStream.writeLong(this.owner.getMostSignificantBits());
             outputStream.writeLong(this.owner.getLeastSignificantBits());
             outputStream.writeUTF(this.getWorld().getName());
@@ -167,7 +167,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
             if (this.minionConfig == null)
                 throw new IllegalStateException("Minion type " + typeId + " no longer exists");
 
-            this.rank = inputStream.readInt();
+            this.rank = inputStream.readUTF();
             this.loadRankData();
 
             this.owner = new UUID(inputStream.readLong(), inputStream.readLong());
@@ -340,7 +340,7 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
         return this.minionConfig.getRank(this.rank);
     }
 
-    public int getRank() {
+    public String getRank() {
         return this.rank;
     }
 

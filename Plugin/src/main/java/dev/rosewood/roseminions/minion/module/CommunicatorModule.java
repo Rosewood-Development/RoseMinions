@@ -33,7 +33,7 @@ public class CommunicatorModule extends MinionModule {
     static {
         CONVERSATION_FREQUENCY = SettingsRegistry.defineLong(CommunicatorModule.class, "conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)");
         MESSAGE_FREQUENCY = SettingsRegistry.defineLong(CommunicatorModule.class, "message-frequency", 3000L, "How often a message will be sent (in milliseconds)");
-        CONVERSATIONS = SettingsRegistry.defineSetting(CommunicatorModule.class, SettingSerializers.ofList(SettingSerializers.CONVERSATION), "conversations", () ->List.of(
+        CONVERSATIONS = SettingsRegistry.defineSetting(CommunicatorModule.class, SettingSerializers.ofList(SettingSerializers.MINION_CONVERSATION), "conversations", () -> List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
         ), "The conversations that the minion can have");
 

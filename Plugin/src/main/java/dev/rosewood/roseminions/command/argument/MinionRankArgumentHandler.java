@@ -9,7 +9,7 @@ import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.config.MinionConfig;
 import dev.rosewood.roseminions.minion.config.RankConfig;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 public class MinionRankArgumentHandler extends RoseCommandArgumentHandler<RankConfig> {
 
@@ -25,16 +25,9 @@ public class MinionRankArgumentHandler extends RoseCommandArgumentHandler<RankCo
         if (minionConfig == null)
             throw new IllegalStateException("MinionRank argument handler requires a MinionData context value");
 
-        int rankNumber;
-        try {
-            rankNumber = Integer.parseInt(input);
-        } catch (NumberFormatException ignored) {
-            throw new HandledArgumentException("argument-handler-minion-rank", StringPlaceholders.of("input", input, "max", minionConfig.getMaxRank()));
-        }
-
-        RankConfig rank = minionConfig.getRank(rankNumber);
+        RankConfig rank = minionConfig.getRank(input);
         if (rank == null)
-            throw new HandledArgumentException("argument-handler-minion-rank", StringPlaceholders.of("input", input, "max", minionConfig.getMaxRank()));
+            throw new HandledArgumentException("argument-handler-minion-rank", StringPlaceholders.of("input", input, "ranks", minionConfig.getRanks().stream().map(RankConfig::rank).collect(Collectors.joining(", "))));
 
         argumentParser.setContextValue(RankConfig.class, rank);
         return rank;
@@ -49,8 +42,8 @@ public class MinionRankArgumentHandler extends RoseCommandArgumentHandler<RankCo
         if (minionConfig == null)
             return List.of();
 
-        return IntStream.rangeClosed(0, minionConfig.getMaxRank())
-                .mapToObj(String::valueOf)
+        return minionConfig.getRanks().stream()
+                .map(RankConfig::rank)
                 .toList();
     }
 

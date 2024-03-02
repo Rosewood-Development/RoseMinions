@@ -7,6 +7,7 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
+import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
@@ -35,6 +36,8 @@ public class FisherModule extends MinionModule {
     public static final SettingAccessor<Long> REEL_IN_MAX_DELAY;
     public static final SettingAccessor<Integer> WATER_LOOKUP_ATTEMPTS;
     public static final SettingAccessor<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS;
+    public static final SettingAccessor<PlayableSound> REEL_IN_SOUND;
+    public static final SettingAccessor<PlayableSound> BOBBER_SOUND;
 
     static {
         RADIUS = SettingsRegistry.defineInteger(FisherModule.class, "radius", 5, "How far away the minion will search for water");
@@ -45,6 +48,8 @@ public class FisherModule extends MinionModule {
         REEL_IN_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-max-delay", 4000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
         WATER_LOOKUP_ATTEMPTS = SettingsRegistry.defineInteger(FisherModule.class, "water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up");
         TOOL_ENCHANTMENTS = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(Enchantment.LUCK, 3, Enchantment.LURE, 3), "The enchantments to apply to the fishing rod");
+        REEL_IN_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "reel-in-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish");
+        BOBBER_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "fish-caught-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber");
 
         SettingsRegistry.redefineString(FisherModule.class, MinionModule.GUI_TITLE, "Fisher Module");
         SettingsRegistry.redefineEnum(FisherModule.class, MinionModule.GUI_ICON, Material.FISHING_ROD);
@@ -86,7 +91,7 @@ public class FisherModule extends MinionModule {
                 item.setVelocity(motion);
             }
 
-            this.targetBlock.getWorld().playSound(this.targetBlock.getLocation(), Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 1.0F, 1.0F);
+            this.settings.get(REEL_IN_SOUND).play(this.targetBlock.getLocation());
 
             this.lastEventTime = System.currentTimeMillis();
             this.resetWaitTime();
@@ -114,7 +119,7 @@ public class FisherModule extends MinionModule {
                 if (block.getType() == Material.WATER || (!block.getType().isSolid() && block.getBlockData() instanceof Waterlogged waterlogged && waterlogged.isWaterlogged())) {
                     this.targetBlock = block;
                     this.reelInTime = ThreadLocalRandom.current().nextLong(this.settings.get(REEL_IN_MIN_DELAY), this.settings.get(REEL_IN_MAX_DELAY));
-                    block.getWorld().playSound(block.getLocation(), Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                    this.settings.get(BOBBER_SOUND).play(block.getLocation());
                     return;
                 }
                 block = block.getRelative(BlockFace.DOWN);

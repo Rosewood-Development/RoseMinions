@@ -31,4 +31,12 @@ public interface NMSHandler {
      */
     Hologram createHologram(Location location, List<String> text);
 
+    /**
+     * Sets the entity custom name bypassing the 256 character limit set by Bukkit.
+     *
+     * @param entity The entity to change the custom name of
+     * @param customName The custom name to set
+     */
+    void setCustomNameUncapped(Entity entity, String customName);
+
 }

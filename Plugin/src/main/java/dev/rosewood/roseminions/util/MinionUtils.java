@@ -109,4 +109,9 @@ public final class MinionUtils {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T, R> R forceCast(T value) {
+        return (R) value;
+    }
+
 }

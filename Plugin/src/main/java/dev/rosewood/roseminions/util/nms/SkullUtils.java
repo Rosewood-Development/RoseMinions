@@ -43,14 +43,14 @@ public final class SkullUtils {
         if (NMSUtil.getVersionNumber() >= 18) {
             PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID());
             PlayerTextures textures = profile.getTextures();
-
-            String decodedTextureJson = new String(Base64.getDecoder().decode(texture));
-            String decodedTextureUrl = decodedTextureJson.substring(28, decodedTextureJson.length() - 4);
-
             try {
+                String decodedTextureJson = new String(Base64.getDecoder().decode(texture));
+                String decodedTextureUrl = decodedTextureJson.substring(28, decodedTextureJson.length() - 4);
+
                 textures.setSkin(new URL(decodedTextureUrl));
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+            } catch (IllegalArgumentException | MalformedURLException e) {
+                skullMeta.setOwnerProfile(null);
+                return;
             }
             skullMeta.setOwnerProfile(profile);
         } else {

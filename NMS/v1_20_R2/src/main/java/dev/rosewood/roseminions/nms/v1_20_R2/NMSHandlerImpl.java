@@ -13,6 +13,7 @@ import net.minecraft.nbt.NbtIo;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_20_R2.util.CraftChatMessage;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
@@ -48,6 +49,11 @@ public class NMSHandlerImpl implements NMSHandler {
     @Override
     public Hologram createHologram(Location location, List<String> text) {
         return new HologramImpl(text, location, entityCounter::incrementAndGet);
+    }
+
+    @Override
+    public void setCustomNameUncapped(org.bukkit.entity.Entity entity, String customName) {
+        ((CraftEntity) entity).getHandle().setCustomName(CraftChatMessage.fromStringOrNull(customName));
     }
 
 }

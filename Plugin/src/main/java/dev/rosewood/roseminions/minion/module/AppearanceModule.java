@@ -14,6 +14,7 @@ import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.nms.NMSAdapter;
+import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.util.EntitySpawnUtil;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
@@ -83,7 +84,8 @@ public class AppearanceModule extends MinionModule {
     public void update() {
         ArmorStand armorStand = this.minion.getDisplayEntity();
         Location centerLocation = this.getCenterVisibleLocation();
-        NMSAdapter.getHandler().setPositionRotation(armorStand, centerLocation.clone().subtract(0, this.heightOffset, 0));
+        NMSHandler nmsHandler = NMSAdapter.getHandler();
+        nmsHandler.setPositionRotation(armorStand, centerLocation.clone().subtract(0, this.heightOffset, 0));
 
         if (System.currentTimeMillis() >= this.nextTicketTime) {
             NotificationTicket notificationTicket = this.getNextNotificationTicket();
@@ -105,7 +107,7 @@ public class AppearanceModule extends MinionModule {
                 }
 
                 // Update the notification entity
-                notificationEntity.setCustomName(HexUtils.colorify(notificationTicket.getMessage()));
+                nmsHandler.setCustomNameUncapped(notificationEntity, HexUtils.colorify(notificationTicket.getMessage()));
                 notificationEntity.setCustomNameVisible(true);
             }
         }
@@ -121,7 +123,7 @@ public class AppearanceModule extends MinionModule {
         if (this.nametagUpdateTicks == 0) {
             String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
             if (!newName.equals(armorStand.getCustomName())) {
-                armorStand.setCustomName(newName);
+                NMSAdapter.getHandler().setCustomNameUncapped(armorStand, newName);
                 armorStand.setCustomNameVisible(true);
             }
         }

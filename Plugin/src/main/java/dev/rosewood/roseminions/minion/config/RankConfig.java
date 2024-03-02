@@ -8,7 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
-public record RankConfig(int rank, SettingsContainerConfig itemSettings, Map<String, ModuleConfig> moduleData) {
+public record RankConfig(String rank, SettingsContainerConfig itemSettings, Map<String, ModuleConfig> moduleData) {
 
     public ItemStack getDisplayItemStack() {
         StringPlaceholders placeholders = StringPlaceholders.builder("rank", this.rank).build();
