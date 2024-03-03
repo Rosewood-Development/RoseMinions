@@ -4,6 +4,7 @@ import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import dev.rosewood.roseminions.nms.util.ReflectionUtils;
+import dev.rosewood.roseminions.nms.v1_19_R3.entity.FakeFishingHook;
 import dev.rosewood.roseminions.nms.v1_19_R3.hologram.HologramImpl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftEntity;
@@ -29,10 +31,12 @@ import org.bukkit.loot.LootTables;
 public class NMSHandlerImpl implements NMSHandler {
 
     private static AtomicInteger entityCounter; // Atomic integer to generate unique entity IDs, normally private
+    private static FakeFishingHook fishingHook;
 
     static {
         try {
             entityCounter = (AtomicInteger) ReflectionUtils.getFieldByPositionAndType(net.minecraft.world.entity.Entity.class, 0, AtomicInteger.class).get(null);
+            fishingHook = new FakeFishingHook(((CraftWorld) Bukkit.getWorlds().get(0)).getHandle());
         } catch (ReflectiveOperationException e) {
             e.printStackTrace();
         }
@@ -52,12 +56,14 @@ public class NMSHandlerImpl implements NMSHandler {
 
     @Override
     public List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod) {
+        fishingHook.setOpenWater(location);
+
         ServerLevel level = ((CraftWorld) looter.getWorld()).getHandle();
         ResourceLocation resourceLocation = CraftNamespacedKey.toMinecraft(LootTables.FISHING.getKey());
         LootContext context = new LootContext.Builder(level)
                 .withParameter(LootContextParams.ORIGIN, new Vec3(location.getX(), location.getY(), location.getZ()))
-                .withParameter(LootContextParams.TOOL, CraftItemStack.asNMSCopy(fishingRod))
-                .withParameter(LootContextParams.THIS_ENTITY, ((CraftEntity) looter).getHandle()) // TODO: This is not the correct entity and needs to be a FishingHook
+                .withOptionalParameter(LootContextParams.TOOL, CraftItemStack.asNMSCopy(fishingRod))
+                .withOptionalParameter(LootContextParams.THIS_ENTITY, fishingHook)
                 .create(LootContextParamSets.FISHING);
 
         return level.getServer().getLootTables().get(resourceLocation).getRandomItems(context).stream()

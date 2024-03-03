@@ -10,14 +10,23 @@ import java.io.DataOutput;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import net.minecraft.server.v1_16_R3.LootContextParameterSets;
+import net.minecraft.server.v1_16_R3.LootContextParameters;
+import net.minecraft.server.v1_16_R3.LootTableInfo;
+import net.minecraft.server.v1_16_R3.MinecraftKey;
 import net.minecraft.server.v1_16_R3.NBTCompressedStreamTools;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.Vec3D;
+import net.minecraft.server.v1_16_R3.WorldServer;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_16_R3.util.CraftChatMessage;
+import org.bukkit.craftbukkit.v1_16_R3.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.loot.LootTables;
 
 public class NMSHandlerImpl implements NMSHandler {
 
@@ -41,6 +50,21 @@ public class NMSHandlerImpl implements NMSHandler {
         AtomicReference<ItemStack> itemStack = new AtomicReference<>();
         DataSerializable.read(bytes, x -> itemStack.set(CraftItemStack.asBukkitCopy(net.minecraft.server.v1_16_R3.ItemStack.a(NBTCompressedStreamTools.a((DataInput) x)))));
         return itemStack.get();
+    }
+
+    @Override
+    public List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod) {
+        WorldServer level = ((CraftWorld) looter.getWorld()).getHandle();
+        MinecraftKey resourceLocation = CraftNamespacedKey.toMinecraft(LootTables.FISHING.getKey());
+        LootTableInfo context = new LootTableInfo.Builder(level)
+                .set(LootContextParameters.ORIGIN, new Vec3D(location.getX(), location.getY(), location.getZ()))
+                .setOptional(LootContextParameters.TOOL, CraftItemStack.asNMSCopy(fishingRod))
+                .build(LootContextParameterSets.FISHING);
+
+        return level.getMinecraftServer().getLootTableRegistry().getLootTable(resourceLocation).populateLoot(context).stream()
+                .filter(x -> !x.isEmpty())
+                .map(CraftItemStack::asBukkitCopy)
+                .toList();
     }
 
     @Override

@@ -16,9 +16,7 @@ public interface NMSHandler {
 
     ItemStack deserializeItemStack(byte[] bytes);
 
-    default List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod) {
-        throw new UnsupportedOperationException("getFishingLoot is not supported on this version of Minecraft");
-    }
+    List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod);
 
     void setPositionRotation(Entity entity, Location location);
 
