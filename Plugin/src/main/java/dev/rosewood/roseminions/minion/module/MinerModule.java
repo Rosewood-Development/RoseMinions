@@ -71,6 +71,8 @@ public class MinerModule extends MinionModule {
 
     @Override
     public void update() {
+        super.update();
+
         if (System.currentTimeMillis() - this.lastMineTime < this.settings.get(MINING_FREQUENCY))
             return;
 

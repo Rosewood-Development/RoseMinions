@@ -52,6 +52,8 @@ public class PlacerModule extends MinionModule {
 
     @Override
     public void update() {
+        super.update();
+
         if (System.currentTimeMillis() - this.lastMineTime <= this.settings.get(PLACE_FREQUENCY))
             return;
 

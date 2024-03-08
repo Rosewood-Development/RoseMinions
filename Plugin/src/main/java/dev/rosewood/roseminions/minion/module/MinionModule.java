@@ -8,6 +8,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.module.controller.ModuleController;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingHolder;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
@@ -17,6 +18,7 @@ import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
 import dev.rosewood.roseminions.model.Updatable;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     protected final String moduleName;
     protected final SettingsContainer settings;
     protected final Map<Class<? extends MinionModule>, MinionModule> submodules;
+    protected final List<ModuleController> activeControllers;
     protected Modular parentModular;
 
     protected final GuiFramework guiFramework;
@@ -52,6 +55,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
         this.moduleName = moduleName.toLowerCase();
         this.settings = new SettingsContainer(this.getClass());
         this.submodules = new LinkedHashMap<>();
+        this.activeControllers = new ArrayList<>();
         this.parentModular = minion;
         this.guiFramework = GuiFramework.instantiate(RoseMinions.getInstance());
     }
@@ -63,6 +67,9 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
 
         // Unload functionality
         this.submodules.values().forEach(MinionModule::unload);
+
+        // Unload controllers
+        this.activeControllers.forEach(ModuleController::unload);
     }
 
     @Override
@@ -140,11 +147,13 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     @Override
     public void update() {
         this.submodules.values().forEach(MinionModule::update);
+        this.activeControllers.forEach(ModuleController::update);
     }
 
     @Override
     public void updateAsync() {
         this.submodules.values().forEach(MinionModule::updateAsync);
+        this.activeControllers.forEach(ModuleController::updateAsync);
     }
 
     public final Minion getMinion() {

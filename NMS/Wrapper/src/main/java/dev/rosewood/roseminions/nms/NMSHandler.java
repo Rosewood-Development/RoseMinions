@@ -1,15 +1,17 @@
 package dev.rosewood.roseminions.nms;
 
-import java.util.List;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
+import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * Allows performing certain actions that are only possible through the use of NMS.
  * For internal use only. Subject to change extremely frequently.
  */
+@ApiStatus.Internal
 public interface NMSHandler {
 
     byte[] serializeItemStack(ItemStack itemStack);

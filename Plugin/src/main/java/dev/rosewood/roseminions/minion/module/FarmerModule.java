@@ -7,16 +7,23 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
+import dev.rosewood.roseminions.model.BlockPosition;
 import dev.rosewood.roseminions.model.NotificationTicket;
+import dev.rosewood.roseminions.model.WorkerAreaProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeSet;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -27,6 +34,8 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
+import static org.bukkit.Material.FARMLAND;
 
 public class FarmerModule extends MinionModule {
 
@@ -40,24 +49,28 @@ public class FarmerModule extends MinionModule {
         FARMLAND_CROP_SEED_MATERIALS.put(Material.BEETROOTS, Material.BEETROOT_SEEDS);
     }
 
-    public static final SettingAccessor<Integer> RADIUS;
+    public static final SettingAccessor<WorkerAreaProperties> WORKER_AREA_PROPERTIES;
     public static final SettingAccessor<Long> FARM_FREQUENCY;
-    public static final SettingAccessor<Long> FARMLAND_UPDATE_FREQUENCY;
+    public static final SettingAccessor<Integer> FARM_BLOCK_AMOUNT;
     public static final SettingAccessor<Boolean> TILL_SOIL;
     public static final SettingAccessor<Boolean> HYDRATE_SOIL;
     public static final SettingAccessor<Boolean> HARVEST_CROPS;
     public static final SettingAccessor<Boolean> PLANT_SEEDS;
     public static final SettingAccessor<Boolean> BONEMEAL_CROPS;
+    public static final SettingAccessor<List<Material>> DESTRUCTIBLE_BLOCKS;
 
     static {
-        RADIUS = SettingsRegistry.defineInteger(FarmerModule.class,"radius", 3, "How far away the minion will farm");
+        WORKER_AREA_PROPERTIES = SettingsRegistry.defineSetting(FarmerModule.class, SettingSerializers.WORKER_AREA_PROPERTIES, "worker-area-properties",
+                () -> new WorkerAreaProperties(3, WorkerAreaController.RadiusType.SQUARE, new Vector(), WorkerAreaController.ScanDirection.TOP_TO_BOTTOM, 10000L),
+                "Settings that control the worker area for this module");
         FARM_FREQUENCY = SettingsRegistry.defineLong(FarmerModule.class, "farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)");
-        FARMLAND_UPDATE_FREQUENCY = SettingsRegistry.defineLong(FarmerModule.class, "farmland-update-frequency", 10000L, "How often the minion will manage farmland (in milliseconds)");
-        TILL_SOIL = SettingsRegistry.defineBoolean(FarmerModule.class, "till-soil", true, "Whether the minion will till");
+        FARM_BLOCK_AMOUNT = SettingsRegistry.defineInteger(FarmerModule.class, "farm-block-amount", 1, "The amount of blocks to plant/harvest at once");
+        TILL_SOIL = SettingsRegistry.defineBoolean(FarmerModule.class, "till-soil", true, "Whether the minion will till plantable soil");
         HYDRATE_SOIL = SettingsRegistry.defineBoolean(FarmerModule.class, "hydrate-soil", true, "Whether the minion will hydrate farmland");
         HARVEST_CROPS = SettingsRegistry.defineBoolean(FarmerModule.class, "harvest-crops", true, "Whether the minion will harvest crops");
         PLANT_SEEDS = SettingsRegistry.defineBoolean(FarmerModule.class, "plant-seeds", true, "Whether the minion will plant seeds");
         BONEMEAL_CROPS = SettingsRegistry.defineBoolean(FarmerModule.class, "bonemeal-crops", true, "Whether the minion will bonemeal crops");
+        DESTRUCTIBLE_BLOCKS = SettingsRegistry.defineSetting(FarmerModule.class, SettingSerializers.ofList(SettingSerializers.MATERIAL), "destructible-blocks", () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS), "Blocks that the minion can till the soil below");
 
         SettingsRegistry.redefineString(FarmerModule.class, MinionModule.GUI_TITLE, "Farmer Module");
         SettingsRegistry.redefineEnum(FarmerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_HOE);
@@ -65,99 +78,47 @@ public class FarmerModule extends MinionModule {
         SettingsRegistry.redefineStringList(FarmerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to farm nearby crops.", MinionUtils.SECONDARY_COLOR + "Click to open."));
     }
 
-    private long lastFarmlandCheckTime;
     private long lastHarvestTime;
-    private final List<Block> farmland;
-    private final List<Block> farmlandToTill;
-    private final List<Block> farmlandToHydrate;
-    private int farmlandIndex;
+    private final TreeSet<BlockPosition> farmland;
+    private final List<BlockPosition> farmlandToTill;
+    private final List<BlockPosition> farmlandToHydrate;
+    private BlockPosition lastFarmlandPosition;
+
+    private final WorkerAreaController workerAreaController;
 
     public FarmerModule(Minion minion) {
         super(minion, DefaultMinionModules.FARMER);
 
-        this.farmland = new ArrayList<>();
+        this.farmland = new TreeSet<>(this::sortFarmland);
         this.farmlandToTill = new ArrayList<>();
         this.farmlandToHydrate = new ArrayList<>();
+
+        this.workerAreaController = new WorkerAreaController(
+                this,
+                this.settings.get(WORKER_AREA_PROPERTIES),
+                this::updateFarmland,
+                this::onBlockScan
+        );
+        this.activeControllers.add(this.workerAreaController);
 
         minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty));
     }
 
     @Override
     public void update() {
-        // Do we need to update the farmland blocks?
-        if (System.currentTimeMillis() - this.lastFarmlandCheckTime > this.settings.get(FARMLAND_UPDATE_FREQUENCY)) {
-            this.lastFarmlandCheckTime = System.currentTimeMillis();
-            this.updateFarmland();
+        super.update();
+
+        boolean readyToHarvest = System.currentTimeMillis() - this.lastHarvestTime > this.settings.get(FARM_FREQUENCY);
+        for (int i = 0; i < this.settings.get(FARM_BLOCK_AMOUNT); i++) {
+            this.tillSoil();
+            this.hydrateSoil();
+
+            if (readyToHarvest)
+                this.harvestAndPlantSeeds();
         }
 
-        // Update soil if needed
-        int beforeSize = this.farmland.size();
-        if (this.tillAndHydrateSoil()) {
-            if (this.farmland.size() != beforeSize)
-                this.sortFarmland();
-            return;
-        }
-
-        if (System.currentTimeMillis() - this.lastHarvestTime <= this.settings.get(FARM_FREQUENCY))
-            return;
-
-        this.lastHarvestTime = System.currentTimeMillis();
-
-        if (this.farmland.isEmpty())
-            return;
-
-        // If the farmland index is greater than the farmland list size, reset it
-        this.farmlandIndex++;
-        if (this.farmlandIndex >= this.farmland.size())
-            this.farmlandIndex = 0;
-
-        Block farmlandBlock = this.farmland.get(this.farmlandIndex);
-
-        // If the farmland block is no longer farmland, remove it from the list and reset the time
-        if (farmlandBlock.getType() != Material.FARMLAND) {
-            this.farmland.remove(farmlandBlock);
-            this.farmlandIndex--;
-            this.lastHarvestTime = 0;
-            return;
-        }
-
-        // Check if this farmland block has a crop on top of it
-        Block cropBlock = farmlandBlock.getRelative(BlockFace.UP);
-        Material desiredSeedType = null;
-        if (this.settings.get(HARVEST_CROPS) && cropBlock.getBlockData() instanceof Ageable ageable) {
-            if (ageable.getAge() == ageable.getMaximumAge()) {
-                desiredSeedType = FARMLAND_CROP_SEED_MATERIALS.get(cropBlock.getType());
-                cropBlock.breakNaturally();
-            } else if (this.settings.get(BONEMEAL_CROPS)) {
-                ageable.setAge(ageable.getAge() + 1);
-                cropBlock.setBlockData(ageable);
-                cropBlock.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, cropBlock.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
-                return;
-            }
-        }
-
-        // If the inventory module is not present, we can't do anything else
-        Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
-        if (inventoryModule.isPresent() && this.settings.get(PLANT_SEEDS)) {
-            // Replant the crop with the same seed type if possible, otherwise pick a random seed from the inventory
-            if (desiredSeedType == null) {
-                List<Material> materials = new ArrayList<>(FARMLAND_CROP_SEED_MATERIALS.values());
-                Collections.shuffle(materials);
-                for (Material seedType : materials) {
-                    if (inventoryModule.get().removeItem(new ItemStack(seedType))) {
-                        desiredSeedType = seedType;
-                        break;
-                    }
-                }
-            }
-
-            if (cropBlock.getType() == Material.AIR && desiredSeedType != null) {
-                Material seedType = FARMLAND_CROP_SEED_MATERIALS.inverse().get(desiredSeedType);
-                cropBlock.setType(seedType);
-                cropBlock.getWorld().playSound(cropBlock.getLocation(), Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5f, 1.0f);
-                cropBlock.getWorld().spawnParticle(Particle.END_ROD, cropBlock.getLocation().add(0.5, 0.5, 0.5), 3, 0.05, 0.05, 0.05, 0.01);
-            }
-        }
+        if (readyToHarvest)
+            this.lastHarvestTime = System.currentTimeMillis();
     }
 
     @Override
@@ -173,128 +134,180 @@ public class FarmerModule extends MinionModule {
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
     }
 
-    private boolean tillAndHydrateSoil() {
-        if (this.farmlandToTill.isEmpty() && this.farmlandToHydrate.isEmpty())
-            return false;
-
-        // Till the soil
-        if (this.settings.get(TILL_SOIL) && !this.farmlandToTill.isEmpty()) {
-            Block block = this.farmlandToTill.remove(0);
+    private void tillSoil() {
+        if (!this.farmlandToTill.isEmpty() && this.settings.get(TILL_SOIL)) {
+            BlockPosition blockPosition = this.farmlandToTill.remove(0);
+            Block block = blockPosition.toBlock(this.minion.getWorld());
             BlockData blockData = block.getBlockData();
             Material material = block.getType();
-            if (material == Material.FARMLAND) {
-                // If the block is already farmland, we don't need to till it
-                this.farmlandToHydrate.add(block);
-                return true;
-            }
-
-            // Till the soil
             switch (material) {
                 case DIRT, GRASS_BLOCK, DIRT_PATH -> {
-                    block.setType(Material.FARMLAND);
+                    block.setType(FARMLAND);
                     block.getWorld().playSound(block.getLocation(), Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1);
                     block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
 
-                    // Hydrate the soil to prevent it from drying out immediately
+                    // Hydrate the soil partially to prevent it from drying out immediately
                     Farmland farmland = (Farmland) block.getBlockData();
-                    farmland.setMoisture(farmland.getMaximumMoisture());
+                    farmland.setMoisture(farmland.getMaximumMoisture() / 2);
                     block.setBlockData(farmland);
 
-                    if (this.settings.get(HYDRATE_SOIL)) {
-                        this.farmlandToHydrate.add(block);
-                    } else {
-                        this.farmland.add(block);
-                    }
+                    if (this.settings.get(HYDRATE_SOIL))
+                        this.farmlandToHydrate.add(blockPosition);
                 }
             }
-
-            return true;
         }
+    }
 
-        // Hydrate the soil
-        if (this.settings.get(HYDRATE_SOIL) && !this.farmlandToHydrate.isEmpty()) {
-            Block block = this.farmlandToHydrate.remove(0);
+    private void hydrateSoil() {
+        if (!this.farmlandToHydrate.isEmpty() && this.settings.get(HYDRATE_SOIL)) {
+            BlockPosition blockPosition = this.farmlandToHydrate.remove(MinionUtils.RANDOM.nextInt(this.farmlandToHydrate.size()));
+            Block block = blockPosition.toBlock(this.minion.getWorld());
             if (!(block.getBlockData() instanceof Farmland blockData)) {
                 // If the block is not farmland, add it back to the till list
-                this.farmlandToTill.add(block);
-                return true;
+                this.farmlandToTill.add(blockPosition);
+                return;
             }
-
-            this.farmland.add(block); // Might not be needed here, it may be able to be moved down
 
             // If the soil is already hydrated, we don't need to do anything
-            if (blockData.getMoisture() == blockData.getMaximumMoisture()) {
-                return true;
-            }
+            if (blockData.getMoisture() == blockData.getMaximumMoisture())
+                return;
 
             // Hydrate the soil
             blockData.setMoisture(blockData.getMaximumMoisture());
             block.setBlockData(blockData);
             block.getWorld().spawnParticle(Particle.WATER_SPLASH, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
-            return true;
         }
-
-        return false;
     }
 
-    private void updateFarmland() {
-        this.farmland.clear();
+    private void harvestAndPlantSeeds() {
+        if (this.farmland.isEmpty())
+            return;
 
-        Location center = this.minion.getLocation();
-        int radius = this.settings.get(RADIUS);
-        boolean tillSoil = this.settings.get(TILL_SOIL);
-        boolean hydrateSoil = this.settings.get(HYDRATE_SOIL);
+        // If the farmland index is greater than the farmland list size, reset it
+        BlockPosition farmlandBlockPosition;
+        if (this.lastFarmlandPosition == null) {
+            farmlandBlockPosition = this.farmland.first();
+        } else {
+            farmlandBlockPosition = this.farmland.higher(this.lastFarmlandPosition);
+            if (farmlandBlockPosition == null)
+                farmlandBlockPosition = this.farmland.first();
+        }
 
-        for (int x = -radius; x <= radius; x++) {
-            for (int z = -radius; z <= radius; z++) {
-                yLevel:
-                for (int y = -1; y >= -radius * 2; y--) {
-                    Location location = center.clone().add(x, y, z);
-                    Material material = MinionUtils.getLazyBlockMaterial(location);
-                    switch (material) {
-                        case FARMLAND -> {
-                            if (this.isPlantable(MinionUtils.getLazyBlockMaterial(location.clone().add(0, 1, 0)))) {
-                                Block block = location.getBlock();
-                                if (block.getBlockData() instanceof Farmland land) {
-                                    if (land.getMoisture() >= land.getMaximumMoisture() || !hydrateSoil) {
-                                        this.farmland.add(block);
-                                    } else {
-                                        this.farmlandToHydrate.add(block);
-                                    }
-                                }
-                            }
-                            break yLevel;
-                        }
-                        case DIRT, GRASS_BLOCK, DIRT_PATH -> {
-                            if (tillSoil && this.isPlantable(MinionUtils.getLazyBlockMaterial(location.clone().add(0, 1, 0))))
-                                this.farmlandToTill.add(location.getBlock());
-                            break yLevel;
-                        }
-                    }
+        this.lastFarmlandPosition = farmlandBlockPosition;
 
-                    if (!this.isPlantable(material))
-                        break;
-                }
+        Block farmlandBlock = farmlandBlockPosition.toBlock(this.minion.getWorld());
+
+        // If the farmland block is no longer farmland, remove it from the list
+        if (farmlandBlock.getType() != FARMLAND) {
+            this.farmland.remove(farmlandBlockPosition);
+            return;
+        }
+
+        // Check if this farmland block has a crop on top of it
+        Block cropBlock = farmlandBlock.getRelative(BlockFace.UP);
+        if (this.settings.get(DESTRUCTIBLE_BLOCKS).contains(cropBlock.getType()))
+            cropBlock.breakNaturally();
+
+        Material desiredSeedType = null;
+        if (this.settings.get(HARVEST_CROPS) && cropBlock.getBlockData() instanceof Ageable ageable) {
+            if (ageable.getAge() == ageable.getMaximumAge()) {
+                desiredSeedType = FARMLAND_CROP_SEED_MATERIALS.get(cropBlock.getType());
+                cropBlock.breakNaturally();
+            } else if (this.settings.get(BONEMEAL_CROPS)) {
+                ageable.setAge(ageable.getAge() + 1);
+                cropBlock.setBlockData(ageable);
+                cropBlock.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, cropBlock.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
+                return;
             }
         }
 
-        this.sortFarmland();
+        // If the inventory module is not present, we can't do anything else
+        Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
+        if (inventoryModule.isPresent() && this.settings.get(PLANT_SEEDS) && cropBlock.getType() == Material.AIR) {
+            // Replant the crop with the same seed type if possible, otherwise pick a random seed from the inventory
+            if (desiredSeedType == null) {
+                List<Material> materials = new ArrayList<>(FARMLAND_CROP_SEED_MATERIALS.values());
+                Collections.shuffle(materials);
+                for (Material seedType : materials) {
+                    if (inventoryModule.get().removeItem(new ItemStack(seedType))) {
+                        desiredSeedType = seedType;
+                        break;
+                    }
+                }
+            }
+
+            if (desiredSeedType != null) {
+                Material seedType = FARMLAND_CROP_SEED_MATERIALS.inverse().get(desiredSeedType);
+                cropBlock.setType(seedType);
+                cropBlock.getWorld().playSound(cropBlock.getLocation(), Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5f, 1.0f);
+                cropBlock.getWorld().spawnParticle(Particle.END_ROD, cropBlock.getLocation().add(0.5, 0.5, 0.5), 3, 0.05, 0.05, 0.05, 0.01);
+            }
+        }
+    }
+
+    private void updateFarmland(Map<BlockPosition, BlockData> detectedBlocks) {
+        boolean tillSoil = this.settings.get(TILL_SOIL);
+        boolean hydrateSoil = this.settings.get(HYDRATE_SOIL);
+
+        this.farmland.clear();
+
+        for (Map.Entry<BlockPosition, BlockData> entry : detectedBlocks.entrySet()) {
+            BlockPosition blockPosition = entry.getKey();
+            BlockData blockData = entry.getValue();
+
+            switch (blockData.getMaterial()) {
+                case FARMLAND -> {
+                    if (hydrateSoil && blockData instanceof Farmland land && land.getMoisture() < land.getMaximumMoisture())
+                        this.farmlandToHydrate.add(blockPosition);
+                    this.farmland.add(blockPosition);
+                }
+                case DIRT, GRASS_BLOCK, DIRT_PATH -> {
+                    if (tillSoil) {
+                        this.farmlandToTill.add(blockPosition);
+                        this.farmland.add(blockPosition);
+                    }
+                }
+            }
+        }
+Bukkit.broadcastMessage("Farmland size: " + this.farmland.size());
         Collections.shuffle(this.farmlandToTill);
         Collections.shuffle(this.farmlandToHydrate);
     }
 
-    private boolean isPlantable(Material material) {
-        return material == Material.AIR || material.createBlockData() instanceof Ageable;
+    private WorkerAreaController.BlockScanResult onBlockScan(BlockData blockData, int x, int y, int z, ChunkSnapshot chunkSnapshot) {
+        Material material = blockData.getMaterial();
+        switch (material) {
+            case FARMLAND -> {
+                if (this.isPlantable(chunkSnapshot.getBlockType(x, y + 1, z)))
+                    return WorkerAreaController.BlockScanResult.INCLUDE_SKIP_COLUMN;
+                return WorkerAreaController.BlockScanResult.SKIP_COLUMN;
+            }
+            case DIRT, GRASS_BLOCK, DIRT_PATH -> {
+                if (this.settings.get(TILL_SOIL) && this.isPlantable(chunkSnapshot.getBlockType(x, y + 1, z)))
+                    return WorkerAreaController.BlockScanResult.INCLUDE_SKIP_COLUMN;
+                return WorkerAreaController.BlockScanResult.SKIP_COLUMN;
+            }
+        }
+
+//        if (this.isPlantable(material))
+//            return WorkerAreaController.BlockScanResult.SKIP_COLUMN;
+
+        if (material == Material.STONE)
+            return WorkerAreaController.BlockScanResult.SKIP_COLUMN;
+
+        return WorkerAreaController.BlockScanResult.EXCLUDE;
     }
 
-    private void sortFarmland() {
-        this.farmland.sort((o1, o2) -> {
-            if (o1.getX() == o2.getX()) {
-                return Integer.compare(o1.getZ(), o2.getZ());
-            } else {
-                return Integer.compare(o1.getX(), o2.getX());
-            }
-        });
+    private boolean isPlantable(Material material) {
+        return material == Material.AIR || material.createBlockData() instanceof Ageable || this.settings.get(DESTRUCTIBLE_BLOCKS).contains(material);
+    }
+
+    private int sortFarmland(BlockPosition o1, BlockPosition o2) {
+        if (o1.x() == o2.x()) {
+            return Integer.compare(o1.z(), o2.z());
+        } else {
+            return Integer.compare(o1.x(), o2.x());
+        }
     }
 
 }

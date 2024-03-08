@@ -49,6 +49,7 @@ public class BeeKeeperModule extends MinionModule {
 
     @Override
     public void update() {
+        super.update();
 
         if (System.currentTimeMillis() - this.lastHiveCheckTime > this.settings.get(FARM_UPDATE_FREQUENCY)) {
             this.lastHiveCheckTime = System.currentTimeMillis();

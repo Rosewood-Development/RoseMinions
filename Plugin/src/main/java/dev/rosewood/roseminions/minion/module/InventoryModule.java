@@ -39,11 +39,6 @@ public class InventoryModule extends MinionModule {
     }
 
     @Override
-    public void update() {
-
-    }
-
-    @Override
     protected void buildGui() {
         MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
 

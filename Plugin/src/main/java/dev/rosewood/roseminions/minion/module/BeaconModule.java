@@ -38,6 +38,8 @@ public class BeaconModule extends MinionModule {
 
     @Override
     public void update() {
+        super.update();
+
         if (System.currentTimeMillis() - this.lastUpdate <= this.settings.get(UPDATE_FREQUENCY))
             return;
 

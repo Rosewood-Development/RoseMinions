@@ -38,6 +38,8 @@ public class ItemPickupModule extends MinionModule {
 
     @Override
     public void update() {
+        super.update();
+
         if (System.currentTimeMillis() - this.lastPickupTime <= this.settings.get(PICKUP_FREQUENCY))
             return;
 

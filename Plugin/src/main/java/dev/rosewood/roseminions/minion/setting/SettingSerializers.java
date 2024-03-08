@@ -4,7 +4,9 @@ import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.model.MinionConversation;
 import dev.rosewood.roseminions.model.PlayableSound;
-import dev.rosewood.roseminions.model.PotionEffectHelpers;
+import dev.rosewood.roseminions.model.WorkerAreaProperties;
+import dev.rosewood.roseminions.model.helpers.PotionEffectHelpers;
+import dev.rosewood.roseminions.model.helpers.VectorHelpers;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -24,6 +26,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 import static dev.rosewood.roseminions.minion.setting.SettingSerializerFactories.ofComplex;
 
 public final class SettingSerializers {
@@ -139,6 +142,8 @@ public final class SettingSerializers {
     public static final SettingSerializer<MinionConversation> MINION_CONVERSATION = ofComplex(MinionConversation.class, MinionConversation::defineComplex, MinionConversation::toMap, MinionConversation::fromMap);
     public static final SettingSerializer<PlayableSound> PLAYABLE_SOUND = ofComplex(PlayableSound.class, PlayableSound::defineComplex, PlayableSound::toMap, PlayableSound::fromMap);
     public static final SettingSerializer<PotionEffect> POTION_EFFECT = ofComplex(PotionEffect.class, PotionEffectHelpers::defineComplex, PotionEffectHelpers::toMap, PotionEffectHelpers::fromMap);
+    public static final SettingSerializer<Vector> VECTOR = ofComplex(Vector.class, VectorHelpers::defineComplex, VectorHelpers::toMap, VectorHelpers::fromMap);
+    public static final SettingSerializer<WorkerAreaProperties> WORKER_AREA_PROPERTIES = ofComplex(WorkerAreaProperties.class, WorkerAreaProperties::defineComplex, WorkerAreaProperties::toMap, WorkerAreaProperties::fromMap);
     //endregion
 
     //region Collection Serializer Factories

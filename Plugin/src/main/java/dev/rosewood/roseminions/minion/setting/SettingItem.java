@@ -27,7 +27,7 @@ public class SettingItem<T> implements DataSerializable {
     }
 
     public boolean isModified() {
-        return this.modified;
+        return this.modified || this.accessor.isHidden();
     }
 
     @Override

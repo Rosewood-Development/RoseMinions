@@ -43,11 +43,6 @@ public class FilterModule extends MinionModule {
     }
 
     @Override
-    public void update() {
-
-    }
-
-    @Override
     protected void buildGui() {
         MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, FILTER_ITEMS);
 

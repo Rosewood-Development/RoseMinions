@@ -5,8 +5,8 @@ public final class DefaultMinionModules {
     public static final String APPEARANCE = "appearance";
     public static final String BEACON = "beacon";
     public static final String BEE_KEEPER = "bee_keeper";
-    public static final String COMMUNICATOR = "communicator";
     public static final String BREAKER = "breaker";
+    public static final String COMMUNICATOR = "communicator";
     public static final String EXPERIENCE = "experience";
     public static final String FARMER = "farmer";
     public static final String FILTER = "filter";

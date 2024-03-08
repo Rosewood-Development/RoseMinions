@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.model;
+package dev.rosewood.roseminions.model.helpers;
 
 import dev.rosewood.roseminions.minion.setting.SettingSerializerFactories;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;

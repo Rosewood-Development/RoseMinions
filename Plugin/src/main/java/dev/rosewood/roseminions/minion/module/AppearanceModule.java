@@ -82,6 +82,8 @@ public class AppearanceModule extends MinionModule {
 
     @Override
     public void update() {
+        super.update();
+
         ArmorStand armorStand = this.minion.getDisplayEntity();
         Location centerLocation = this.getCenterVisibleLocation();
         NMSHandler nmsHandler = NMSAdapter.getHandler();
@@ -115,6 +117,8 @@ public class AppearanceModule extends MinionModule {
 
     @Override
     public void updateAsync() {
+        super.updateAsync();
+
         ArmorStand armorStand = this.minion.getDisplayEntity();
         if (armorStand == null)
             return;

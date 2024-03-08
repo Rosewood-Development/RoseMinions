@@ -14,7 +14,7 @@ public interface DataSerializable {
     /**
      * Serializes this object to a byte array
      *
-     * @return the byge array
+     * @return the byte array
      */
     byte[] serialize();
 
@@ -41,7 +41,7 @@ public interface DataSerializable {
              ObjectInputStream dataInput = new ObjectInputStream(inputStream)) {
             consumer.accept(dataInput);
         } catch (Exception e) {
-            throw new DataSerializationException("An error occurred while reading from ObjectOutputStream", e);
+            throw new DataSerializationException("An error occurred while reading from ObjectInputStream", e);
         }
     }
 

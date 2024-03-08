@@ -13,6 +13,7 @@ import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -45,9 +46,9 @@ public class FisherModule extends MinionModule {
         FISH_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)");
         FISH_LURE_DELAY_OFFSET = SettingsRegistry.defineLong(FisherModule.class, "fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)");
         REEL_IN_MIN_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
-        REEL_IN_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-max-delay", 4000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
+        REEL_IN_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)");
         WATER_LOOKUP_ATTEMPTS = SettingsRegistry.defineInteger(FisherModule.class, "water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up");
-        TOOL_ENCHANTMENTS = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(Enchantment.LUCK, 3, Enchantment.LURE, 3), "The enchantments to apply to the fishing rod");
+        TOOL_ENCHANTMENTS = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(Enchantment.LUCK, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod");
         REEL_IN_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "reel-in-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish");
         BOBBER_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "fish-caught-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber");
 
@@ -71,6 +72,8 @@ public class FisherModule extends MinionModule {
 
     @Override
     public void update() {
+        super.update();
+
         if (this.targetBlock != null) {
             if (System.currentTimeMillis() - this.lastEventTime <= this.reelInTime) {
                 Location particleCenter = this.targetBlock.getLocation().add(0.5, 1.0, 0.5);
@@ -152,7 +155,9 @@ public class FisherModule extends MinionModule {
 
     private ItemStack getToolUsed() {
         ItemStack toolUsed = new ItemStack(Material.FISHING_ROD);
-        toolUsed.addEnchantments(this.settings.get(TOOL_ENCHANTMENTS));
+        toolUsed.addEnchantments(this.settings.get(TOOL_ENCHANTMENTS).entrySet().stream()
+                .filter(entry -> entry.getValue() > 0)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
         return toolUsed;
     }
 
