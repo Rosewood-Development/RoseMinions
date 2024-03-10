@@ -22,7 +22,7 @@ public class CMIShopProvider extends ShopProvider {
         if (itemStack == null)
             return -1;
 
-        return CMI.getInstance().getWorthManager().getWorth(itemStack).getSellPrice();
+        return CMI.getInstance().getWorthManager().getWorth(itemStack).getBuyPrice();
     }
 
 }

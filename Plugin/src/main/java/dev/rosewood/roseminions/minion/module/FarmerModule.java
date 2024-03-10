@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeSet;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
@@ -269,7 +268,7 @@ public class FarmerModule extends MinionModule {
                 }
             }
         }
-Bukkit.broadcastMessage("Farmland size: " + this.farmland.size());
+
         Collections.shuffle(this.farmlandToTill);
         Collections.shuffle(this.farmlandToHydrate);
     }

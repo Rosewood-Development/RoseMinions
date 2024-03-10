@@ -81,7 +81,6 @@ public class MinionManager extends Manager {
 
         PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
         pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY, minion.serialize());
-        Bukkit.broadcastMessage("Unloading minion: " + minionEntity.getLocation());
     }
 
     public Optional<Minion> getMinionFromEntity(ArmorStand entity) {

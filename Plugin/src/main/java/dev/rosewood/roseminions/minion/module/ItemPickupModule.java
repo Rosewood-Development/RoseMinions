@@ -3,6 +3,7 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.roseminions.hook.StackerHelper;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
@@ -74,23 +75,37 @@ public class ItemPickupModule extends MinionModule {
             for (Item item : items)
                 if (filterModule.isEmpty() || filterModule.get().isAllowed(item.getItemStack()))
                     item.teleport(this.minion.getCenterLocation());
-        } else {
-            // Add items to the inventory
-            for (Item item : items) {
-                // TODO: Support for plugins that stack items
-                ItemStack itemStack = item.getItemStack();
+            return;
+        }
 
-                // Don't pick up items that are filtered
-                if (filterModule.isPresent() && !filterModule.get().isAllowed(itemStack))
-                    continue;
+        // Add items to the inventory
+        for (Item item : items) {
+            ItemStack itemStack = item.getItemStack();
+            int originalAmount = StackerHelper.getItemStackAmount(item);
+            int maxStackSize = Math.max(1, itemStack.getMaxStackSize());
 
-                ItemStack overflow = inventoryModule.get().addItem(itemStack);
-                if (overflow == null) {
-                    item.remove();
-                } else {
-                    item.setItemStack(overflow);
+            // Don't pick up items that are filtered
+            if (filterModule.isPresent() && !filterModule.get().isAllowed(itemStack))
+                continue;
+
+            int amount = originalAmount;
+            while (amount > 0) {
+                ItemStack toAdd = itemStack.clone();
+                int amountToAdd = Math.min(amount, maxStackSize);
+                toAdd.setAmount(amountToAdd);
+                amount -= amountToAdd;
+                ItemStack overflow = inventoryModule.get().addItem(toAdd);
+                if (overflow != null) {
+                    amount += overflow.getAmount();
                     item.teleport(this.minion.getCenterLocation());
+                    break;
                 }
+            }
+
+            if (amount == 0) {
+                item.remove();
+            } else if (amount != originalAmount) {
+                StackerHelper.setItemStackAmount(item, amount);
             }
         }
     }
