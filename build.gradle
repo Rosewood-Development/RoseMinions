@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0' apply false
+    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
 
 allprojects {
@@ -7,9 +7,12 @@ allprojects {
     apply plugin: 'com.github.johnrengelman.shadow'
     group = 'dev.rosewood'
     version = '1.0.0-SNAPSHOT'
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     java {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        disableAutoTargetJvm()
     }
 
     dependencies {
@@ -47,9 +50,10 @@ dependencies {
     implementation project(path: ':NMS:v1_17_R1', configuration: 'remapped')
     implementation project(path: ':NMS:v1_18_R2', configuration: 'remapped')
     implementation project(path: ':NMS:v1_19_R3', configuration: 'remapped')
-    implementation project(path: ':NMS:v1_20_R1', configuration: 'remapped')
-    implementation project(path: ':NMS:v1_20_R2', configuration: 'remapped')
     implementation project(path: ':NMS:v1_20_R3', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_20_R4', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_21_R1', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_21_R2', configuration: 'remapped')
 }
 
 shadowJar {

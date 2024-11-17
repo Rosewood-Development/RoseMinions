@@ -3,31 +3,53 @@ ranks:
   0:
     modules:
       farmer:
-        radius: 3
-        farm-frequency: 1000
-        farmland-update-frequency: 10000
-        till-soil: true
-        hydrate-soil: true
-        plant-seeds: true
-        harvest-crops: true
-        bonemeal-crops: true
-      item_pickup:
-        radius: 3
-        pickup-frequency: 1000
-        sub-modules:
-          filter:
-            inventory-size: 27
-      inventory:
-        inventory-size: 27
+        farm-frequency: 1500
+      inventory: {}
+      item_pickup: {}
       appearance:
-        small: true
-        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjk5Nzg4Njg3YzMxNmUxOGNmZGZkNzU4ZWY2ZjEyYTE5NzFiODY0NjkzMmE2Y2NjMmI5ODY3ZTdjNzcwN2I2YiJ9fX0='
-        display-name: '<g#50:#ec9f05:#ff4e00>Farmer Minion'
-        rotation-speed: 0.05
+        display-name: '<g#50:#69ff3b:#c4ffa0>Farmer Minion'
+        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDI3MGMwNjI1MmQ0ZDQxYzE1NzI5YjE5N2IwM2RkOTE1NzY0ZWU3NDkxYTdhOTFlNDEyYmNiMDY1MzAxYzM5NSJ9fX0='
+      # Add upgrade cost ?
     item:
-      display-name: '<#c7a4ff>Farmer Minion'
+      display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 0&7]'
       lore:
         - ''
-        - '<#ffaaff>Place to summon a minion that will'
-        - '<#ffaaff>farm nearby crops.'
-      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjk5Nzg4Njg3YzMxNmUxOGNmZGZkNzU4ZWY2ZjEyYTE5NzFiODY0NjkzMmE2Y2NjMmI5ODY3ZTdjNzcwN2I2YiJ9fX0='
+        - '<#c4ffa0>I''ll manage your farmland.'
+        - '<#c4ffa0>Trust me, I''m outstanding in my field!'
+      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDI3MGMwNjI1MmQ0ZDQxYzE1NzI5YjE5N2IwM2RkOTE1NzY0ZWU3NDkxYTdhOTFlNDEyYmNiMDY1MzAxYzM5NSJ9fX0='
+  1:
+    modules:
+      farmer:
+        farm-frequency: 1250
+      inventory:
+        inventory-size: 81
+      # Add upgrade cost
+    item:
+      display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 1&7]'
+  2:
+    modules:
+      farmer:
+        farm-frequency: 1000
+      inventory:
+        inventory-size: 162
+      # Add upgrade cost
+    item:
+      display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 2&7]'
+  3:
+    modules:
+      farmer:
+        farm-frequency: 750
+      inventory:
+        inventory-size: 243
+      # Add upgrade cost
+    item:
+      display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 3&7]'
+  4:
+    modules:
+      farmer:
+        farm-frequency: 500
+      inventory:
+        inventory-size: 324
+      # Add upgrade cost ?
+    item:
+      display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 4&7]'

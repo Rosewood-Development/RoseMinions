@@ -5,6 +5,7 @@ import dev.rosewood.guiframework.framework.util.GuiUtil;
 import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.RoseMinions;
@@ -12,8 +13,8 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
-import dev.rosewood.roseminions.util.EntitySpawnUtil;
 import dev.rosewood.roseminions.util.MinionUtils;
+import dev.rosewood.roseminions.util.VersionUtils;
 import dev.rosewood.roseminions.util.nms.SkullUtils;
 import java.util.List;
 import java.util.function.Predicate;
@@ -94,7 +95,7 @@ public class ExperienceModule extends MinionModule {
             this.settings.set(STORED_XP, this.settings.get(STORED_XP) + xp);
             entity.remove();
             entity.getWorld().playSound(this.minion.getCenterLocation(), Sound.ENTITY_ITEM_PICKUP, 10, 0);
-            entity.getWorld().spawnParticle(Particle.REDSTONE, entity.getLocation(), 5, 0.5, 0.5, 0.5, 0, new Particle.DustOptions(org.bukkit.Color.fromRGB(0, 255, 0), 1));
+            entity.getWorld().spawnParticle(VersionUtils.DUST, entity.getLocation(), 5, 0.5, 0.5, 0.5, 0, new Particle.DustOptions(org.bukkit.Color.fromRGB(0, 255, 0), 1));
         });
     }
 

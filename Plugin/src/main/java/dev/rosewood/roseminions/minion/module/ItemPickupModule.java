@@ -8,11 +8,11 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
+import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 
@@ -47,7 +47,7 @@ public class ItemPickupModule extends MinionModule {
         this.lastPickupTime = System.currentTimeMillis();
 
         int radius = this.settings.get(RADIUS);
-        this.pickup(this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, entity -> entity.getType() == EntityType.DROPPED_ITEM)
+        this.pickup(this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, entity -> entity.getType() == VersionUtils.ITEM)
                 .stream()
                 .map(x -> (Item) x)
                 .collect(Collectors.toList()));

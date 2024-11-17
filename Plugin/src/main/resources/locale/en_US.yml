@@ -31,7 +31,6 @@ command-reload-reloaded: '&eConfiguration and locale files were reloaded.'
 command-give-description: 'Gives a minion to a player'
 command-give-success: '&eYou have given &b%amount% %minion% &eminion(s) to &b%player%.'
 command-give-no-ranks: '&cThere are no ranks available for that minion type.'
-command-give-invalid-rank: '&cInvalid rank, must be between 0 and %max%.'
 
 # Argument Handler Error Messages
 argument-handler-enum: '%enum% type [%input%] does not exist'
@@ -39,4 +38,5 @@ argument-handler-enum-list: '%enum% type [%input%] does not exist. Valid types: 
 argument-handler-string: 'String cannot be empty'
 argument-handler-integer: 'Integer [%input%] must be a whole number between -2^31 and 2^31-1 inclusively'
 argument-handler-player: 'No Player with the username [%input%] was found online'
-argument-handler-minion-rank: 'Minion rank [%input%] must be between 0 and %max% inclusively'
+argument-handler-minion-config: 'No minion config named [%input%] exists'
+argument-handler-minion-rank: 'Minion rank [%input%] is not valid. Available ranks: [%ranks%]'

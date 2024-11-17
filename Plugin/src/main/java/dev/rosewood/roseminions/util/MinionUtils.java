@@ -83,4 +83,8 @@ public final class MinionUtils {
         return (R) value;
     }
 
+    public static int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
 }

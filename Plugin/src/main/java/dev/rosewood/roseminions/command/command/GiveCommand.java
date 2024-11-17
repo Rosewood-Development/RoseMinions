@@ -1,12 +1,14 @@
 package dev.rosewood.roseminions.command.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;
+import dev.rosewood.rosegarden.command.framework.ArgumentsDefinition;
+import dev.rosewood.rosegarden.command.framework.BaseRoseCommand;
 import dev.rosewood.rosegarden.command.framework.CommandContext;
-import dev.rosewood.rosegarden.command.framework.RoseCommand;
-import dev.rosewood.rosegarden.command.framework.RoseCommandWrapper;
-import dev.rosewood.rosegarden.command.framework.annotation.Optional;
+import dev.rosewood.rosegarden.command.framework.CommandInfo;
 import dev.rosewood.rosegarden.command.framework.annotation.RoseExecutable;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.rosewood.roseminions.command.argument.MinionArgumentHandlers;
 import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.minion.config.MinionConfig;
 import dev.rosewood.roseminions.minion.config.RankConfig;
@@ -17,14 +19,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public class GiveCommand extends RoseCommand {
+public class GiveCommand extends BaseRoseCommand {
 
-    public GiveCommand(RosePlugin rosePlugin, RoseCommandWrapper parent) {
-        super(rosePlugin, parent);
+    public GiveCommand(RosePlugin rosePlugin) {
+        super(rosePlugin);
     }
 
     @RoseExecutable
-    public void execute(CommandContext context, Player player, MinionConfig minionType, @Optional RankConfig rank, @Optional Integer amount) {
+    public void execute(CommandContext context, Player player, MinionConfig minionType, RankConfig rank, Integer amount) {
         LocaleManager locale = this.rosePlugin.getManager(LocaleManager.class);
 
         if (rank == null)
@@ -42,6 +44,7 @@ public class GiveCommand extends RoseCommand {
             itemStack.setItemMeta(itemMeta);
         }
 
+        amount = Math.min(itemStack.getMaxStackSize(), amount);
         itemStack.setAmount(amount);
 
         player.getInventory().addItem(itemStack);
@@ -54,23 +57,17 @@ public class GiveCommand extends RoseCommand {
     }
 
     @Override
-    protected String getDefaultName() {
-        return "give";
-    }
-
-    @Override
-    public String getDescriptionKey() {
-        return "command-give-description";
-    }
-
-    @Override
-    public String getRequiredPermission() {
-        return "roseminions.give";
-    }
-
-    @Override
-    public boolean isPlayerOnly() {
-        return false;
+    protected CommandInfo createCommandInfo() {
+        return CommandInfo.builder("give")
+                .descriptionKey("command-give-description")
+                .permission("roseminions.give")
+                .arguments(ArgumentsDefinition.builder()
+                        .required("player", ArgumentHandlers.PLAYER)
+                        .required("minionType", MinionArgumentHandlers.MINION_CONFIG)
+                        .optional("rank", MinionArgumentHandlers.MINION_RANK)
+                        .optional("amount", ArgumentHandlers.INTEGER)
+                        .build())
+                .build();
     }
 
 }

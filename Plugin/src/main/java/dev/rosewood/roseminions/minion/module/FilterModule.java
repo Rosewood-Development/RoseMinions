@@ -40,6 +40,8 @@ public class FilterModule extends MinionModule {
 
     public FilterModule(Minion minion) {
         super(minion, DefaultMinionModules.FILTER);
+
+        MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, FILTER_ITEMS);
     }
 
     @Override

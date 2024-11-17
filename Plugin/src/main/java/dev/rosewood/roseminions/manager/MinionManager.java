@@ -3,7 +3,7 @@ package dev.rosewood.roseminions.manager;
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.RoseMinions;
-import dev.rosewood.roseminions.manager.ConfigurationManager.Setting;
+import dev.rosewood.roseminions.config.SettingKey;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -91,8 +91,8 @@ public class MinionManager extends Manager {
 
     @Override
     public void reload() {
-        this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::update), 0L, Setting.MINION_UPDATE_FREQUENCY.getLong());
-        this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, () -> List.copyOf(this.loadedMinions).forEach(Minion::updateAsync), 0L, Setting.MINION_UPDATE_FREQUENCY.getLong());
+        this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::update), 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
+        this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, () -> List.copyOf(this.loadedMinions).forEach(Minion::updateAsync), 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
         this.loadPendingMinionsTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> {
             this.pendingLoadMinions.stream().filter(ArmorStand::isValid).forEach(this::loadMinion);
             this.pendingLoadMinions.clear();

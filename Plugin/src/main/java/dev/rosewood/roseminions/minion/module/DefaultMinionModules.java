@@ -17,6 +17,7 @@ public final class DefaultMinionModules {
     public static final String PLACER = "placer";
     public static final String SHEARER = "shearer";
     public static final String SLAYER = "slayer";
+    public static final String UPGRADE = "upgrade";
 
     private DefaultMinionModules() { }
 

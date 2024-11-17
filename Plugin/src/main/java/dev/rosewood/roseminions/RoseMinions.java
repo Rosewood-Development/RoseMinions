@@ -8,7 +8,6 @@ import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
 import dev.rosewood.roseminions.listener.WorldListener;
 import dev.rosewood.roseminions.manager.CommandManager;
-import dev.rosewood.roseminions.manager.ConfigurationManager;
 import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
@@ -34,7 +33,7 @@ public class RoseMinions extends RosePlugin {
     }
 
     public RoseMinions() {
-        super(-1, 14807, ConfigurationManager.class, null, LocaleManager.class, CommandManager.class);
+        super(-1, 14807, null, LocaleManager.class, CommandManager.class);
 
         instance = this;
     }

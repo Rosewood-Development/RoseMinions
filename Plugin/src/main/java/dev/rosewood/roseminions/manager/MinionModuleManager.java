@@ -24,6 +24,7 @@ import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.PlacerModule;
 import dev.rosewood.roseminions.minion.module.ShearerModule;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
+import dev.rosewood.roseminions.minion.module.UpgradeModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import java.io.File;
@@ -144,6 +145,7 @@ public class MinionModuleManager extends Manager implements Listener {
         event.registerModule(DefaultMinionModules.PLACER, PlacerModule::new, PlacerModule.class);
         event.registerModule(DefaultMinionModules.SHEARER, ShearerModule::new, ShearerModule.class);
         event.registerModule(DefaultMinionModules.SLAYER, SlayerModule::new, SlayerModule.class);
+        event.registerModule(DefaultMinionModules.UPGRADE, UpgradeModule::new, UpgradeModule.class);
     }
 
     public record RegisteredMinionModule<T extends MinionModule>(String name,

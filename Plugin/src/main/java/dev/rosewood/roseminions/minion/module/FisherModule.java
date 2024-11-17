@@ -10,13 +10,13 @@ import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
+import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
@@ -48,7 +48,7 @@ public class FisherModule extends MinionModule {
         REEL_IN_MIN_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
         REEL_IN_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)");
         WATER_LOOKUP_ATTEMPTS = SettingsRegistry.defineInteger(FisherModule.class, "water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up");
-        TOOL_ENCHANTMENTS = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(Enchantment.LUCK, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod");
+        TOOL_ENCHANTMENTS = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod");
         REEL_IN_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "reel-in-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish");
         BOBBER_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "fish-caught-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber");
 
@@ -77,8 +77,8 @@ public class FisherModule extends MinionModule {
         if (this.targetBlock != null) {
             if (System.currentTimeMillis() - this.lastEventTime <= this.reelInTime) {
                 Location particleCenter = this.targetBlock.getLocation().add(0.5, 1.0, 0.5);
-                this.targetBlock.getWorld().spawnParticle(Particle.WATER_BUBBLE, particleCenter, 2, 0.2, 0.1, 0.2, 0.1);
-                this.targetBlock.getWorld().spawnParticle(Particle.WATER_SPLASH, particleCenter, 3, 0.3, 0.1, 0.3, 0.1);
+                this.targetBlock.getWorld().spawnParticle(VersionUtils.BUBBLE, particleCenter, 2, 0.2, 0.1, 0.2, 0.1);
+                this.targetBlock.getWorld().spawnParticle(VersionUtils.SPLASH, particleCenter, 3, 0.3, 0.1, 0.3, 0.1);
                 return;
             }
 
@@ -131,7 +131,7 @@ public class FisherModule extends MinionModule {
 
         // Unable to find water, play some particles around the minion to indicate this
         Location particleCenter = this.minion.getCenterLocation();
-        this.minion.getWorld().spawnParticle(Particle.SMOKE_NORMAL, particleCenter, 15, 0.25, 0.25, 0.25, 0.1);
+        this.minion.getWorld().spawnParticle(VersionUtils.SMOKE, particleCenter, 15, 0.25, 0.25, 0.25, 0.1);
         this.resetWaitTime();
     }
 

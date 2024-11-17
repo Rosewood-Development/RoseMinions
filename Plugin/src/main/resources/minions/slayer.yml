@@ -1,43 +1,66 @@
-id: slayer
+id: newslayer
 ranks:
   0:
     modules:
       slayer:
-        radius: 3
-        attack-frequency: 1000
-        only-attack-enemies: true
-        damage-amount: 5
+        damage-amount: 2
+        attack-frequency: 3000
         number-of-targets: 1
-      item_pickup:
-        radius: 3
-        pickup-frequency: 1000
-        sub-modules:
-          filter:
-            inventory-size: 27
-      inventory:
-        inventory-size: 27
+        radius: 5
+      inventory: {}
+      item_pickup: {}
+      # Add upgrade cost ?
       appearance:
-        small: true
-        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjk5Nzg4Njg3YzMxNmUxOGNmZGZkNzU4ZWY2ZjEyYTE5NzFiODY0NjkzMmE2Y2NjMmI5ODY3ZTdjNzcwN2I2YiJ9fX0='
-        display-name: '<g#50:#ec9f05:#ff4e00>Slayer Minion'
-        rotation-speed: 0.05
+        display-name: '<g#50:#cb2424:#fe8181>Slayer Minion'
+        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDJhZDQ5Yzc0YTdjZGY3NTEzOTVmMmVlNjRiNWMyZDhjZjMyNmE0YzA1MzRlNzZlMzhmNzMzZTQ0YTcwODRkOCJ9fX0='
     item:
-      display-name: '<#c7a4ff>Slayer Minion'
+      display-name: '<#ee6969>Slayer Minion &7[<#fde0e0>Rank 0&7]'
       lore:
         - ''
-        - '<#ffaaff>Place to summon a minion that will'
-        - '<#ffaaff>attack nearby enemies and collect'
-        - '<#ffaaff>their items.'
-      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMjk5Nzg4Njg3YzMxNmUxOGNmZGZkNzU4ZWY2ZjEyYTE5NzFiODY0NjkzMmE2Y2NjMmI5ODY3ZTdjNzcwN2I2YiJ9fX0='
+        - '<#fdaaaa>Attack!  I''ll protect you from'
+        - '<#fdaaaa>enemies and share their loot.'
+      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDJhZDQ5Yzc0YTdjZGY3NTEzOTVmMmVlNjRiNWMyZDhjZjMyNmE0YzA1MzRlNzZlMzhmNzMzZTQ0YTcwODRkOCJ9fX0='
   1:
     modules:
       slayer:
-        radius: 5
-      item_pickup:
-        radius: 5
-      appearance:
-        display-name: '<g#50:#CB218E:#6617CB>Slayer2 Minion'
-        texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGRjYmIyM2RiNjczMzA2MTRlZWQ2NTIzMjYyZjMxMWI0NmRjMDA0NDgxZDBjNTcyNjE2ODQwNDNiODllOGJjNSJ9fX0='
+        damage-amount: 4
+        attack-frequency: 2500
+        number-of-targets: 2
+      inventory:
+        inventory-size: 81
+      # Add upgrade cost
     item:
-      display-name: '<#c7a4ff>Slayer2 Minion'
-      texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGRjYmIyM2RiNjczMzA2MTRlZWQ2NTIzMjYyZjMxMWI0NmRjMDA0NDgxZDBjNTcyNjE2ODQwNDNiODllOGJjNSJ9fX0='
+      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 1&7]'
+  2:
+    modules:
+      slayer:
+        damage-amount: 6
+        attack-frequency: 2000
+        number-of-targets: 3
+      inventory:
+        inventory-size: 162
+      # Add upgrade cost
+    item:
+      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 2&7]'
+  3:
+    modules:
+      slayer:
+        damage-amount: 8
+        attack-frequency: 1500
+        number-of-targets: 4
+      inventory:
+        inventory-size: 243
+      # Add upgrade cost
+    item:
+      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 3&7]'
+  4:
+    modules:
+      slayer:
+        damage-amount: 10
+        attack-frequency: 1000
+        number-of-targets: 5
+      inventory:
+        inventory-size: 324
+      # Add upgrade cost ?
+    item:
+      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 4&7]'

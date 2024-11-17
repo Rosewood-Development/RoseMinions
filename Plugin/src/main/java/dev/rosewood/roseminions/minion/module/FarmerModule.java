@@ -15,6 +15,7 @@ import dev.rosewood.roseminions.model.BlockPosition;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.model.WorkerAreaProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
+import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -143,7 +144,7 @@ public class FarmerModule extends MinionModule {
                 case DIRT, GRASS_BLOCK, DIRT_PATH -> {
                     block.setType(FARMLAND);
                     block.getWorld().playSound(block.getLocation(), Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1);
-                    block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
+                    block.getWorld().spawnParticle(VersionUtils.BLOCK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
 
                     // Hydrate the soil partially to prevent it from drying out immediately
                     Farmland farmland = (Farmland) block.getBlockData();
@@ -174,7 +175,7 @@ public class FarmerModule extends MinionModule {
             // Hydrate the soil
             blockData.setMoisture(blockData.getMaximumMoisture());
             block.setBlockData(blockData);
-            block.getWorld().spawnParticle(Particle.WATER_SPLASH, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
+            block.getWorld().spawnParticle(VersionUtils.SPLASH, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
         }
     }
 
@@ -215,7 +216,7 @@ public class FarmerModule extends MinionModule {
             } else if (this.settings.get(BONEMEAL_CROPS)) {
                 ageable.setAge(ageable.getAge() + 1);
                 cropBlock.setBlockData(ageable);
-                cropBlock.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, cropBlock.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
+                cropBlock.getWorld().spawnParticle(VersionUtils.HAPPY_VILLAGER, cropBlock.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
                 return;
             }
         }
