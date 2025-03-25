@@ -80,7 +80,7 @@ public class WorkerAreaController extends ModuleController {
 
         Map<BlockPosition, BlockData> includedBlocks = new ConcurrentHashMap<>();
 
-        IntStream.rangeClosed(-radius, radius)/*.parallel()*/.forEach(x -> {
+        IntStream.rangeClosed(-radius, radius).forEach(x -> {
             for (int z = -radius; z <= radius; z++) {
                 if (circle && x * x + z * z > radiusSquared)
                     continue;

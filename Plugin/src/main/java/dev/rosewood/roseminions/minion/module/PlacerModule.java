@@ -27,7 +27,7 @@ public class PlacerModule extends MinionModule {
         RADIUS = SettingsRegistry.defineInteger(PlacerModule.class, "radius", 2, "The radius in which to break blocks");
         PLACE_FREQUENCY = SettingsRegistry.defineLong(PlacerModule.class, "place-frequency", 1000L, "How often blocks will be placed (in milliseconds)");
         TARGET_BLOCK = SettingsRegistry.defineEnum(PlacerModule.class, "target-block", Material.COBBLESTONE, "The block to place");
-        REQUIRE_UNOBSTRUCTED = SettingsRegistry.defineBoolean(PlacerModule.class, "require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block block that is not the target block.");
+        REQUIRE_UNOBSTRUCTED = SettingsRegistry.defineBoolean(PlacerModule.class, "require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block.");
 
         SettingsRegistry.redefineString(MinerModule.class, MinionModule.GUI_TITLE, "Placer Module");
         SettingsRegistry.redefineEnum(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
@@ -40,14 +40,14 @@ public class PlacerModule extends MinionModule {
     public PlacerModule(Minion minion) {
         super(minion, DefaultMinionModules.PLACER);
 
-        this.getModule(AppearanceModule.class).ifPresent(module -> module.registerNotificationTicket(new NotificationTicket(
+        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(
                 this,
                 "obstructed-block",
                 ChatColor.RED + "Unidentified block in the way!",
                 1000,
                 this::isPlacingObstructed,
                 StringPlaceholders::empty
-        )));
+        ));
     }
 
     @Override

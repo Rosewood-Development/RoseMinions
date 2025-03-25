@@ -23,7 +23,9 @@ dependencies {
     compileOnly 'com.mojang:authlib:1.5.21'
 
     // Shop Hook Dependencies
-    compileOnly 'com.github.brcdev-minecraft:shopgui-api:3.0.0'
+    compileOnly 'com.github.brcdev-minecraft:shopgui-api:3.0.0', {
+        exclude group: 'org.spigotmc'
+    }
     compileOnly 'com.github.Gypopo:EconomyShopGUI-API:1.5.0'
     compileOnly 'com.zrips:cmi:9.0.1.3'
     // TODO: Add BossShopPro

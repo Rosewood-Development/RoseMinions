@@ -9,16 +9,12 @@ import dev.rosewood.roseminions.nms.v1_21_R1.hologram.HologramImpl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
@@ -28,10 +24,8 @@ import org.bukkit.craftbukkit.v1_21_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_21_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_21_R1.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_21_R1.util.CraftChatMessage;
-import org.bukkit.craftbukkit.v1_21_R1.util.CraftNamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.loot.LootTables;
 
 public class NMSHandlerImpl implements NMSHandler {
 
@@ -70,10 +64,8 @@ public class NMSHandlerImpl implements NMSHandler {
                 .withOptionalParameter(LootContextParams.THIS_ENTITY, fishingHook)
                 .create(LootContextParamSets.FISHING);
 
-        ResourceLocation resourceLocation = CraftNamespacedKey.toMinecraft(LootTables.FISHING.getKey());
-        Registry<LootTable> registry = MinecraftServer.getServer().registryAccess().registry(Registries.LOOT_TABLE).orElseThrow();
-        ResourceKey<LootTable> lootTableKey = ResourceKey.create(Registries.LOOT_TABLE, resourceLocation);
-        return registry.getOrThrow(lootTableKey).getRandomItems(params).stream()
+        return MinecraftServer.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING).getRandomItems(params)
+                .stream()
                 .filter(x -> !x.isEmpty())
                 .map(CraftItemStack::asBukkitCopy)
                 .toList();

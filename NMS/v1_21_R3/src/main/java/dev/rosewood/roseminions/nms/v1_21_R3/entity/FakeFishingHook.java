@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.nms.v1_17_R1.entity;
+package dev.rosewood.roseminions.nms.v1_21_R3.entity;
 
 import dev.rosewood.roseminions.nms.util.ReflectionUtils;
 import java.lang.reflect.Method;
@@ -7,7 +7,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.level.Level;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_21_R3.CraftWorld;
 
 public class FakeFishingHook extends FishingHook {
 
@@ -28,7 +28,7 @@ public class FakeFishingHook extends FishingHook {
     }
 
     public void setOpenWater(Location location) {
-        this.level = ((CraftWorld) location.getWorld()).getHandle();
+        this.setLevel(((CraftWorld) location.getWorld()).getHandle());
 
         try {
             this.isOpenWater = (boolean) method_calculateOpenWater.invoke(this, new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()));

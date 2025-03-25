@@ -88,16 +88,12 @@ public class CommunicatorModule extends MinionModule {
 
             this.lastConversation = System.currentTimeMillis();
 
-            this.active = this.getRandomConversation();
-            if (this.active == null)
-                return;
-
             // This could be a bit funky, but it should work
-            while (this.active.participants() > this.getNearbyMinions(this.active.radius()).size() + 1) {
+            do {
                 this.active = this.getRandomConversation();
                 if (this.active == null)
                     return;
-            }
+            } while (this.active.participants() > this.getNearbyMinions(this.active.radius()).size() + 1);
 
             this.participants = this.getNearbyMinions(this.active.radius());
             this.lastConversation = System.currentTimeMillis();
@@ -125,7 +121,7 @@ public class CommunicatorModule extends MinionModule {
         String nextMessage = this.active.messages().get(nextMessageIndex);
 
         // Get the next speaker in the conversation, try and not repeat the last speaker if possible
-        if (this.participants.size() < 1)
+        if (this.participants.isEmpty())
             return; // There are no participants in the conversation
 
         this.lastSpeaker = this.participants.get(this.lastSpeaker == null ? 0 : this.lastSpeaker == this.participants.get(this.participants.size() - 1)
