@@ -7,12 +7,13 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
-import dev.rosewood.roseminions.util.nms.SkullUtils;
+import dev.rosewood.roseminions.util.SkullUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,31 +24,42 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import static dev.rosewood.roseminions.minion.module.MinerModule.Settings.*;
 
 public class MinerModule extends MinionModule {
 
-    public static final SettingAccessor<BlockFace> MINING_DIRECTION;
-    public static final SettingAccessor<Integer> MINING_DISTANCE;
-    public static final SettingAccessor<Integer> MIN_MINING_DISTANCE;
-    public static final SettingAccessor<Integer> MAX_MINING_DISTANCE;
-    public static final SettingAccessor<Integer> MINING_HEIGHT;
-    public static final SettingAccessor<Long> MINING_FREQUENCY;
+    public static class Settings implements ModuleSettings {
 
-    public static final SettingAccessor<List<Material>> BLACKLISTED_BLOCKS;
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-    static {
-        MINING_DIRECTION = SettingsRegistry.defineEnum(MinerModule.class, "mining-direction", BlockFace.SELF, "The direction in which to mine blocks");
-        MINING_DISTANCE = SettingsRegistry.defineHiddenSetting(MinerModule.class, SettingSerializers.INTEGER, "mining-distance", () -> 1);
-        MIN_MINING_DISTANCE = SettingsRegistry.defineInteger(MinerModule.class, "min-mining-distance", 1, "The minimum distance in which to mine blocks");
-        MAX_MINING_DISTANCE = SettingsRegistry.defineInteger(MinerModule.class, "max-mining-distance", 5, "The maximum distance in which to mine blocks");
-        MINING_HEIGHT = SettingsRegistry.defineInteger(MinerModule.class, "mining-height", 1, "The height in which to mine blocks up and down from the minion", "1 = only mine the same y level as the minion)");
-        MINING_FREQUENCY = SettingsRegistry.defineLong(MinerModule.class, "mining-frequency", 1000L, "How often blocks will be mined (in milliseconds)");
-        BLACKLISTED_BLOCKS = SettingsRegistry.defineSetting(MinerModule.class, SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", () -> List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine");
+        public static final SettingAccessor<BlockFace> MINING_DIRECTION = define(SettingAccessor.defineEnum("mining-direction", BlockFace.SELF, "The direction in which to mine blocks"));
+        public static final SettingAccessor<Integer> MINING_DISTANCE = define(SettingAccessor.defineHiddenSetting(SettingSerializers.INTEGER, "mining-distance", () -> 1));
+        public static final SettingAccessor<Integer> MIN_MINING_DISTANCE = define(SettingAccessor.defineInteger("min-mining-distance", 1, "The minimum distance in which to mine blocks"));
+        public static final SettingAccessor<Integer> MAX_MINING_DISTANCE = define(SettingAccessor.defineInteger("max-mining-distance", 5, "The maximum distance in which to mine blocks"));
+        public static final SettingAccessor<Integer> MINING_HEIGHT = define(SettingAccessor.defineInteger("mining-height", 1, "The height in which to mine blocks up and down from the minion", "1 = only mine the same y level as the minion)"));
+        public static final SettingAccessor<Long> MINING_FREQUENCY = define(SettingAccessor.defineLong("mining-frequency", 1000L, "How often blocks will be mined (in milliseconds)"));
+        public static final SettingAccessor<List<Material>> BLACKLISTED_BLOCKS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", () -> List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine"));
 
-        SettingsRegistry.redefineString(MinerModule.class, MinionModule.GUI_TITLE, "Miner Module");
-        SettingsRegistry.redefineEnum(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
-        SettingsRegistry.redefineString(MinerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Miner Module");
-        SettingsRegistry.redefineStringList(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        static {
+            define(MinionModule.GUI_TITLE.copy("Miner Module"));
+            define(MinionModule.GUI_ICON.copy(Material.DIAMOND_PICKAXE));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Miner Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastMineTime;
@@ -66,7 +78,7 @@ public class MinerModule extends MinionModule {
     );
 
     public MinerModule(Minion minion) {
-        super(minion, DefaultMinionModules.MINER);
+        super(minion, DefaultMinionModules.MINER, Settings.INSTANCE);
     }
 
     @Override

@@ -2,6 +2,7 @@ package dev.rosewood.roseminions.event;
 
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,8 +28,8 @@ public class MinionModuleRegistrationEvent extends Event {
      * @param name The name of the module being registered
      * @return true if registering the module overwrote an existing module, false otherwise
      */
-    public <T extends MinionModule> boolean registerModule(String name, Function<Minion, T> moduleFactory, Class<T> moduleClass) {
-        return this.registeredModules.put(name, new MinionModuleManager.RegisteredMinionModule<>(name, moduleFactory, moduleClass)) != null;
+    public <T extends MinionModule> boolean registerModule(String name, Function<Minion, T> moduleFactory, ModuleSettings settings) {
+        return this.registeredModules.put(name, new MinionModuleManager.RegisteredMinionModule<>(name, moduleFactory, settings)) != null;
     }
 
     /**

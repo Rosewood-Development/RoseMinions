@@ -8,14 +8,15 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.MinionConversation;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.bukkit.Location;
@@ -23,24 +24,40 @@ import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import static dev.rosewood.roseminions.minion.module.CommunicatorModule.Settings.*;
 
 public class CommunicatorModule extends MinionModule {
 
-    public static final SettingAccessor<Long> CONVERSATION_FREQUENCY;
-    public static final SettingAccessor<Long> MESSAGE_FREQUENCY;
-    public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        CONVERSATION_FREQUENCY = SettingsRegistry.defineLong(CommunicatorModule.class, "conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)");
-        MESSAGE_FREQUENCY = SettingsRegistry.defineLong(CommunicatorModule.class, "message-frequency", 3000L, "How often a message will be sent (in milliseconds)");
-        CONVERSATIONS = SettingsRegistry.defineSetting(CommunicatorModule.class, SettingSerializers.ofList(SettingSerializers.MINION_CONVERSATION), "conversations", () -> List.of(
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+
+        public static final SettingAccessor<Long> CONVERSATION_FREQUENCY = define(SettingAccessor.defineLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
+        public static final SettingAccessor<Long> MESSAGE_FREQUENCY = define(SettingAccessor.defineLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
+        public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MINION_CONVERSATION), "conversations", () -> List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
-        ), "The conversations that the minion can have");
+        ), "The conversations that the minion can have"));
 
-        SettingsRegistry.redefineString(CommunicatorModule.class, MinionModule.GUI_TITLE, "Communicator Module");
-        SettingsRegistry.redefineEnum(CommunicatorModule.class, MinionModule.GUI_ICON, Material.COMMAND_BLOCK);
-        SettingsRegistry.redefineString(CommunicatorModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Communicator Module");
-        SettingsRegistry.redefineStringList(CommunicatorModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to have", MinionUtils.SECONDARY_COLOR + "conversations with other minions."));
+        static {
+            define(MinionModule.GUI_TITLE.copy("Communicator Module"));
+            define(MinionModule.GUI_ICON.copy(Material.COMMAND_BLOCK));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Communicator Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to have", MinionUtils.SECONDARY_COLOR + "conversations with other minions.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     public long lastConversation; // The last time the minion started a conversation
@@ -54,7 +71,7 @@ public class CommunicatorModule extends MinionModule {
     public Hologram hologram; // The hologram for the conversation
 
     public CommunicatorModule(Minion minion) {
-        super(minion, DefaultMinionModules.COMMUNICATOR);
+        super(minion, DefaultMinionModules.COMMUNICATOR, Settings.INSTANCE);
 
         // TODO: Clear all messages when the the plugin is reloaded or disabled
 
@@ -158,7 +175,7 @@ public class CommunicatorModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_FOUR)
-                .setTitle(this.settings.get(GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
 
         mainScreen.addButtonAt(0, GuiFactory.createButton(new ItemStack(Material.BIRCH_SIGN))
                 .setName(HexUtils.colorify("<g:#F7971E:#FFD200>Start Conversation"))

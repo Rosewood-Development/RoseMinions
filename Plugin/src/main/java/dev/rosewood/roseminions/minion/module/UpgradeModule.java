@@ -5,8 +5,11 @@ import dev.rosewood.guiframework.framework.util.GuiUtil;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
+import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
@@ -15,15 +18,34 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class UpgradeModule extends MinionModule {
 
-    static {
-        SettingsRegistry.redefineString(AppearanceModule.class, MinionModule.GUI_TITLE, "Upgrade Minion");
-        SettingsRegistry.redefineEnum(AppearanceModule.class, MinionModule.GUI_ICON, Material.NETHER_STAR);
-        SettingsRegistry.redefineString(AppearanceModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Minion Appearance");
-        SettingsRegistry.redefineStringList(AppearanceModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+    public static class Settings implements ModuleSettings {
+
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Upgrade Minion"));
+            define(MinionModule.GUI_ICON.copy(Material.IRON_SWORD));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Upgrade Minion"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows upgrading this minion.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     public UpgradeModule(Minion minion) {
-        super(minion, DefaultMinionModules.UPGRADE);
+        super(minion, DefaultMinionModules.UPGRADE, Settings.INSTANCE);
     }
 
     @Override

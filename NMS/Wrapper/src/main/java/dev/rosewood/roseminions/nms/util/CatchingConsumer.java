@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.util.catching;
+package dev.rosewood.roseminions.nms.util;
 
 public interface CatchingConsumer<T> {
 

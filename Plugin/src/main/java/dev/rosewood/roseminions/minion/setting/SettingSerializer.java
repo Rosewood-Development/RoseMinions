@@ -1,51 +1,45 @@
 package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
-import dev.rosewood.roseminions.model.DataSerializable;
-import dev.rosewood.roseminions.util.catching.CatchingBiConsumer;
-import dev.rosewood.roseminions.util.catching.CatchingFunction;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.concurrent.atomic.AtomicReference;
+import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import java.util.function.Function;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public abstract class SettingSerializer<T> {
 
     protected final Class<T> type;
+    protected final PersistentDataType<?, T> persistentDataType;
     private final Function<T, String> toStringFunction;
     private final Function<String, T> fromStringFunction;
 
-    public SettingSerializer(Class<T> type, Function<T, String> toStringFunction, Function<String, T> fromStringFunction) {
+    public SettingSerializer(Class<T> type, PersistentDataType<?, T> persistentDataType, Function<T, String> toStringFunction, Function<String, T> fromStringFunction) {
         this.type = type;
+        this.persistentDataType = persistentDataType;
         this.toStringFunction = toStringFunction;
         this.fromStringFunction = fromStringFunction;
     }
 
-    public SettingSerializer(Class<T> type) {
-        this(type, null, null);
+    public SettingSerializer(Class<T> type, PersistentDataType<?, T> persistentDataType) {
+        this(type, persistentDataType, null, null);
     }
 
-    public SettingSerializer() {
-        this(null);
+    public SettingSerializer(PersistentDataType<?, T> persistentDataType) {
+        this(null, persistentDataType);
     }
 
     public abstract void write(CommentedConfigurationSection config, String key, T value, String... comments);
 
-    public abstract byte[] write(T value);
+    public void write(PersistentDataContainer container, PersistentDataAdapterContext context, String key, T value) {
+        container.set(CustomPersistentDataType.KeyHelper.get(key), this.persistentDataType, value);
+    }
 
     public abstract T read(ConfigurationSection config, String key);
 
-    public abstract T read(byte[] input);
-
-    public T readValue(byte[] input, CatchingFunction<ObjectInputStream, T> function) {
-        AtomicReference<T> value = new AtomicReference<>();
-        DataSerializable.read(input, x -> value.set(function.apply(x)));
-        return value.get();
-    }
-
-    public byte[] writeValue(T value, CatchingBiConsumer<ObjectOutputStream, T> consumer) {
-        return DataSerializable.write(x -> consumer.accept(x, value));
+    public T read(PersistentDataContainer container, String key) {
+        return container.get(CustomPersistentDataType.KeyHelper.get(key), this.persistentDataType);
     }
 
     public final boolean isStringificationAllowed() {
@@ -62,6 +56,10 @@ public abstract class SettingSerializer<T> {
         if (this.fromStringFunction == null)
             throw new UnsupportedOperationException("parseString not implemented, check isStringificationAllowed() first");
         return this.fromStringFunction.apply(value);
+    }
+
+    public PersistentDataType<?, T> getPersistentDataType() {
+        return this.persistentDataType;
     }
 
     public Class<T> getType() {

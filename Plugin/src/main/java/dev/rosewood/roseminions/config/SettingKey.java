@@ -7,8 +7,7 @@ import dev.rosewood.roseminions.RoseMinions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import static dev.rosewood.rosegarden.config.RoseSettingSerializers.LONG;
-import static dev.rosewood.rosegarden.config.RoseSettingSerializers.STRING_LIST;
+import static dev.rosewood.rosegarden.config.RoseSettingSerializers.*;
 
 public final class SettingKey {
 

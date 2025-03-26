@@ -8,38 +8,55 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import static dev.rosewood.roseminions.minion.module.FilterModule.Settings.*;
 
 public class FilterModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> INVENTORY_SIZE;
-    public static final SettingAccessor<ItemStack[]> FILTER_ITEMS;
-    public static final SettingAccessor<FilterType> FILTER_TYPE;
-    public static final SettingAccessor<Boolean> MATCH_NBT;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        INVENTORY_SIZE = SettingsRegistry.defineInteger(FilterModule.class, "inventory-size", 27, "How many individual items can be stored for filtering");
-        FILTER_ITEMS = SettingsRegistry.defineHiddenSetting(FilterModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "filter-items", () -> new ItemStack[27]);
-        FILTER_TYPE = SettingsRegistry.defineEnum(FilterModule.class, "filter-type", FilterType.BLACKLIST, "The type of filter");
-        MATCH_NBT = SettingsRegistry.defineBoolean(FilterModule.class, "match-nbt", false, "Whether or not to match NBT data");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(FilterModule.class, MinionModule.GUI_TITLE, "Filter Module");
-        SettingsRegistry.redefineEnum(FilterModule.class, MinionModule.GUI_ICON, Material.COMPARATOR);
-        SettingsRegistry.redefineString(FilterModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Filter Module");
-        SettingsRegistry.redefineStringList(FilterModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> INVENTORY_SIZE = define(SettingAccessor.defineInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
+        public static final SettingAccessor<ItemStack[]> FILTER_ITEMS = define(SettingAccessor.defineHiddenSetting(SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "filter-items", () -> new ItemStack[27]));
+        public static final SettingAccessor<FilterType> FILTER_TYPE = define(SettingAccessor.defineEnum("filter-type", FilterType.BLACKLIST, "The type of filter"));
+        public static final SettingAccessor<Boolean> MATCH_NBT = define(SettingAccessor.defineBoolean("match-nbt", false, "Whether or not to match NBT data"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Filter Module"));
+            define(MinionModule.GUI_ICON.copy(Material.COMPARATOR));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Filter Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     public FilterModule(Minion minion) {
-        super(minion, DefaultMinionModules.FILTER);
+        super(minion, DefaultMinionModules.FILTER, Settings.INSTANCE);
 
         MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, FILTER_ITEMS);
     }

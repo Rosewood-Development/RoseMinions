@@ -1,7 +1,7 @@
 package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
-import dev.rosewood.roseminions.model.DataSerializable;
+import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -9,12 +9,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.bukkit.Keyed;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.persistence.PersistentDataType;
 
 @SuppressWarnings("unchecked")
 public final class SettingSerializerFactories {
@@ -29,15 +29,9 @@ public final class SettingSerializerFactories {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<T>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<T> serializer = new SettingSerializer<>(enumClass, Enum::name, x -> Enum.valueOf(enumClass, x)) {
+        SettingSerializer<T> serializer = new SettingSerializer<>(enumClass, CustomPersistentDataType.forEnum(enumClass), Enum::name, x -> Enum.valueOf(enumClass, x)) {
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) { config.set(key, value.name(), comments); }
-            public byte[] write(T value) { return DataSerializable.write(x -> x.writeUTF(value.name())); }
             public T read(ConfigurationSection config, String key) { return Enum.valueOf(enumClass, config.getString(key, "")); }
-            public T read(byte[] input) {
-                AtomicReference<T> value = new AtomicReference<>();
-                DataSerializable.read(input, x -> value.set(Enum.valueOf(enumClass, x.readUTF())));
-                return value.get();
-            }
         };
 
         DYNAMIC_SERIALIZERS.put(key, serializer);
@@ -49,15 +43,9 @@ public final class SettingSerializerFactories {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<T>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<T> serializer = new SettingSerializer<>(keyedClass, x -> translateName(x.getKey()), x -> valueOfFunction.apply(translateKey(x))) {
+        SettingSerializer<T> serializer = new SettingSerializer<>(keyedClass, CustomPersistentDataType.forKeyed(keyedClass, valueOfFunction), x -> translateName(x.getKey()), x -> valueOfFunction.apply(translateKey(x))) {
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) { config.set(key, translateName(value.getKey()), comments); }
-            public byte[] write(T value) { return DataSerializable.write(x -> x.writeUTF(translateName(value.getKey()))); }
             public T read(ConfigurationSection config, String key) { return valueOfFunction.apply(translateKey(config.getString(key))); }
-            public T read(byte[] input) {
-                AtomicReference<T> value = new AtomicReference<>();
-                DataSerializable.read(input, x -> value.set(valueOfFunction.apply(translateKey(x.readUTF()))));
-                return value.get();
-            }
         };
 
         DYNAMIC_SERIALIZERS.put(key, serializer);
@@ -69,7 +57,7 @@ public final class SettingSerializerFactories {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<T[]>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<T[]> arraySerializer = new SettingSerializer<>() {
+        SettingSerializer<T[]> arraySerializer = new SettingSerializer<>(CustomPersistentDataType.forArray(serializer.getPersistentDataType())) {
             public void write(CommentedConfigurationSection config, String key, T[] value, String... comments) {
                 if (serializer.isStringificationAllowed()) {
                     config.set(key, Arrays.stream(value).map(x -> x == null ? "" : serializer.stringify(x)).toList(), comments);
@@ -84,19 +72,6 @@ public final class SettingSerializerFactories {
                         }
                     }
                 }
-            }
-            public byte[] write(T[] value) {
-                return DataSerializable.write(x -> {
-                    x.writeInt(value.length);
-                    for (T t : value) {
-                        x.writeBoolean(t != null);
-                        if (t != null) {
-                            byte[] data = serializer.write(t);
-                            x.writeInt(data.length);
-                            x.write(data);
-                        }
-                    }
-                });
             }
             public T[] read(ConfigurationSection config, String key) {
                 if (serializer.isStringificationAllowed()) {
@@ -123,21 +98,6 @@ public final class SettingSerializerFactories {
                     return (T[]) Array.newInstance(serializer.type, 0);
                 }
             }
-            public T[] read(byte[] input) {
-                AtomicReference<T[]> value = new AtomicReference<>();
-                DataSerializable.read(input, x -> {
-                    T[] array = (T[]) Array.newInstance(serializer.type, x.readInt());
-                    for (int i = 0; i < array.length; i++) {
-                        if (x.readBoolean()) {
-                            byte[] data = new byte[x.readInt()];
-                            x.readFully(data);
-                            array[i] = serializer.read(data);
-                        }
-                    }
-                    value.set(array);
-                });
-                return value.get();
-            }
             public String getTypeName() {
                 return key;
             }
@@ -152,7 +112,7 @@ public final class SettingSerializerFactories {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<List<T>>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<List<T>> listSerializer = new SettingSerializer<>() {
+        SettingSerializer<List<T>> listSerializer = new SettingSerializer<>(CustomPersistentDataType.forList(serializer.getPersistentDataType())) {
             public void write(CommentedConfigurationSection config, String key, List<T> value, String... comments) {
                 if (serializer.isStringificationAllowed()) {
                     config.set(key, value.stream().map(serializer::stringify).toList(), comments);
@@ -162,16 +122,6 @@ public final class SettingSerializerFactories {
                     for (T t : value)
                         serializer.write(section, String.valueOf(index++), t);
                 }
-            }
-            public byte[] write(List<T> value) {
-                return DataSerializable.write(x -> {
-                    x.writeInt(value.size());
-                    for (T t : value) {
-                        byte[] data = serializer.write(t);
-                        x.writeInt(data.length);
-                        x.write(data);
-                    }
-                });
             }
             public List<T> read(ConfigurationSection config, String key) {
                 if (serializer.isStringificationAllowed()) {
@@ -189,19 +139,6 @@ public final class SettingSerializerFactories {
                     return list;
                 }
             }
-            public List<T> read(byte[] input) {
-                List<T> list = new ArrayList<>();
-                DataSerializable.read(input, x -> {
-                    int size = x.readInt();
-                    for (int i = 0; i < size; i++) {
-                        int dataLength = x.readInt();
-                        byte[] data = new byte[dataLength];
-                        x.readFully(data);
-                        list.add(serializer.read(data));
-                    }
-                });
-                return list;
-            }
             public String getTypeName() {
                 return key;
             }
@@ -216,7 +153,7 @@ public final class SettingSerializerFactories {
         if (DYNAMIC_SERIALIZERS.containsKey(key))
             return (SettingSerializer<Map<K, V>>) DYNAMIC_SERIALIZERS.get(key);
 
-        SettingSerializer<Map<K, V>> mapSerializer = new SettingSerializer<>() {
+        SettingSerializer<Map<K, V>> mapSerializer = new SettingSerializer<>(CustomPersistentDataType.forMap(keySerializer.getPersistentDataType(), valueSerializer.getPersistentDataType())) {
             public void write(CommentedConfigurationSection config, String key, Map<K, V> value, String... comments) {
                 CommentedConfigurationSection section = getOrCreateSection(config, key, comments);
                 if (keySerializer.isStringificationAllowed() && valueSerializer.isStringificationAllowed()) {
@@ -230,19 +167,6 @@ public final class SettingSerializerFactories {
                         valueSerializer.write(indexedSection, "value", entry.getValue());
                     }
                 }
-            }
-            public byte[] write(Map<K, V> value) {
-                return DataSerializable.write(x -> {
-                    x.writeInt(value.size());
-                    for (Map.Entry<K, V> entry : value.entrySet()) {
-                        byte[] keyData = keySerializer.write(entry.getKey());
-                        x.writeInt(keyData.length);
-                        x.write(keyData);
-                        byte[] valueData = valueSerializer.write(entry.getValue());
-                        x.writeInt(valueData.length);
-                        x.write(valueData);
-                    }
-                });
             }
             public Map<K, V> read(ConfigurationSection config, String key) {
                 Map<K, V> map = new HashMap<>();
@@ -269,20 +193,6 @@ public final class SettingSerializerFactories {
                 }
                 return map;
             }
-            public Map<K, V> read(byte[] input) {
-                Map<K, V> map = new HashMap<>();
-                DataSerializable.read(input, x -> {
-                    int size = x.readInt();
-                    for (int i = 0; i < size; i++) {
-                        byte[] keyData = new byte[x.readInt()];
-                        x.readFully(keyData);
-                        byte[] valueData = new byte[x.readInt()];
-                        x.readFully(valueData);
-                        map.put(keySerializer.read(keyData), valueSerializer.read(valueData));
-                    }
-                });
-                return map;
-            }
             public String getTypeName() {
                 return key;
             }
@@ -293,6 +203,7 @@ public final class SettingSerializerFactories {
     }
 
     public static <T> SettingSerializer<T> ofComplex(Class<T> clazz,
+                                                     PersistentDataType<?, T> persistentDataType,
                                                      Consumer<ComplexSettingWriter> writerConsumer,
                                                      Function<T, Map<String, Object>> toMapFunction,
                                                      Function<Map<String, Object>, T> fromMapFunction) {
@@ -304,7 +215,7 @@ public final class SettingSerializerFactories {
         writerConsumer.accept(builder);
         List<ComplexSettingProperty<?>> properties = builder.getProperties();
 
-        SettingSerializer<T> serializer = new SettingSerializer<>(clazz) {
+        SettingSerializer<T> serializer = new SettingSerializer<>(clazz, persistentDataType) {
             @Override
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) {
                 config.set(key, null, comments);
@@ -319,17 +230,6 @@ public final class SettingSerializerFactories {
                 }
             }
             @Override
-            public byte[] write(T value) {
-                return DataSerializable.write(x -> {
-                    Map<String, Object> data = toMapFunction.apply(value);
-                    for (ComplexSettingProperty<?> property : properties) {
-                        byte[] keyData = property.serializer().write(MinionUtils.forceCast(data.get(property.name())));
-                        x.writeInt(keyData.length);
-                        x.write(keyData);
-                    }
-                });
-            }
-            @Override
             public T read(ConfigurationSection config, String key) {
                 Map<String, Object> values = new HashMap<>();
                 for (ComplexSettingProperty<?> property : properties) {
@@ -341,20 +241,6 @@ public final class SettingSerializerFactories {
                     }
                 }
                 return fromMapFunction.apply(values);
-            }
-            @Override
-            public T read(byte[] input) {
-                AtomicReference<T> value = new AtomicReference<>();
-                DataSerializable.read(input, x -> {
-                    Map<String, Object> values = new HashMap<>();
-                    for (ComplexSettingProperty<?> property : properties) {
-                        byte[] keyData = new byte[x.readInt()];
-                        x.readFully(keyData);
-                        values.put(property.name(), property.serializer().read(keyData));
-                    }
-                    value.set(fromMapFunction.apply(values));
-                });
-                return value.get();
             }
             @Override
             public String getTypeName() {

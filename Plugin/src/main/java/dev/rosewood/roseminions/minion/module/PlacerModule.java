@@ -5,40 +5,56 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-
-import java.util.List;
+import static dev.rosewood.roseminions.minion.module.PlacerModule.Settings.*;
 
 public class PlacerModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> RADIUS;
-    public static final SettingAccessor<Long> PLACE_FREQUENCY;
-    public static final SettingAccessor<Material> TARGET_BLOCK;
-    public static final SettingAccessor<Boolean> REQUIRE_UNOBSTRUCTED;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        RADIUS = SettingsRegistry.defineInteger(PlacerModule.class, "radius", 2, "The radius in which to break blocks");
-        PLACE_FREQUENCY = SettingsRegistry.defineLong(PlacerModule.class, "place-frequency", 1000L, "How often blocks will be placed (in milliseconds)");
-        TARGET_BLOCK = SettingsRegistry.defineEnum(PlacerModule.class, "target-block", Material.COBBLESTONE, "The block to place");
-        REQUIRE_UNOBSTRUCTED = SettingsRegistry.defineBoolean(PlacerModule.class, "require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block.");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(MinerModule.class, MinionModule.GUI_TITLE, "Placer Module");
-        SettingsRegistry.redefineEnum(MinerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
-        SettingsRegistry.redefineString(MinerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Placer Module");
-        SettingsRegistry.redefineStringList(MinerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to place blocks.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 2, "The radius in which to break blocks"));
+        public static final SettingAccessor<Long> PLACE_FREQUENCY = define(SettingAccessor.defineLong("place-frequency", 1000L, "How often blocks will be placed (in milliseconds)"));
+        public static final SettingAccessor<Material> TARGET_BLOCK = define(SettingAccessor.defineEnum("target-block", Material.COBBLESTONE, "The block to place"));
+        public static final SettingAccessor<Boolean> REQUIRE_UNOBSTRUCTED = define(SettingAccessor.defineBoolean("require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block."));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Placer Module"));
+            define(MinionModule.GUI_ICON.copy(Material.GRASS_BLOCK));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Placer Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to place blocks.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastMineTime;
 
     public PlacerModule(Minion minion) {
-        super(minion, DefaultMinionModules.PLACER);
+        super(minion, DefaultMinionModules.PLACER, Settings.INSTANCE);
 
         minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(
                 this,

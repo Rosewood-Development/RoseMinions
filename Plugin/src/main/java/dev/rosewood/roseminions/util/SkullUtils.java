@@ -1,20 +1,18 @@
-package dev.rosewood.roseminions.util.nms;
+package dev.rosewood.roseminions.util;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import dev.rosewood.rosegarden.utils.NMSUtil;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Base64;
+import java.util.UUID;
 import me.arcaniax.hdb.api.HeadDatabaseAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Base64;
-import java.util.UUID;
 
 public final class SkullUtils {
 
@@ -49,7 +47,7 @@ public final class SkullUtils {
                 String decodedTextureUrl = decodedTextureJson.substring(28, decodedTextureJson.length() - 4);
 
                 textures.setSkin(new URL(decodedTextureUrl));
-            } catch (IllegalArgumentException | MalformedURLException e) {
+            } catch (Exception e) {
                 skullMeta.setOwnerProfile(null);
                 return;
             }

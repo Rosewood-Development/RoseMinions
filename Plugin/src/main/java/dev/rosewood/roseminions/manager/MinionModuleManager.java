@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.MinionItem;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.config.SettingsContainerConfig;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.module.BeaconModule;
@@ -26,7 +27,6 @@ import dev.rosewood.roseminions.minion.module.ShearerModule;
 import dev.rosewood.roseminions.minion.module.SlayerModule;
 import dev.rosewood.roseminions.minion.module.UpgradeModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,7 +97,7 @@ public class MinionModuleManager extends Manager implements Listener {
     public SettingsContainerConfig getSectionSettings(String name, ConfigurationSection section) {
         RegisteredMinionModule<?> registeredModule = this.registeredModules.get(name);
         if (registeredModule != null)
-            return new SettingsContainerConfig(registeredModule.moduleClass(), section);
+            return new SettingsContainerConfig(registeredModule.settings(), section);
         return null;
     }
 
@@ -110,13 +110,7 @@ public class MinionModuleManager extends Manager implements Listener {
         boolean changed = !file.exists();
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        try {
-            Class.forName(registeredModule.moduleClass().getName());
-        } catch (ClassNotFoundException e) {
-            throw new AssertionError(e);
-        }
-
-        for (SettingAccessor<?> accessor : SettingsRegistry.REGISTERED_SETTINGS.get(registeredModule.moduleClass())) {
+        for (SettingAccessor<?> accessor : registeredModule.settings().get()) {
             if (!config.contains(accessor.getKey())) {
                 accessor.write(config);
                 changed = true;
@@ -130,26 +124,26 @@ public class MinionModuleManager extends Manager implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onMinionModuleRegistration(MinionModuleRegistrationEvent event) {
-        event.registerModule(DefaultMinionModules.APPEARANCE, AppearanceModule::new, AppearanceModule.class);
-        event.registerModule(DefaultMinionModules.BEACON, BeaconModule::new, BeaconModule.class);
-        event.registerModule(DefaultMinionModules.BEE_KEEPER, BeeKeeperModule::new, BeeKeeperModule.class);
-        event.registerModule(DefaultMinionModules.BREAKER, BreakerModule::new, BreakerModule.class);
-        event.registerModule(DefaultMinionModules.COMMUNICATOR, CommunicatorModule::new, CommunicatorModule.class);
-        event.registerModule(DefaultMinionModules.EXPERIENCE, ExperienceModule::new, ExperienceModule.class);
-        event.registerModule(DefaultMinionModules.FARMER, FarmerModule::new, FarmerModule.class);
-        event.registerModule(DefaultMinionModules.FILTER, FilterModule::new, FilterModule.class);
-        event.registerModule(DefaultMinionModules.FISHER, FisherModule::new, FisherModule.class);
-        event.registerModule(DefaultMinionModules.INVENTORY, InventoryModule::new, InventoryModule.class);
-        event.registerModule(DefaultMinionModules.ITEM_PICKUP, ItemPickupModule::new, ItemPickupModule.class);
-        event.registerModule(DefaultMinionModules.MINER, MinerModule::new, MinerModule.class);
-        event.registerModule(DefaultMinionModules.PLACER, PlacerModule::new, PlacerModule.class);
-        event.registerModule(DefaultMinionModules.SHEARER, ShearerModule::new, ShearerModule.class);
-        event.registerModule(DefaultMinionModules.SLAYER, SlayerModule::new, SlayerModule.class);
-        event.registerModule(DefaultMinionModules.UPGRADE, UpgradeModule::new, UpgradeModule.class);
+        event.registerModule(DefaultMinionModules.APPEARANCE, AppearanceModule::new, AppearanceModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.BEACON, BeaconModule::new, BeaconModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.BEE_KEEPER, BeeKeeperModule::new, BeeKeeperModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.BREAKER, BreakerModule::new, BreakerModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.COMMUNICATOR, CommunicatorModule::new, CommunicatorModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.EXPERIENCE, ExperienceModule::new, ExperienceModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.FARMER, FarmerModule::new, FarmerModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.FILTER, FilterModule::new, FilterModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.FISHER, FisherModule::new, FisherModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.INVENTORY, InventoryModule::new, InventoryModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.ITEM_PICKUP, ItemPickupModule::new, ItemPickupModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.MINER, MinerModule::new, MinerModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.PLACER, PlacerModule::new, PlacerModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.SHEARER, ShearerModule::new, ShearerModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.SLAYER, SlayerModule::new, SlayerModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.UPGRADE, UpgradeModule::new, UpgradeModule.Settings.INSTANCE);
     }
 
     public record RegisteredMinionModule<T extends MinionModule>(String name,
                                                                  Function<Minion, T> factory,
-                                                                 Class<T> moduleClass) { }
+                                                                 ModuleSettings settings) { }
 
 }

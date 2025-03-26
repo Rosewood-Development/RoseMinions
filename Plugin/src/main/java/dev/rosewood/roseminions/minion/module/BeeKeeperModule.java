@@ -5,10 +5,11 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.bukkit.Location;
@@ -16,24 +17,39 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Beehive;
 import org.bukkit.inventory.ItemStack;
+import static dev.rosewood.roseminions.minion.module.BeeKeeperModule.Settings.*;
 
 public class BeeKeeperModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> RADIUS;
-    public static final SettingAccessor<Long> FARMING_FREQUENCY;
-    public static final SettingAccessor<Long> FARM_UPDATE_FREQUENCY;
-    public static final SettingAccessor<Boolean> USE_BOTTLES;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        RADIUS = SettingsRegistry.defineInteger(BeeKeeperModule.class, "radius", 3, "The radius for the beekeeper to search for bee hives");
-        FARMING_FREQUENCY = SettingsRegistry.defineLong(BeeKeeperModule.class, "farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)");
-        FARM_UPDATE_FREQUENCY = SettingsRegistry.defineLong(BeeKeeperModule.class, "farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)");
-        USE_BOTTLES = SettingsRegistry.defineBoolean(BeeKeeperModule.class, "use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(BeeKeeperModule.class, MinionModule.GUI_TITLE, "Bee Keeper Module");
-        SettingsRegistry.redefineEnum(BeeKeeperModule.class, MinionModule.GUI_ICON, Material.BEE_NEST);
-        SettingsRegistry.redefineString(BeeKeeperModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Bee Keeper Module");
-        SettingsRegistry.redefineStringList(BeeKeeperModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey from bee hives.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 3, "The radius for the beekeeper to search for bee hives"));
+        public static final SettingAccessor<Long> FARMING_FREQUENCY = define(SettingAccessor.defineLong("farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)"));
+        public static final SettingAccessor<Long> FARM_UPDATE_FREQUENCY = define(SettingAccessor.defineLong("farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
+        public static final SettingAccessor<Boolean> USE_BOTTLES = define(SettingAccessor.defineBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Bee Keeper Module"));
+            define(MinionModule.GUI_ICON.copy(Material.BEE_NEST));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Bee Keeper Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey from bee hives.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastHiveCheckTime;
@@ -42,7 +58,7 @@ public class BeeKeeperModule extends MinionModule {
     private int hiveIndex;
 
     public BeeKeeperModule(Minion minion) {
-        super(minion, DefaultMinionModules.BEE_KEEPER);
+        super(minion, DefaultMinionModules.BEE_KEEPER, Settings.INSTANCE);
 
         this.hives = new ArrayList<>();
     }
@@ -81,11 +97,11 @@ public class BeeKeeperModule extends MinionModule {
 
         Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
         ItemStack result = null;
-        if (!this.settings.get(USE_BOTTLES)) {
+        if (!this.settings.get(Settings.USE_BOTTLES)) {
             result = new ItemStack(Material.HONEYCOMB, 3);
         }
 
-        if (this.settings.get(USE_BOTTLES)
+        if (this.settings.get(Settings.USE_BOTTLES)
                 && inventoryModule.isPresent()
                 && inventoryModule.get().removeItem(new ItemStack(Material.GLASS_BOTTLE))) {
             result = new ItemStack(Material.HONEY_BOTTLE);
@@ -130,7 +146,7 @@ public class BeeKeeperModule extends MinionModule {
         this.hives.clear();
 
         Location center = this.minion.getCenterLocation();
-        int radius = this.settings.get(RADIUS);
+        int radius = this.settings.get(Settings.RADIUS);
 
         for (int x = -radius; x <= radius; x++) {
             for (int y = -radius; y <= radius; y++) {

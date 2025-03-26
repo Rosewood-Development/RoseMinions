@@ -1,6 +1,6 @@
 package dev.rosewood.roseminions.util;
 
-import dev.rosewood.roseminions.RoseMinions;
+import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
 import java.util.Random;
@@ -13,10 +13,10 @@ import org.bukkit.inventory.ItemStack;
 
 public final class MinionUtils {
 
-    public static final NamespacedKey MINION_NEW_TYPE_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_new_type");
-    public static final NamespacedKey MINION_NEW_RANK_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_new_rank");
-    public static final NamespacedKey MINION_DATA_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_data");
-    public static final NamespacedKey MINION_NOTIFICATION_KEY = new NamespacedKey(RoseMinions.getInstance(), "minion_notification");
+    public static final NamespacedKey MINION_NEW_TYPE_KEY = CustomPersistentDataType.KeyHelper.get("minion_new_type");
+    public static final NamespacedKey MINION_NEW_RANK_KEY = CustomPersistentDataType.KeyHelper.get("minion_new_rank");
+    public static final NamespacedKey MINION_DATA_KEY = CustomPersistentDataType.KeyHelper.get("minion_data");
+    public static final NamespacedKey MINION_NOTIFICATION_KEY = CustomPersistentDataType.KeyHelper.get("minion_notification");
 
     public static final String PRIMARY_COLOR = "<#c7a4ff>";
     public static final String SECONDARY_COLOR = "<#ffaaff>";
@@ -81,10 +81,6 @@ public final class MinionUtils {
     @SuppressWarnings("unchecked")
     public static <T, R> R forceCast(T value) {
         return (R) value;
-    }
-
-    public static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 
 }

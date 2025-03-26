@@ -1,12 +1,12 @@
 package dev.rosewood.roseminions.nms.v1_19_R3.hologram;
 
 import dev.rosewood.roseminions.nms.hologram.Hologram;
+import dev.rosewood.roseminions.nms.hologram.HologramLine;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import dev.rosewood.roseminions.nms.hologram.HologramLine;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;

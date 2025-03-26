@@ -54,7 +54,7 @@ public class MinionConfig {
         }
 
         ConfigurationSection itemSection = section.getConfigurationSection("item");
-        SettingsContainerConfig itemSettings = new SettingsContainerConfig(MinionItem.class, itemSection);
+        SettingsContainerConfig itemSettings = new SettingsContainerConfig(MinionItem.INSTANCE, itemSection);
 
         if (previousRankItemSettings != null) {
             previousRankItemSettings.merge(itemSettings);
@@ -105,7 +105,7 @@ public class MinionConfig {
     }
 
     public RankConfig getDefaultRank() {
-        return this.ranks.get(0);
+        return this.ranks.getFirst();
     }
 
     public RankConfig getRank(String rank) {

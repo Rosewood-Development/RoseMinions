@@ -1,29 +1,14 @@
-package dev.rosewood.roseminions.model;
+package dev.rosewood.roseminions.nms.util;
 
-import dev.rosewood.roseminions.util.catching.CatchingConsumer;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * Represents something that can be serialized and deserialized
+ * Utility class for reading/writing from Object data streams
  */
 public interface DataSerializable {
-
-    /**
-     * Serializes this object to a byte array
-     *
-     * @return the byte array
-     */
-    byte[] serialize();
-
-    /**
-     * Deserializes the byte array into this object
-     *
-     * @param input the byte array
-     */
-    void deserialize(byte[] input);
 
     static byte[] write(CatchingConsumer<ObjectOutputStream> consumer) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

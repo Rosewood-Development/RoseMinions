@@ -11,14 +11,16 @@ import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.util.MinionUtils;
+import dev.rosewood.roseminions.util.SkullUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
-import dev.rosewood.roseminions.util.nms.SkullUtils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,26 +43,42 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
+import static dev.rosewood.roseminions.minion.module.AppearanceModule.Settings.*;
 
 public class AppearanceModule extends MinionModule {
 
-    public static final SettingAccessor<Boolean> SMALL;
-    public static final SettingAccessor<String> TEXTURE;
-    public static final SettingAccessor<String> DISPLAY_NAME;
-    public static final SettingAccessor<Double> ROTATION_SPEED;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        SMALL = SettingsRegistry.defineBoolean(AppearanceModule.class, "small", true, "If the skull should be small");
-        TEXTURE = SettingsRegistry.defineString(AppearanceModule.class, "texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull");
-        DISPLAY_NAME = SettingsRegistry.defineString(AppearanceModule.class, "display-name", "<r#5:0.5>Default Minion", "The display name of the skull");
-        ROTATION_SPEED = SettingsRegistry.defineDouble(AppearanceModule.class, "rotation-speed", 0.05, "The speed at which the skull should rotate");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(AppearanceModule.class, MinionModule.GUI_TITLE, "Minion Appearance");
-        SettingsRegistry.redefineEnum(AppearanceModule.class, MinionModule.GUI_ICON, Material.PLAYER_HEAD);
-        SettingsRegistry.redefineString(AppearanceModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Minion Appearance");
-        SettingsRegistry.redefineStringList(AppearanceModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Boolean> SMALL = define(SettingAccessor.defineBoolean("small", true, "If the skull should be small"));
+        public static final SettingAccessor<String> TEXTURE = define(SettingAccessor.defineString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
+        public static final SettingAccessor<String> DISPLAY_NAME = define(SettingAccessor.defineString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
+        public static final SettingAccessor<Double> ROTATION_SPEED = define(SettingAccessor.defineDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Minion Appearance"));
+            define(MinionModule.GUI_ICON.copy(Material.PLAYER_HEAD));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Minion Appearance"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private static BukkitTask thetaUpdateTask;
@@ -72,7 +90,7 @@ public class AppearanceModule extends MinionModule {
     private long nextTicketTime;
 
     public AppearanceModule(Minion minion) {
-        super(minion, DefaultMinionModules.APPEARANCE);
+        super(minion, DefaultMinionModules.APPEARANCE, Settings.INSTANCE);
 
         if (thetaUpdateTask == null)
             thetaUpdateTask = Bukkit.getScheduler().runTaskTimer(RoseMinions.getInstance(), () -> thetaTicks++, 0L, 1L);
@@ -152,8 +170,8 @@ public class AppearanceModule extends MinionModule {
     }
 
     @Override
-    public void deserialize(byte[] input) {
-        super.deserialize(input);
+    public void readPDC(PersistentDataContainer container) {
+        super.readPDC(container);
         this.updateEntity();
     }
 

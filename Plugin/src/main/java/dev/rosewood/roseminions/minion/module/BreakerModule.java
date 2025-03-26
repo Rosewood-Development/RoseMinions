@@ -4,35 +4,53 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import static dev.rosewood.roseminions.minion.module.BreakerModule.Settings.*;
 
 public class BreakerModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> RADIUS;
-    public static final SettingAccessor<Long> BREAK_FREQUENCY;
-    public static final SettingAccessor<Material> TARGET_BLOCK;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        RADIUS = SettingsRegistry.defineInteger(BreakerModule.class, "radius", 2, "The radius in which to break blocks");
-        BREAK_FREQUENCY = SettingsRegistry.defineLong(BreakerModule.class, "break-frequency", 1000L, "How often blocks will be broken (in milliseconds)");
-        TARGET_BLOCK = SettingsRegistry.defineEnum(BreakerModule.class, "target-block", Material.COBBLESTONE, "The block to mine");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_TITLE, "Miner Module");
-        SettingsRegistry.redefineEnum(BreakerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_PICKAXE);
-        SettingsRegistry.redefineString(BreakerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Miner Module");
-        SettingsRegistry.redefineStringList(BreakerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 2, "The radius in which to break blocks"));
+        public static final SettingAccessor<Long> BREAK_FREQUENCY = define(SettingAccessor.defineLong("break-frequency", 1000L, "How often blocks will be broken (in milliseconds)"));
+        public static final SettingAccessor<Material> TARGET_BLOCK = define(SettingAccessor.defineEnum("target-block", Material.COBBLESTONE, "The block to mine"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Miner Module"));
+            define(MinionModule.GUI_ICON.copy(Material.DIAMOND_PICKAXE));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Miner Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastMineTime;
 
     public BreakerModule(Minion minion) {
-        super(minion, DefaultMinionModules.BREAKER);
+        super(minion, DefaultMinionModules.BREAKER, Settings.INSTANCE);
     }
 
     @Override

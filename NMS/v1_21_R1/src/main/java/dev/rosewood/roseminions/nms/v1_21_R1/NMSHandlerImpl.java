@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.nms.v1_20_R4;
 
-import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
+import dev.rosewood.roseminions.nms.util.DataSerializable;
 import dev.rosewood.roseminions.nms.util.ReflectionUtils;
 import dev.rosewood.roseminions.nms.v1_21_R1.entity.FakeFishingHook;
 import dev.rosewood.roseminions.nms.v1_21_R1.hologram.HologramImpl;

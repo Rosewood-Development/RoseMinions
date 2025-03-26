@@ -15,6 +15,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -50,17 +51,20 @@ public class MinionPickupListener implements Listener {
         }
 
         if (player.isSneaking()) {
-            byte[] data = minion.serialize();
-            minionManager.destroyMinion(minion);
-
             ItemStack itemStack = minion.getRankData().getDisplayItemStack();
             ItemMeta itemMeta = itemStack.getItemMeta();
             if (itemMeta == null)
                 throw new IllegalStateException("ItemStack does not have any ItemMeta");
 
             PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-            pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY, data);
+            PersistentDataAdapterContext adapterContext = pdc.getAdapterContext();
+
+            PersistentDataContainer dataContainer = adapterContext.newPersistentDataContainer();
+            minion.writePDC(dataContainer, adapterContext);
+            pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER, dataContainer);
             itemStack.setItemMeta(itemMeta);
+
+            minionManager.destroyMinion(minion);
 
             PlayerInventory inventory = player.getInventory();
             int heldSlot = inventory.getHeldItemSlot();

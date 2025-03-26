@@ -10,6 +10,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
+import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.config.MinionConfig;
@@ -20,11 +21,11 @@ import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.module.DefaultMinionModules;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
+import dev.rosewood.roseminions.model.PDCSerializable;
 import dev.rosewood.roseminions.model.Updatable;
-import dev.rosewood.roseminions.util.nms.SkullUtils;
+import dev.rosewood.roseminions.util.SkullUtils;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -36,8 +37,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -45,8 +46,17 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
-public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
+public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
+
+    private static final NamespacedKey KEY_CONFIG_ID = CustomPersistentDataType.KeyHelper.get("config_id");
+    private static final NamespacedKey KEY_RANK = CustomPersistentDataType.KeyHelper.get("rank");
+    private static final NamespacedKey KEY_OWNER = CustomPersistentDataType.KeyHelper.get("owner");
+    private static final NamespacedKey KEY_LOCATION = CustomPersistentDataType.KeyHelper.get("location");
+    private static final NamespacedKey KEY_MODULES = CustomPersistentDataType.KeyHelper.get("modules");
 
     // Sort the first row right-to-left and all other rows left-to-right
     private static final int[] MODULE_SLOT_FILL_ORDER = {
@@ -75,19 +85,19 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     /**
      * Used for loading a minion from an existing entity in the world
      */
-    public Minion(ArmorStand displayEntity, byte[] data) {
+    public Minion(ArmorStand displayEntity, PersistentDataContainer container) {
         this(displayEntity);
-        this.deserialize(data);
+        this.readPDC(container);
     }
 
     /**
      * Used for placing a minion from an item
      */
-    public Minion(Location location, byte[] data) {
+    public Minion(Location location, PersistentDataContainer container) {
         this(null);
         this.displayEntity = new WeakReference<>(null);
         this.location = location;
-        this.deserialize(data);
+        this.readPDC(container);
     }
 
     /**
@@ -135,70 +145,60 @@ public class Minion implements GuiHolder, Modular, Updatable, DataSerializable {
     }
 
     @Override
-    public byte[] serialize() {
-        return DataSerializable.write(outputStream -> {
-            // Write minion data
-            outputStream.writeUTF(this.minionConfig.getId());
-            outputStream.writeUTF(this.rank);
-            outputStream.writeLong(this.owner.getMostSignificantBits());
-            outputStream.writeLong(this.owner.getLeastSignificantBits());
-            outputStream.writeUTF(this.getWorld().getName());
-            outputStream.writeInt(this.location.getBlockX());
-            outputStream.writeInt(this.location.getBlockY());
-            outputStream.writeInt(this.location.getBlockZ());
+    public void writePDC(PersistentDataContainer container, PersistentDataAdapterContext context) {
+        // Write minion data
+        container.set(KEY_CONFIG_ID, PersistentDataType.STRING, this.minionConfig.getId());
+        container.set(KEY_RANK, PersistentDataType.STRING, this.rank);
+        container.set(KEY_OWNER, CustomPersistentDataType.UUID, this.owner);
+        container.set(KEY_LOCATION, CustomPersistentDataType.LOCATION, this.location);
 
-            // Write module data
-            List<MinionModule> modules = this.getModules();
-            outputStream.writeInt(modules.size());
-            for (MinionModule module : modules) {
-                byte[] moduleData = module.serialize();
-                outputStream.writeUTF(module.getName());
-                outputStream.writeInt(moduleData.length);
-                outputStream.write(moduleData);
-            }
-        });
+        // Write module data
+        PersistentDataContainer modulesContainer = context.newPersistentDataContainer();
+        for (MinionModule submodule : this.getModules()) {
+            PersistentDataContainer moduleContainer = context.newPersistentDataContainer();
+            submodule.writePDC(moduleContainer, context);
+            modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
+        }
+        container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);
     }
 
     @Override
-    public void deserialize(byte[] input) {
-        DataSerializable.read(input, inputStream -> {
-            String typeId = inputStream.readUTF();
-            this.minionConfig = RoseMinions.getInstance().getManager(MinionTypeManager.class).getMinionData(typeId);
-            if (this.minionConfig == null)
-                throw new IllegalStateException("Minion type " + typeId + " no longer exists");
+    public void readPDC(PersistentDataContainer container) {
+        String configId = container.get(KEY_CONFIG_ID, PersistentDataType.STRING);
+        if (configId == null)
+            throw new IllegalStateException("No minion config");
 
-            this.rank = inputStream.readUTF();
-            this.loadRankData();
+        this.minionConfig = RoseMinions.getInstance().getManager(MinionTypeManager.class).getMinionData(configId);
+        if (this.minionConfig == null)
+            throw new IllegalStateException("Minion type " + configId + " no longer exists");
 
-            this.owner = new UUID(inputStream.readLong(), inputStream.readLong());
+        this.rank = container.get(KEY_RANK, PersistentDataType.STRING);
+        this.loadRankData();
 
-            World world = Bukkit.getWorld(inputStream.readUTF());
-            if (world == null)
-                throw new IllegalStateException("Cannot create display entity for minion at " + this.location + " because the world is null");
+        this.owner = container.get(KEY_OWNER, CustomPersistentDataType.UUID);
 
-            Location location = new Location(world, inputStream.readInt(), inputStream.readInt(), inputStream.readInt());
-            if (this.location == null)
-                this.location = location;
+        if (this.location == null)
+            this.location = container.get(KEY_LOCATION, CustomPersistentDataType.LOCATION);
 
-            int moduleCount = inputStream.readInt();
-            for (int i = 0; i < moduleCount; i++) {
-                String name = inputStream.readUTF();
-                int length = inputStream.readInt();
-                byte[] data = new byte[length];
-                inputStream.readFully(data);
+        PersistentDataContainer modulesContainer = container.get(KEY_MODULES, PersistentDataType.TAG_CONTAINER);
+        if (modulesContainer != null) {
+            for (NamespacedKey key : modulesContainer.getKeys()) {
+                String name = key.getKey();
+                PersistentDataContainer moduleContainer = modulesContainer.get(key, PersistentDataType.TAG_CONTAINER);
+                if (moduleContainer != null) {
+                    // Find module with this name
+                    Optional<MinionModule> module = this.getModules().stream()
+                            .filter(x -> x.getName().equals(name))
+                            .findFirst();
 
-                // Find module with this name
-                Optional<MinionModule> module = this.getModules().stream()
-                        .filter(x -> x.getName().equals(name))
-                        .findFirst();
-
-                if (module.isPresent()) {
-                    module.get().deserialize(data);
-                } else {
-                    RoseMinions.getInstance().getLogger().warning("Skipped loading module " + name + " for minion at " + this.location + " because the module no longer exists");
+                    if (module.isPresent()) {
+                        module.get().readPDC(moduleContainer);
+                    } else {
+                        RoseMinions.getInstance().getLogger().warning("Skipped loading module " + name + " for minion at " + this.location + " because the module no longer exists");
+                    }
                 }
             }
-        });
+        }
     }
 
     private void buildGui() {

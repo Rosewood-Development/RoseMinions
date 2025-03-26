@@ -10,12 +10,14 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
+import dev.rosewood.roseminions.util.SkullUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
-import dev.rosewood.roseminions.util.nms.SkullUtils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import org.bukkit.Material;
@@ -32,33 +34,48 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
+import static dev.rosewood.roseminions.minion.module.ExperienceModule.Settings.*;
 
 public class ExperienceModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> STORED_XP;
-    public static final SettingAccessor<Integer> MAX_EXP;
-    public static final SettingAccessor<Long> UPDATE_FREQUENCY;
-    public static final SettingAccessor<Integer> RADIUS;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        STORED_XP = SettingsRegistry.defineHiddenSetting(ExperienceModule.class, SettingSerializers.INTEGER, "stored-xp", () -> 0);
-        MAX_EXP = SettingsRegistry.defineInteger(ExperienceModule.class, "max-exp", 30970, "The maximum amount of XP the minion can store", "");
-        UPDATE_FREQUENCY = SettingsRegistry.defineLong(ExperienceModule.class, "update-frequency", 3000L, "How often the minion will update (in milliseconds)");
-        RADIUS = SettingsRegistry.defineInteger(ExperienceModule.class, "radius", 5, "The radius for the minion to search for items");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(ExperienceModule.class, MinionModule.GUI_TITLE, "Experience Module");
-        SettingsRegistry.redefineEnum(ExperienceModule.class, MinionModule.GUI_ICON, Material.EXPERIENCE_BOTTLE);
-        SettingsRegistry.redefineString(ExperienceModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Experience Module");
-        SettingsRegistry.redefineStringList(ExperienceModule.class, MinionModule.GUI_ICON_LORE, List.of(
-                "", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect XP",
-                MinionUtils.SECONDARY_COLOR + "and store it for later use.",
-                "",
-                MinionUtils.SECONDARY_COLOR + "Click to open."
-        ));
+        public static final SettingAccessor<Integer> STORED_XP = define(SettingAccessor.defineHiddenSetting(SettingSerializers.INTEGER, "stored-xp", () -> 0));
+        public static final SettingAccessor<Integer> MAX_EXP = define(SettingAccessor.defineInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
+        public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 3000L, "How often the minion will update (in milliseconds)"));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 5, "The radius for the minion to search for items"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Experience Module"));
+            define(MinionModule.GUI_ICON.copy(Material.EXPERIENCE_BOTTLE));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Experience Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of(
+                    "", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect XP",
+                    MinionUtils.SECONDARY_COLOR + "and store it for later use.",
+                    "",
+                    MinionUtils.SECONDARY_COLOR + "Click to open."
+            )));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     public ExperienceModule(Minion minion) {
-        super(minion, DefaultMinionModules.EXPERIENCE);
+        super(minion, DefaultMinionModules.EXPERIENCE, Settings.INSTANCE);
 
         this.xpKey = new NamespacedKey(RoseMinions.getInstance(), "experience-orb");
     }

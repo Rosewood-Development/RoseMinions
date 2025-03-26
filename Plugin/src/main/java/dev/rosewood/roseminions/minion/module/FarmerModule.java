@@ -7,10 +7,10 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.BlockPosition;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.model.WorkerAreaProperties;
@@ -35,7 +35,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import static org.bukkit.Material.FARMLAND;
+import static dev.rosewood.roseminions.minion.module.FarmerModule.Settings.*;
 
 public class FarmerModule extends MinionModule {
 
@@ -49,33 +49,42 @@ public class FarmerModule extends MinionModule {
         FARMLAND_CROP_SEED_MATERIALS.put(Material.BEETROOTS, Material.BEETROOT_SEEDS);
     }
 
-    public static final SettingAccessor<WorkerAreaProperties> WORKER_AREA_PROPERTIES;
-    public static final SettingAccessor<Long> FARM_FREQUENCY;
-    public static final SettingAccessor<Integer> FARM_BLOCK_AMOUNT;
-    public static final SettingAccessor<Boolean> TILL_SOIL;
-    public static final SettingAccessor<Boolean> HYDRATE_SOIL;
-    public static final SettingAccessor<Boolean> HARVEST_CROPS;
-    public static final SettingAccessor<Boolean> PLANT_SEEDS;
-    public static final SettingAccessor<Boolean> BONEMEAL_CROPS;
-    public static final SettingAccessor<List<Material>> DESTRUCTIBLE_BLOCKS;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        WORKER_AREA_PROPERTIES = SettingsRegistry.defineSetting(FarmerModule.class, SettingSerializers.WORKER_AREA_PROPERTIES, "worker-area-properties",
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+
+        public static final SettingAccessor<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(SettingAccessor.defineSetting(SettingSerializers.WORKER_AREA_PROPERTIES, "worker-area-properties",
                 () -> new WorkerAreaProperties(3, WorkerAreaController.RadiusType.SQUARE, new Vector(), WorkerAreaController.ScanDirection.TOP_TO_BOTTOM, 10000L),
-                "Settings that control the worker area for this module");
-        FARM_FREQUENCY = SettingsRegistry.defineLong(FarmerModule.class, "farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)");
-        FARM_BLOCK_AMOUNT = SettingsRegistry.defineInteger(FarmerModule.class, "farm-block-amount", 1, "The amount of blocks to plant/harvest at once");
-        TILL_SOIL = SettingsRegistry.defineBoolean(FarmerModule.class, "till-soil", true, "Whether the minion will till plantable soil");
-        HYDRATE_SOIL = SettingsRegistry.defineBoolean(FarmerModule.class, "hydrate-soil", true, "Whether the minion will hydrate farmland");
-        HARVEST_CROPS = SettingsRegistry.defineBoolean(FarmerModule.class, "harvest-crops", true, "Whether the minion will harvest crops");
-        PLANT_SEEDS = SettingsRegistry.defineBoolean(FarmerModule.class, "plant-seeds", true, "Whether the minion will plant seeds");
-        BONEMEAL_CROPS = SettingsRegistry.defineBoolean(FarmerModule.class, "bonemeal-crops", true, "Whether the minion will bonemeal crops");
-        DESTRUCTIBLE_BLOCKS = SettingsRegistry.defineSetting(FarmerModule.class, SettingSerializers.ofList(SettingSerializers.MATERIAL), "destructible-blocks", () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS), "Blocks that the minion can till the soil below");
+                "Settings that control the worker area for this module"));
+        public static final SettingAccessor<Long> FARM_FREQUENCY = define(SettingAccessor.defineLong("farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)"));
+        public static final SettingAccessor<Integer> FARM_BLOCK_AMOUNT = define(SettingAccessor.defineInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
+        public static final SettingAccessor<Boolean> TILL_SOIL = define(SettingAccessor.defineBoolean("till-soil", true, "Whether the minion will till plantable soil"));
+        public static final SettingAccessor<Boolean> HYDRATE_SOIL = define(SettingAccessor.defineBoolean("hydrate-soil", true, "Whether the minion will hydrate farmland"));
+        public static final SettingAccessor<Boolean> HARVEST_CROPS = define(SettingAccessor.defineBoolean("harvest-crops", true, "Whether the minion will harvest crops"));
+        public static final SettingAccessor<Boolean> PLANT_SEEDS = define(SettingAccessor.defineBoolean("plant-seeds", true, "Whether the minion will plant seeds"));
+        public static final SettingAccessor<Boolean> BONEMEAL_CROPS = define(SettingAccessor.defineBoolean("bonemeal-crops", true, "Whether the minion will bonemeal crops"));
+        public static final SettingAccessor<List<Material>> DESTRUCTIBLE_BLOCKS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MATERIAL), "destructible-blocks", () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS), "Blocks that the minion can till the soil below"));
 
-        SettingsRegistry.redefineString(FarmerModule.class, MinionModule.GUI_TITLE, "Farmer Module");
-        SettingsRegistry.redefineEnum(FarmerModule.class, MinionModule.GUI_ICON, Material.DIAMOND_HOE);
-        SettingsRegistry.redefineString(FarmerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Farmer Module");
-        SettingsRegistry.redefineStringList(FarmerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to farm nearby crops.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        static {
+            define(MinionModule.GUI_TITLE.copy("Farmer Module"));
+            define(MinionModule.GUI_ICON.copy(Material.DIAMOND_HOE));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Farmer Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to farm nearby crops.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastHarvestTime;
@@ -87,7 +96,7 @@ public class FarmerModule extends MinionModule {
     private final WorkerAreaController workerAreaController;
 
     public FarmerModule(Minion minion) {
-        super(minion, DefaultMinionModules.FARMER);
+        super(minion, DefaultMinionModules.FARMER, Settings.INSTANCE);
 
         this.farmland = new TreeSet<>(this::sortFarmland);
         this.farmlandToTill = new ArrayList<>();
@@ -142,7 +151,7 @@ public class FarmerModule extends MinionModule {
             Material material = block.getType();
             switch (material) {
                 case DIRT, GRASS_BLOCK, DIRT_PATH -> {
-                    block.setType(FARMLAND);
+                    block.setType(Material.FARMLAND);
                     block.getWorld().playSound(block.getLocation(), Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1);
                     block.getWorld().spawnParticle(VersionUtils.BLOCK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
 
@@ -198,7 +207,7 @@ public class FarmerModule extends MinionModule {
         Block farmlandBlock = farmlandBlockPosition.toBlock(this.minion.getWorld());
 
         // If the farmland block is no longer farmland, remove it from the list
-        if (farmlandBlock.getType() != FARMLAND) {
+        if (farmlandBlock.getType() != Material.FARMLAND) {
             this.farmland.remove(farmlandBlockPosition);
             return;
         }

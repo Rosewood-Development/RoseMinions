@@ -1,8 +1,10 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.roseminions.model.DataSerializable;
+import dev.rosewood.roseminions.model.PDCSerializable;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
 
-public interface SettingHolder extends DataSerializable {
+public interface SettingHolder extends PDCSerializable {
 
     /**
      * @return the SettingsContainer
@@ -10,13 +12,13 @@ public interface SettingHolder extends DataSerializable {
     SettingsContainer getSettings();
 
     @Override
-    default byte[] serialize() {
-        return this.getSettings().serialize();
+    default void writePDC(PersistentDataContainer container, PersistentDataAdapterContext context) {
+        this.getSettings().writePDC(container, context);
     }
 
     @Override
-    default void deserialize(byte[] input) {
-        this.getSettings().deserialize(input);
+    default void readPDC(PersistentDataContainer container) {
+        this.getSettings().readPDC(container);
     }
 
 }

@@ -16,6 +16,7 @@ import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
@@ -57,11 +58,19 @@ public class MinionManager extends Manager {
                 return;
 
             PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
-            byte[] data = pdc.get(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
-            if (data == null)
+            if (pdc.has(MinionUtils.MINION_DATA_KEY)) {
+                if (!pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER)) {
+                    minionEntity.remove();
+                    RoseMinions.getInstance().getLogger().warning("Deleted minion entity with invalid PDC type at " + minionEntity.getLocation());
+                    return;
+                }
+            }
+
+            PersistentDataContainer dataContainer = pdc.get(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER);
+            if (dataContainer == null)
                 return;
 
-            Minion minion = new Minion(minionEntity, data);
+            Minion minion = new Minion(minionEntity, dataContainer);
             this.loadedMinions.add(minion);
         } catch (Exception e) {
             RoseMinions.getInstance().getLogger().warning("Failed to load minion from entity " + minionEntity.getUniqueId());
@@ -80,7 +89,11 @@ public class MinionManager extends Manager {
         this.loadedMinions.remove(minion);
 
         PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
-        pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY, minion.serialize());
+        PersistentDataAdapterContext adapterContext = pdc.getAdapterContext();
+
+        PersistentDataContainer dataContainer = adapterContext.newPersistentDataContainer();
+        minion.writePDC(dataContainer, adapterContext);
+        pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER, dataContainer);
     }
 
     public Optional<Minion> getMinionFromEntity(ArmorStand entity) {

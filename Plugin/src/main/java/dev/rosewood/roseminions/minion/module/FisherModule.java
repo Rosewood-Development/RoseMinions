@@ -4,13 +4,15 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,36 +28,45 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import static dev.rosewood.roseminions.minion.module.FisherModule.Settings.*;
 
 public class FisherModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> RADIUS;
-    public static final SettingAccessor<Long> FISH_MIN_DELAY;
-    public static final SettingAccessor<Long> FISH_MAX_DELAY;
-    public static final SettingAccessor<Long> FISH_LURE_DELAY_OFFSET;
-    public static final SettingAccessor<Long> REEL_IN_MIN_DELAY;
-    public static final SettingAccessor<Long> REEL_IN_MAX_DELAY;
-    public static final SettingAccessor<Integer> WATER_LOOKUP_ATTEMPTS;
-    public static final SettingAccessor<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS;
-    public static final SettingAccessor<PlayableSound> REEL_IN_SOUND;
-    public static final SettingAccessor<PlayableSound> BOBBER_SOUND;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        RADIUS = SettingsRegistry.defineInteger(FisherModule.class, "radius", 5, "How far away the minion will search for water");
-        FISH_MIN_DELAY = SettingsRegistry.defineLong(FisherModule.class, "fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)");
-        FISH_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)");
-        FISH_LURE_DELAY_OFFSET = SettingsRegistry.defineLong(FisherModule.class, "fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)");
-        REEL_IN_MIN_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)");
-        REEL_IN_MAX_DELAY = SettingsRegistry.defineLong(FisherModule.class, "reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)");
-        WATER_LOOKUP_ATTEMPTS = SettingsRegistry.defineInteger(FisherModule.class, "water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up");
-        TOOL_ENCHANTMENTS = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod");
-        REEL_IN_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "reel-in-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish");
-        BOBBER_SOUND = SettingsRegistry.defineSetting(FisherModule.class, SettingSerializers.PLAYABLE_SOUND, "fish-caught-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(FisherModule.class, MinionModule.GUI_TITLE, "Fisher Module");
-        SettingsRegistry.redefineEnum(FisherModule.class, MinionModule.GUI_ICON, Material.FISHING_ROD);
-        SettingsRegistry.redefineString(FisherModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Fisher Module");
-        SettingsRegistry.redefineStringList(FisherModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 5, "How far away the minion will search for water"));
+        public static final SettingAccessor<Long> FISH_MIN_DELAY = define(SettingAccessor.defineLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
+        public static final SettingAccessor<Long> FISH_MAX_DELAY = define(SettingAccessor.defineLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
+        public static final SettingAccessor<Long> FISH_LURE_DELAY_OFFSET = define(SettingAccessor.defineLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
+        public static final SettingAccessor<Long> REEL_IN_MIN_DELAY = define(SettingAccessor.defineLong("reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final SettingAccessor<Long> REEL_IN_MAX_DELAY = define(SettingAccessor.defineLong("reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final SettingAccessor<Integer> WATER_LOOKUP_ATTEMPTS = define(SettingAccessor.defineInteger("water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up"));
+        public static final SettingAccessor<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS = define(SettingAccessor.defineSetting(SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), "tool-enchantments", () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod"));
+        public static final SettingAccessor<PlayableSound> REEL_IN_SOUND = define(SettingAccessor.defineSetting(SettingSerializers.PLAYABLE_SOUND, "reel-in-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish"));
+        public static final SettingAccessor<PlayableSound> BOBBER_SOUND = define(SettingAccessor.defineSetting(SettingSerializers.PLAYABLE_SOUND, "fish-caught-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Fisher Module"));
+            define(MinionModule.GUI_ICON.copy(Material.FISHING_ROD));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Fisher Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastEventTime;
@@ -65,7 +76,7 @@ public class FisherModule extends MinionModule {
     private long reelInTime;
 
     public FisherModule(Minion minion) {
-        super(minion, DefaultMinionModules.FISHER);
+        super(minion, DefaultMinionModules.FISHER, Settings.INSTANCE);
 
         this.lastEventTime = System.currentTimeMillis();
     }

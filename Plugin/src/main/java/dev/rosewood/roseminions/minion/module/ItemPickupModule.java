@@ -5,36 +5,55 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.hook.StackerHelper;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
+import static dev.rosewood.roseminions.minion.module.ItemPickupModule.Settings.*;
 
 public class ItemPickupModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> RADIUS;
-    public static final SettingAccessor<Long> PICKUP_FREQUENCY;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        RADIUS = SettingsRegistry.defineInteger(ItemPickupModule.class, "radius", 5, "The radius in which to pick up items");
-        PICKUP_FREQUENCY = SettingsRegistry.defineLong(ItemPickupModule.class, "pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(ItemPickupModule.class, MinionModule.GUI_TITLE, "Item Pickup Module");
-        SettingsRegistry.redefineEnum(ItemPickupModule.class, MinionModule.GUI_ICON, Material.HOPPER);
-        SettingsRegistry.redefineString(ItemPickupModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Item Pickup Module");
-        SettingsRegistry.redefineStringList(ItemPickupModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 5, "The radius in which to pick up items"));
+        public static final SettingAccessor<Long> PICKUP_FREQUENCY = define(SettingAccessor.defineLong("pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Item Pickup Module"));
+            define(MinionModule.GUI_ICON.copy(Material.HOPPER));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Item Pickup Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastPickupTime;
 
     public ItemPickupModule(Minion minion) {
-        super(minion, DefaultMinionModules.ITEM_PICKUP);
+        super(minion, DefaultMinionModules.ITEM_PICKUP, Settings.INSTANCE);
     }
 
     @Override

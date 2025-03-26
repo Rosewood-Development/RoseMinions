@@ -64,7 +64,7 @@ public class GiveCommand extends BaseRoseCommand {
                 .arguments(ArgumentsDefinition.builder()
                         .required("player", ArgumentHandlers.PLAYER)
                         .required("minionType", MinionArgumentHandlers.MINION_CONFIG)
-                        .optional("rank", MinionArgumentHandlers.MINION_RANK)
+                        .required("rank", MinionArgumentHandlers.MINION_RANK)
                         .optional("amount", ArgumentHandlers.INTEGER)
                         .build())
                 .build();

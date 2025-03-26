@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.hook.shop;
 
 import dev.rosewood.roseminions.util.Lazy;
-import org.bukkit.inventory.ItemStack;
 import java.util.function.Supplier;
+import org.bukkit.inventory.ItemStack;
 
 public enum ShopPlugin {
 

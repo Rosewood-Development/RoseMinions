@@ -7,13 +7,13 @@ import dev.rosewood.guiframework.gui.GuiContainer;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
+import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.module.controller.ModuleController;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingHolder;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
-import dev.rosewood.roseminions.model.DataSerializable;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
 import dev.rosewood.roseminions.model.Updatable;
@@ -24,21 +24,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataAdapterContext;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 public abstract class MinionModule implements GuiHolder, SettingHolder, Modular, Updatable {
 
-    public static final SettingAccessor<String> GUI_TITLE;
-    public static final SettingAccessor<Material> GUI_ICON;
-    public static final SettingAccessor<String> GUI_ICON_NAME;
-    public static final SettingAccessor<List<String>> GUI_ICON_LORE;
+    private static final NamespacedKey KEY_SETTINGS = CustomPersistentDataType.KeyHelper.get("settings");
+    private static final NamespacedKey KEY_MODULES = CustomPersistentDataType.KeyHelper.get("modules");
 
-    static {
-        GUI_TITLE = SettingsRegistry.defineString(MinionModule.class, "gui-title", "GUI Title", "The title of the GUI");
-        GUI_ICON = SettingsRegistry.defineEnum(MinionModule.class, "gui-icon", Material.BARRIER, "The icon to use for this module in the minion GUI");
-        GUI_ICON_NAME = SettingsRegistry.defineString(MinionModule.class, "gui-icon-name", "Module", "The name to use for this module in the minion GUI");
-        GUI_ICON_LORE = SettingsRegistry.defineStringList(MinionModule.class, "gui-icon-lore", List.of("", MinionUtils.SECONDARY_COLOR + "A minion module.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."), "The lore to use for this module in the minion GUI");
-    }
+    public static final SettingAccessor<String> GUI_TITLE = SettingAccessor.defineString("gui-title", "GUI Title", "The title of the GUI");
+    public static final SettingAccessor<Material> GUI_ICON = SettingAccessor.defineEnum("gui-icon", Material.BARRIER, "The icon to use for this module in the minion GUI");
+    public static final SettingAccessor<String> GUI_ICON_NAME = SettingAccessor.defineString("gui-icon-name", "Module", "The name to use for this module in the minion GUI");
+    public static final SettingAccessor<List<String>> GUI_ICON_LORE = SettingAccessor.defineStringList("gui-icon-lore", List.of("", MinionUtils.SECONDARY_COLOR + "A minion module.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."), "The lore to use for this module in the minion GUI");
 
     protected final Minion minion;
     protected final String moduleName;
@@ -50,10 +50,10 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     protected final GuiFramework guiFramework;
     protected GuiContainer guiContainer;
 
-    public MinionModule(Minion minion, String moduleName) {
+    public MinionModule(Minion minion, String moduleName, ModuleSettings settings) {
         this.minion = minion;
         this.moduleName = moduleName.toLowerCase();
-        this.settings = new SettingsContainer(this.getClass());
+        this.settings = new SettingsContainer(settings.get());
         this.submodules = new LinkedHashMap<>();
         this.activeControllers = new ArrayList<>();
         this.parentModular = minion;
@@ -93,47 +93,45 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     }
 
     @Override
-    public byte[] serialize() {
-        return DataSerializable.write(outputStream -> {
-            byte[] settingsData = SettingHolder.super.serialize();
-            outputStream.writeInt(settingsData.length);
-            outputStream.write(settingsData);
+    public void writePDC(PersistentDataContainer container, PersistentDataAdapterContext context) {
+        PersistentDataContainer settingsContainer = context.newPersistentDataContainer();
+        SettingHolder.super.writePDC(settingsContainer, context);
+        container.set(KEY_SETTINGS, PersistentDataType.TAG_CONTAINER, settingsContainer);
 
-            outputStream.writeInt(this.submodules.size());
-            for (MinionModule submodule : this.submodules.values()) {
-                outputStream.writeUTF(submodule.getName());
-                byte[] submoduleData = submodule.serialize();
-                outputStream.writeInt(submoduleData.length);
-                outputStream.write(submoduleData);
-            }
-        });
+        PersistentDataContainer modulesContainer = context.newPersistentDataContainer();
+        for (MinionModule submodule : this.submodules.values()) {
+            PersistentDataContainer moduleContainer = context.newPersistentDataContainer();
+            submodule.writePDC(moduleContainer, context);
+            modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
+        }
+        container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);
     }
 
     @Override
-    public void deserialize(byte[] input) {
-        DataSerializable.read(input, inputStream -> {
-            byte[] settingsData = new byte[inputStream.readInt()];
-            inputStream.readFully(settingsData);
-            SettingHolder.super.deserialize(settingsData);
+    public void readPDC(PersistentDataContainer container) {
+        PersistentDataContainer settingsContainer = container.get(KEY_SETTINGS, PersistentDataType.TAG_CONTAINER);
+        if (settingsContainer != null)
+            SettingHolder.super.readPDC(settingsContainer);
 
-            int submodulesSize = inputStream.readInt();
-            for (int i = 0; i < submodulesSize; i++) {
-                String name = inputStream.readUTF();
-                byte[] submoduleData = new byte[inputStream.readInt()];
-                inputStream.readFully(submoduleData);
+        PersistentDataContainer modulesContainer = container.get(KEY_MODULES, PersistentDataType.TAG_CONTAINER);
+        if (modulesContainer != null) {
+            for (NamespacedKey key : modulesContainer.getKeys()) {
+                String name = key.getKey();
+                PersistentDataContainer moduleContainer = modulesContainer.get(key, PersistentDataType.TAG_CONTAINER);
+                if (moduleContainer != null) {
+                    // Find module with this name
+                    Optional<MinionModule> module = this.submodules.values().stream()
+                            .filter(x -> x.getName().equals(name))
+                            .findFirst();
 
-                // Find module with this name
-                Optional<MinionModule> module = this.submodules.values().stream()
-                        .filter(x -> x.getName().equals(name))
-                        .findFirst();
-
-                if (module.isPresent()) {
-                    module.get().deserialize(submoduleData); // TODO: Make sure values are still within allowed range
-                } else {
-                    RoseMinions.getInstance().getLogger().warning("Skipped loading submodule " + name + " for minion at " + this.getMinion().getLocation() + " because the module no longer exists");
+                    if (module.isPresent()) {
+                        module.get().readPDC(moduleContainer); // TODO: Make sure values are still within allowed range
+                    } else {
+                        RoseMinions.getInstance().getLogger().warning("Skipped loading submodule " + name + " for minion at " + this.getMinion().getLocation() + " because the module no longer exists");
+                    }
                 }
             }
-        });
+        }
     }
 
     @Override

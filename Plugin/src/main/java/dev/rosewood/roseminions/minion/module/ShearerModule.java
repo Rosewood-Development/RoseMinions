@@ -4,10 +4,12 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,26 +20,42 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Sheep;
 import org.bukkit.inventory.ItemStack;
+import static dev.rosewood.roseminions.minion.module.ShearerModule.Settings.*;
 
 public class ShearerModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> RADIUS;
-    public static final SettingAccessor<Long> UPDATE_FREQUENCY;
-    public static final SettingAccessor<Integer> MAX_SHEEP;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        RADIUS = SettingsRegistry.defineInteger(ShearerModule.class, "radius", 3, "The radius in which to shear sheep");
-        UPDATE_FREQUENCY = SettingsRegistry.defineLong(ShearerModule.class, "update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)");
-        MAX_SHEEP = SettingsRegistry.defineInteger(ShearerModule.class, "max-sheep", 5, "The maximum number of sheep that can be sheared at once");
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(ShearerModule.class, MinionModule.GUI_TITLE, "Shearer Module");
-        SettingsRegistry.redefineEnum(ShearerModule.class, MinionModule.GUI_ICON, Material.SHEARS);
-        SettingsRegistry.redefineString(ShearerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Shearer Module");
-        SettingsRegistry.redefineStringList(ShearerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 3, "The radius in which to shear sheep"));
+        public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)"));
+        public static final SettingAccessor<Integer> MAX_SHEEP = define(SettingAccessor.defineInteger("max-sheep", 5, "The maximum number of sheep that can be sheared at once"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Shearer Module"));
+            define(MinionModule.GUI_ICON.copy(Material.SHEARS));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Shearer Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     public ShearerModule(Minion minion) {
-        super(minion, DefaultMinionModules.SHEARER);
+        super(minion, DefaultMinionModules.SHEARER, Settings.INSTANCE);
 
         // worst code conceived
         cachedWoolColors = new HashMap<>();

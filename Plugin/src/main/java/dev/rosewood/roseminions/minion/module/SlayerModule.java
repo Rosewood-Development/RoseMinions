@@ -4,9 +4,11 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -19,34 +21,48 @@ import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import static dev.rosewood.roseminions.minion.module.SlayerModule.Settings.*;
 
 public class SlayerModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> RADIUS;
-    public static final SettingAccessor<Long> ATTACK_FREQUENCY;
-    public static final SettingAccessor<Boolean> ONLY_ATTACK_ENEMIES;
-    public static final SettingAccessor<Integer> DAMAGE_AMOUNT;
-    public static final SettingAccessor<Integer> NUMBER_OF_TARGETS;
-
     private static final Set<EntityType> BLACKLIST_TYPES = EnumSet.of(EntityType.PLAYER, EntityType.ARMOR_STAND);
 
-    static {
-        RADIUS = SettingsRegistry.defineInteger(SlayerModule.class, "radius", 3, "How far away the minion will search for targets");
-        ATTACK_FREQUENCY = SettingsRegistry.defineLong(SlayerModule.class, "attack-frequency", 1000L, "How often the minion will attack (in milliseconds)");
-        ONLY_ATTACK_ENEMIES = SettingsRegistry.defineBoolean(SlayerModule.class, "only-attack-enemies", true, "Whether the minion will only attack enemies");
-        DAMAGE_AMOUNT = SettingsRegistry.defineInteger(SlayerModule.class, "damage-amount", 10, "How much damage the minion will deal to targets");
-        NUMBER_OF_TARGETS = SettingsRegistry.defineInteger(SlayerModule.class, "number-of-targets", 1, "How many targets the minion will attack at once");
+    public static class Settings implements ModuleSettings {
 
-        SettingsRegistry.redefineString(SlayerModule.class, MinionModule.GUI_TITLE, "Slayer Module");
-        SettingsRegistry.redefineEnum(SlayerModule.class, MinionModule.GUI_ICON, Material.IRON_SWORD);
-        SettingsRegistry.redefineString(SlayerModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Slayer Module");
-        SettingsRegistry.redefineStringList(SlayerModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 3, "How far away the minion will search for targets"));
+        public static final SettingAccessor<Long> ATTACK_FREQUENCY = define(SettingAccessor.defineLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
+        public static final SettingAccessor<Boolean> ONLY_ATTACK_ENEMIES = define(SettingAccessor.defineBoolean("only-attack-enemies", true, "Whether the minion will only attack enemies"));
+        public static final SettingAccessor<Integer> DAMAGE_AMOUNT = define(SettingAccessor.defineInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
+        public static final SettingAccessor<Integer> NUMBER_OF_TARGETS = define(SettingAccessor.defineInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Slayer Module"));
+            define(MinionModule.GUI_ICON.copy(Material.IRON_SWORD));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Slayer Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     private long lastAttackTime;
 
     public SlayerModule(Minion minion) {
-        super(minion, DefaultMinionModules.SLAYER);
+        super(minion, DefaultMinionModules.SLAYER, Settings.INSTANCE);
     }
 
     @Override

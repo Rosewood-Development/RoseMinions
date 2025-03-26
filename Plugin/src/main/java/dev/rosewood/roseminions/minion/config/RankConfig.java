@@ -2,7 +2,7 @@ package dev.rosewood.roseminions.minion.config;
 
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
-import dev.rosewood.roseminions.util.nms.SkullUtils;
+import dev.rosewood.roseminions.util.SkullUtils;
 import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

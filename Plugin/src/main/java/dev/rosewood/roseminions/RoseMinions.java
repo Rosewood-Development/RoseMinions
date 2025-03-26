@@ -41,7 +41,7 @@ public class RoseMinions extends RosePlugin {
     @Override
     public void enable() {
         if (!NMSAdapter.isValidVersion()) {
-            this.getLogger().severe(this.getDescription().getName() + " only supports 1.16.5 servers and newer. Disabling plugin...");
+            this.getLogger().severe(this.getDescription().getName() + " only supports 1.19.4 servers and newer. Disabling plugin...");
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }

@@ -1,5 +1,6 @@
 package dev.rosewood.roseminions.nms.v1_21_R3.entity;
 
+import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.nms.util.ReflectionUtils;
 import java.lang.reflect.Method;
 import net.minecraft.core.BlockPos;
@@ -13,7 +14,11 @@ public class FakeFishingHook extends FishingHook {
 
     private static final Method method_calculateOpenWater;
     static {
-        method_calculateOpenWater = ReflectionUtils.getMethodByPositionAndTypes(FishingHook.class, 0, BlockPos.class);
+        if (NMSUtil.isPaper()) {
+            method_calculateOpenWater = ReflectionUtils.getMethodByName(FishingHook.class, "calculateOpenWater", BlockPos.class);
+        } else {
+            method_calculateOpenWater = ReflectionUtils.getMethodByPositionAndTypes(FishingHook.class, 2, BlockPos.class);
+        }
     }
 
     private boolean isOpenWater;

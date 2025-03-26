@@ -8,34 +8,53 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import dev.rosewood.roseminions.util.MinionUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import static dev.rosewood.roseminions.minion.module.InventoryModule.Settings.*;
 
 public class InventoryModule extends MinionModule {
 
-    public static final SettingAccessor<Integer> INVENTORY_SIZE;
-    public static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS;
+    public static class Settings implements ModuleSettings {
 
-    static {
-        INVENTORY_SIZE = SettingsRegistry.defineInteger(InventoryModule.class, "inventory-size", 27, "How many individual items can be stored");
-        INVENTORY_CONTENTS = SettingsRegistry.defineHiddenSetting(InventoryModule.class, SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "inventory-contents", () -> new ItemStack[27]);
+        public static final Settings INSTANCE = new Settings();
+        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        SettingsRegistry.redefineString(InventoryModule.class, MinionModule.GUI_TITLE, "Inventory Module");
-        SettingsRegistry.redefineEnum(InventoryModule.class, MinionModule.GUI_ICON, Material.CHEST);
-        SettingsRegistry.redefineString(InventoryModule.class, MinionModule.GUI_ICON_NAME, MinionUtils.PRIMARY_COLOR + "Inventory Module");
-        SettingsRegistry.redefineStringList(InventoryModule.class, MinionModule.GUI_ICON_LORE, List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Click to open."));
+        public static final SettingAccessor<Integer> INVENTORY_SIZE = define(SettingAccessor.defineInteger("inventory-size", 27, "How many individual items can be stored"));
+        public static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS = define(SettingAccessor.defineHiddenSetting(SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "inventory-contents", () -> new ItemStack[27]));
+
+        static {
+            define(MinionModule.GUI_TITLE.copy("Inventory Module"));
+            define(MinionModule.GUI_ICON.copy(Material.CHEST));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Inventory Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+        }
+
+        private Settings() { }
+
+        @Override
+        public List<SettingAccessor<?>> get() {
+            return Collections.unmodifiableList(ACCESSORS);
+        }
+
+        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
+            ACCESSORS.add(accessor);
+            return accessor;
+        }
+
     }
 
     public InventoryModule(Minion minion) {
-        super(minion, DefaultMinionModules.INVENTORY);
+        super(minion, DefaultMinionModules.INVENTORY, Settings.INSTANCE);
 
         MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
     }

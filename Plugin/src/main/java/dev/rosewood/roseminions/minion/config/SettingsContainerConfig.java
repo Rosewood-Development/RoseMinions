@@ -2,10 +2,11 @@ package dev.rosewood.roseminions.minion.config;
 
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingsContainer;
-import dev.rosewood.roseminions.minion.setting.SettingsRegistry;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
@@ -13,28 +14,26 @@ import org.bukkit.configuration.ConfigurationSection;
  */
 public class SettingsContainerConfig {
 
-    private final Class<?> clazz;
+    private final Map<String, SettingAccessor<?>> settings;
     private final Map<String, Supplier<?>> settingDefaultValueSuppliers;
 
-    public SettingsContainerConfig(Class<?> clazz, ConfigurationSection section) {
-        this.clazz = clazz;
+    public SettingsContainerConfig(ModuleSettings settings, ConfigurationSection section) {
+        this.settings = new LinkedHashMap<>();
+        for (SettingAccessor<?> setting : settings.get())
+            this.settings.put(setting.getKey(), setting);
         this.settingDefaultValueSuppliers = new HashMap<>();
 
         if (section == null)
             return;
 
-        for (SettingAccessor<?> accessor : SettingsRegistry.REGISTERED_SETTINGS.get(this.clazz))
+        for (SettingAccessor<?> accessor : this.settings.values())
             if (!accessor.isHidden() && section.contains(accessor.getKey()))
                 this.settingDefaultValueSuppliers.put(accessor.getKey(), () -> accessor.read(section));
     }
 
     private SettingsContainerConfig(SettingsContainerConfig other) {
-        this.clazz = other.clazz;
+        this.settings = new LinkedHashMap<>(other.settings);
         this.settingDefaultValueSuppliers = new HashMap<>(other.settingDefaultValueSuppliers);
-    }
-
-    public Class<?> getSettingsClass() {
-        return this.clazz;
     }
 
     public Map<String, Supplier<?>> getSettingDefaultValueSuppliers() {
@@ -48,11 +47,16 @@ public class SettingsContainerConfig {
     }
 
     public void merge(SettingsContainerConfig other) {
-        this.settingDefaultValueSuppliers.putAll(other.getSettingDefaultValueSuppliers());
+        this.settingDefaultValueSuppliers.putAll(other.settingDefaultValueSuppliers);
     }
 
     public SettingsContainerConfig copy() {
         return new SettingsContainerConfig(this);
+    }
+
+    @Override
+    public String toString() {
+        return "SettingsContainerConfig{" + this.settingDefaultValueSuppliers.entrySet().stream().map(x -> x.getKey() + "->" + x.getValue().get()).collect(Collectors.joining(",")) + "}";
     }
 
 }

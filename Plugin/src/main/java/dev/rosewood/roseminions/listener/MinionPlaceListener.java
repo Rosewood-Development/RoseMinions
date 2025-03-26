@@ -6,7 +6,9 @@ import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.MinionConfig;
 import dev.rosewood.roseminions.util.MinionUtils;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -29,6 +31,7 @@ public class MinionPlaceListener implements Listener {
         if (event.getBlockPlaced().getType() != Material.PLAYER_HEAD && event.getBlockPlaced().getType() != Material.PLAYER_WALL_HEAD)
             return;
 
+        Player player = event.getPlayer();
         ItemStack itemStack = event.getItemInHand();
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null)
@@ -50,24 +53,28 @@ public class MinionPlaceListener implements Listener {
 
             MinionConfig minionConfig = this.rosePlugin.getManager(MinionTypeManager.class).getMinionData(minionId);
             if (minionConfig == null) {
-                event.getPlayer().sendMessage("Invalid minion ID: " + minionId);
+                player.sendMessage("Invalid minion ID: " + minionId);
                 return;
             }
 
-            Minion minion = new Minion(minionConfig, minionRank, event.getPlayer().getUniqueId(), event.getBlockPlaced().getLocation());
+            Minion minion = new Minion(minionConfig, minionRank, player.getUniqueId(), event.getBlockPlaced().getLocation());
             minionManager.registerMinion(minion);
-        } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY)) {
+        } else if (pdc.has(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER)) {
             event.setCancelled(true);
 
-            byte[] data = pdc.get(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
-            if (data == null)
+            PersistentDataContainer dataContainer = pdc.get(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER);
+            if (dataContainer == null)
                 return;
 
-            Minion minion = new Minion(event.getBlockPlaced().getLocation(), data);
+            Minion minion = new Minion(event.getBlockPlaced().getLocation(), dataContainer);
             minionManager.registerMinion(minion);
         }
 
-        itemStack.setAmount(itemStack.getAmount() - 1);
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            this.rosePlugin.getScheduler().runTask(() -> itemStack.setAmount(itemStack.getAmount() - 1));
+        } else {
+            itemStack.setAmount(itemStack.getAmount() - 1);
+        }
     }
 
 }
