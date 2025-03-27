@@ -362,11 +362,11 @@ public final class CustomPersistentDataType {
     }
 
     public static final PersistentDataType<PersistentDataContainer, List<String>> STRING_LIST = forList(PersistentDataType.STRING);
-    public static final PersistentDataType<String, Sound> SOUND = forKeyed(Sound.class, Registry.SOUND_EVENT::get);
+    public static final PersistentDataType<String, Sound> SOUND = forKeyed(Sound.class, Registry.SOUNDS::get);
     public static final PersistentDataType<String, SoundCategory> SOUND_CATEGORY = forEnum(SoundCategory.class);
     public static final PersistentDataType<String, WorkerAreaController.RadiusType> RADIUS_TYPE = forEnum(WorkerAreaController.RadiusType.class);
     public static final PersistentDataType<String, WorkerAreaController.ScanDirection> SCAN_DIRECTION = forEnum(WorkerAreaController.ScanDirection.class);
-    public static final PersistentDataType<String, PotionEffectType> POTION_EFFECT_TYPE = forKeyed(PotionEffectType.class, Registry.MOB_EFFECT::get);
+    public static final PersistentDataType<String, PotionEffectType> POTION_EFFECT_TYPE = forKeyed(PotionEffectType.class, Registry.EFFECT::get);
 
     public static class KeyHelper {
 
