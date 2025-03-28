@@ -19,8 +19,8 @@ public class BaseCommand extends PrimaryCommand {
                 .aliases("roseminions", "minions")
                 .arguments(ArgumentsDefinition.builder()
                         .optionalSub("subcommand",
-                                new HelpCommand(this.rosePlugin, this, CommandInfo.builder("help").descriptionKey("command-help-description").build()),
-                                new ReloadCommand(this.rosePlugin, CommandInfo.builder("reload").descriptionKey("command-reload-description").permission("roseminions.reload").build()),
+                                new HelpCommand(this.rosePlugin, this),
+                                new ReloadCommand(this.rosePlugin),
                                 new GiveCommand(this.rosePlugin)
                         ))
                 .build();

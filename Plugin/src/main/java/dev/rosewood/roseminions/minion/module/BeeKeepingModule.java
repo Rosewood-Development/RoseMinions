@@ -17,9 +17,9 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Beehive;
 import org.bukkit.inventory.ItemStack;
-import static dev.rosewood.roseminions.minion.module.BeeKeeperModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.BeeKeepingModule.Settings.*;
 
-public class BeeKeeperModule extends MinionModule {
+public class BeeKeepingModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -32,10 +32,10 @@ public class BeeKeeperModule extends MinionModule {
         public static final SettingAccessor<Boolean> USE_BOTTLES = define(SettingAccessor.defineBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Bee Keeper Module"));
+            define(MinionModule.GUI_TITLE.copy("Bee Keeping Module"));
             define(MinionModule.GUI_ICON.copy(Material.BEE_NEST));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Bee Keeper Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey from bee hives.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Bee Keeping Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey from bee hives.")));
         }
 
         private Settings() { }
@@ -57,8 +57,8 @@ public class BeeKeeperModule extends MinionModule {
     private List<Block> hives;
     private int hiveIndex;
 
-    public BeeKeeperModule(Minion minion) {
-        super(minion, DefaultMinionModules.BEE_KEEPER, Settings.INSTANCE);
+    public BeeKeepingModule(Minion minion) {
+        super(minion, DefaultMinionModules.BEE_KEEPING, Settings.INSTANCE);
 
         this.hives = new ArrayList<>();
     }
@@ -134,6 +134,7 @@ public class BeeKeeperModule extends MinionModule {
         mainScreen.addButtonAt(10, GuiFactory.createButton()
                 .setIcon(Material.BEE_NEST)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Total Hives: " + MinionUtils.SECONDARY_COLOR + this.hives.size())))
+                .setItemFlags()
         );
 
         this.addBackButton(mainScreen);

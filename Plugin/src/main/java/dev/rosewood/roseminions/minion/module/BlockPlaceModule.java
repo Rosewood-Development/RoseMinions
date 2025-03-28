@@ -16,9 +16,9 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import static dev.rosewood.roseminions.minion.module.PlacerModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.BlockPlaceModule.Settings.*;
 
-public class PlacerModule extends MinionModule {
+public class BlockPlaceModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -31,10 +31,10 @@ public class PlacerModule extends MinionModule {
         public static final SettingAccessor<Boolean> REQUIRE_UNOBSTRUCTED = define(SettingAccessor.defineBoolean("require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block."));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Placer Module"));
+            define(MinionModule.GUI_TITLE.copy("Block Place Module"));
             define(MinionModule.GUI_ICON.copy(Material.GRASS_BLOCK));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Placer Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to place blocks.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Block Place Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to place blocks.")));
         }
 
         private Settings() { }
@@ -53,8 +53,8 @@ public class PlacerModule extends MinionModule {
 
     private long lastMineTime;
 
-    public PlacerModule(Minion minion) {
-        super(minion, DefaultMinionModules.PLACER, Settings.INSTANCE);
+    public BlockPlaceModule(Minion minion) {
+        super(minion, DefaultMinionModules.BLOCK_PLACE, Settings.INSTANCE);
 
         minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(
                 this,

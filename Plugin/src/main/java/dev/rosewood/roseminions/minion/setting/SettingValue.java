@@ -4,13 +4,13 @@ import dev.rosewood.roseminions.model.PDCSerializable;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 
-public class SettingItem<T> implements PDCSerializable {
+public class SettingValue<T> implements PDCSerializable {
 
     private final SettingAccessor<T> accessor;
     private T value;
     private boolean modified;
 
-    public SettingItem(SettingAccessor<T> accessor, T value) {
+    public SettingValue(SettingAccessor<T> accessor, T value) {
         this.accessor = accessor;
         this.value = value;
     }

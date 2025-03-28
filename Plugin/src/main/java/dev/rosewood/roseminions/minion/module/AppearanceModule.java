@@ -64,7 +64,7 @@ public class AppearanceModule extends MinionModule {
             define(MinionModule.GUI_TITLE.copy("Minion Appearance"));
             define(MinionModule.GUI_ICON.copy(Material.PLAYER_HEAD));
             define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Minion Appearance"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.")));
         }
 
         private Settings() { }
@@ -201,6 +201,7 @@ public class AppearanceModule extends MinionModule {
                 .setIcon(Material.NAME_TAG)
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Name"))
                 .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "The name of the minion"))
+                .setItemFlags()
                 .setClickAction(event -> {
                     event.getWhoClicked().sendMessage((HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Enter the new name of the minion:")));
                     this.createConversation((Conversable) event.getWhoClicked(), newName -> {
@@ -220,6 +221,7 @@ public class AppearanceModule extends MinionModule {
                 .setIcon(Material.ARMOR_STAND)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Small: " + MinionUtils.SECONDARY_COLOR + this.settings.get(SMALL))))
                 .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "Toggle the size of the minion"))
+                .setItemFlags()
                 .setClickAction(event -> {
                     this.settings.set(SMALL, !this.settings.get(SMALL));
                     this.updateEntity();
@@ -237,6 +239,7 @@ public class AppearanceModule extends MinionModule {
                 .setIcon(Material.PLAYER_HEAD)
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Texture"))
                 .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "The texture of the minion"))
+                .setItemFlags()
                 .setClickAction(event -> {
                     event.getWhoClicked().sendMessage(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Enter the new texture of the minion:"));
                     this.createConversation((Conversable) event.getWhoClicked(), newTexture -> {

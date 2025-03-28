@@ -1,7 +1,7 @@
 package dev.rosewood.roseminions.minion.config;
 
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,14 +10,14 @@ import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
- * Allows creating a {@link SettingsContainer}
+ * Allows creating a {@link SettingContainer}
  */
-public class SettingsContainerConfig {
+public class SettingContainerConfig {
 
     private final Map<String, SettingAccessor<?>> settings;
     private final Map<String, Supplier<?>> settingDefaultValueSuppliers;
 
-    public SettingsContainerConfig(ModuleSettings settings, ConfigurationSection section) {
+    public SettingContainerConfig(ModuleSettings settings, ConfigurationSection section) {
         this.settings = new LinkedHashMap<>();
         for (SettingAccessor<?> setting : settings.get())
             this.settings.put(setting.getKey(), setting);
@@ -31,7 +31,7 @@ public class SettingsContainerConfig {
                 this.settingDefaultValueSuppliers.put(accessor.getKey(), () -> accessor.read(section));
     }
 
-    private SettingsContainerConfig(SettingsContainerConfig other) {
+    private SettingContainerConfig(SettingContainerConfig other) {
         this.settings = new LinkedHashMap<>(other.settings);
         this.settingDefaultValueSuppliers = new HashMap<>(other.settingDefaultValueSuppliers);
     }
@@ -46,12 +46,12 @@ public class SettingsContainerConfig {
         return supplier != null ? supplier.get() : accessor.getDefaultValue();
     }
 
-    public void merge(SettingsContainerConfig other) {
+    public void merge(SettingContainerConfig other) {
         this.settingDefaultValueSuppliers.putAll(other.settingDefaultValueSuppliers);
     }
 
-    public SettingsContainerConfig copy() {
-        return new SettingsContainerConfig(this);
+    public SettingContainerConfig copy() {
+        return new SettingContainerConfig(this);
     }
 
     @Override

@@ -28,9 +28,9 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import static dev.rosewood.roseminions.minion.module.FisherModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.FishingModule.Settings.*;
 
-public class FisherModule extends MinionModule {
+public class FishingModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -49,10 +49,10 @@ public class FisherModule extends MinionModule {
         public static final SettingAccessor<PlayableSound> BOBBER_SOUND = define(SettingAccessor.defineSetting(SettingSerializers.PLAYABLE_SOUND, "fish-caught-sound", () -> new PlayableSound(Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Fisher Module"));
+            define(MinionModule.GUI_TITLE.copy("Fishing Module"));
             define(MinionModule.GUI_ICON.copy(Material.FISHING_ROD));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Fisher Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Fishing Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.")));
         }
 
         private Settings() { }
@@ -75,8 +75,8 @@ public class FisherModule extends MinionModule {
     private Block targetBlock;
     private long reelInTime;
 
-    public FisherModule(Minion minion) {
-        super(minion, DefaultMinionModules.FISHER, Settings.INSTANCE);
+    public FishingModule(Minion minion) {
+        super(minion, DefaultMinionModules.FISHING, Settings.INSTANCE);
 
         this.lastEventTime = System.currentTimeMillis();
     }

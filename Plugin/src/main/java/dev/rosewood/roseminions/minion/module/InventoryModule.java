@@ -36,7 +36,7 @@ public class InventoryModule extends MinionModule {
             define(MinionModule.GUI_TITLE.copy("Inventory Module"));
             define(MinionModule.GUI_ICON.copy(Material.CHEST));
             define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Inventory Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.")));
         }
 
         private Settings() { }
@@ -91,12 +91,14 @@ public class InventoryModule extends MinionModule {
                 .addButtonAt(fullSize.getNumSlots() - 6, GuiFactory.createButton()
                         .setIcon(Material.PAPER)
                         .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Previous Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.PREVIOUS_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
+                        .setItemFlags()
                         .setClickAction(event -> event.isShiftClick() ? ClickAction.PAGE_FIRST : ClickAction.PAGE_BACKWARDS)
                         .setFlags(GuiButtonFlag.HIDE_IF_FIRST_PAGE)
                         .setHiddenReplacement(borderItem))
                 .addButtonAt(fullSize.getNumSlots() - 4, GuiFactory.createButton()
                         .setIcon(Material.PAPER)
                         .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Next Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.NEXT_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
+                        .setItemFlags()
                         .setClickAction(event -> event.isShiftClick() ? ClickAction.PAGE_LAST : ClickAction.PAGE_FORWARDS)
                         .setFlags(GuiButtonFlag.HIDE_IF_LAST_PAGE)
                         .setHiddenReplacement(borderItem));

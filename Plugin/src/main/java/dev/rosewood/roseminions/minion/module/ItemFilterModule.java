@@ -20,9 +20,9 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import static dev.rosewood.roseminions.minion.module.FilterModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.ItemFilterModule.Settings.*;
 
-public class FilterModule extends MinionModule {
+public class ItemFilterModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -35,10 +35,10 @@ public class FilterModule extends MinionModule {
         public static final SettingAccessor<Boolean> MATCH_NBT = define(SettingAccessor.defineBoolean("match-nbt", false, "Whether or not to match NBT data"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Filter Module"));
+            define(MinionModule.GUI_TITLE.copy("Item Filter Module"));
             define(MinionModule.GUI_ICON.copy(Material.COMPARATOR));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Filter Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Item Filter Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items.")));
         }
 
         private Settings() { }
@@ -55,8 +55,8 @@ public class FilterModule extends MinionModule {
 
     }
 
-    public FilterModule(Minion minion) {
-        super(minion, DefaultMinionModules.FILTER, Settings.INSTANCE);
+    public ItemFilterModule(Minion minion) {
+        super(minion, DefaultMinionModules.ITEM_FILTER, Settings.INSTANCE);
 
         MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, FILTER_ITEMS);
     }
@@ -92,6 +92,7 @@ public class FilterModule extends MinionModule {
         mainScreen.addButtonAt(fullSize.getNumSlots() - 6, GuiFactory.createButton()
                         .setIcon(Material.PAPER)
                         .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Previous Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.PREVIOUS_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
+                        .setItemFlags()
                         .setClickAction(event -> event.isShiftClick() ? ClickAction.PAGE_FIRST : ClickAction.PAGE_BACKWARDS)
                         .setFlags(GuiButtonFlag.HIDE_IF_FIRST_PAGE)
                         .setHiddenReplacement(borderItem))
@@ -106,6 +107,7 @@ public class FilterModule extends MinionModule {
         mainScreen.addButtonAt(fullSize.getNumSlots() - 5, GuiFactory.createButton()
                 .setIcon(Material.HOPPER)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Filter Type (" + MinionUtils.SECONDARY_COLOR + this.settings.get(FILTER_TYPE).name() + MinionUtils.PRIMARY_COLOR + ")")))
+                .setItemFlags()
                 .setClickAction(event -> {
                     FilterType filterType = this.settings.get(FILTER_TYPE);
                     filterType = filterType == FilterType.BLACKLIST ? FilterType.WHITELIST : FilterType.BLACKLIST;
@@ -117,6 +119,7 @@ public class FilterModule extends MinionModule {
         mainScreen.addButtonAt(fullSize.getNumSlots() - 3, GuiFactory.createButton()
                 .setIcon(Material.NETHER_STAR)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Match NBT (" + MinionUtils.SECONDARY_COLOR + this.settings.get(MATCH_NBT) + MinionUtils.PRIMARY_COLOR + ")")))
+                .setItemFlags()
                 .setClickAction(event -> {
                     boolean matchNbt = this.settings.get(MATCH_NBT);
                     this.settings.set(MATCH_NBT, !matchNbt);

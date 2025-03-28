@@ -2,7 +2,7 @@ package dev.rosewood.roseminions.util;
 
 import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import java.util.Random;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Boss;
@@ -49,7 +49,7 @@ public final class MinionUtils {
      * @param sizeAccessor The setting accessor for the inventory size
      * @param inventoryAccessor The setting accessor for the inventory
      */
-    public static void snapInventorySize(SettingsContainer settings, SettingAccessor<Integer> sizeAccessor, SettingAccessor<ItemStack[]> inventoryAccessor) {
+    public static void snapInventorySize(SettingContainer settings, SettingAccessor<Integer> sizeAccessor, SettingAccessor<ItemStack[]> inventoryAccessor) {
         int originalSize = settings.get(sizeAccessor);
         int inventorySize = originalSize;
         if (inventorySize % 9 != 0) {

@@ -13,7 +13,7 @@ public class FakeFishingHook extends FishingHook {
 
     private static final Method method_calculateOpenWater;
     static {
-        method_calculateOpenWater = ReflectionUtils.getMethodByPositionAndTypes(FishingHook.class, 1, BlockPos.class);
+        method_calculateOpenWater = ReflectionUtils.getMethodByPositionAndTypes(FishingHook.class, 0, BlockPos.class);
     }
 
     private boolean isOpenWater;

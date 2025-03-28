@@ -47,14 +47,14 @@ public class MinionConfig {
         Map<String, ModuleConfig> moduleData = new HashMap<>();
 
         // Load settings from previous rank
-        SettingsContainerConfig previousRankItemSettings = null;
+        SettingContainerConfig previousRankItemSettings = null;
         if (previousRank != null) {
             previousRankItemSettings = previousRank.itemSettings().copy();
             previousRank.moduleData().forEach((module, data) -> moduleData.put(module, data.copy()));
         }
 
         ConfigurationSection itemSection = section.getConfigurationSection("item");
-        SettingsContainerConfig itemSettings = new SettingsContainerConfig(MinionItem.INSTANCE, itemSection);
+        SettingContainerConfig itemSettings = new SettingContainerConfig(MinionItem.INSTANCE, itemSection);
 
         if (previousRankItemSettings != null) {
             previousRankItemSettings.merge(itemSettings);
@@ -93,7 +93,7 @@ public class MinionConfig {
                 continue;
             }
 
-            SettingsContainerConfig settingsContainer = minionModuleManager.getSectionSettings(key, moduleSection);
+            SettingContainerConfig settingsContainer = minionModuleManager.getSectionSettings(key, moduleSection);
             Map<String, ModuleConfig> submodules = this.getModules(moduleSection.getConfigurationSection("sub-modules"), minionModuleManager);
             moduleData.put(key, new ModuleConfig(key, settingsContainer, submodules));
         }

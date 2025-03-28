@@ -10,7 +10,7 @@ import java.util.Map;
  * @param settings The default settings for the module
  * @param subModules The submodules of the module
  */
-public record ModuleConfig(String id, SettingsContainerConfig settings, Map<String, ModuleConfig> subModules) {
+public record ModuleConfig(String id, SettingContainerConfig settings, Map<String, ModuleConfig> subModules) {
 
     public ModuleConfig copy() {
         return new ModuleConfig(this.id, this.settings.copy(), this.copySubModules());

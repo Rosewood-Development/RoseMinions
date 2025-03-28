@@ -33,7 +33,7 @@ public class ItemPickupModule extends MinionModule {
             define(MinionModule.GUI_TITLE.copy("Item Pickup Module"));
             define(MinionModule.GUI_ICON.copy(Material.HOPPER));
             define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Item Pickup Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.")));
         }
 
         private Settings() { }
@@ -87,7 +87,7 @@ public class ItemPickupModule extends MinionModule {
 
     private void pickup(List<Item> items) {
         Optional<InventoryModule> inventoryModule = this.getModule(InventoryModule.class);
-        Optional<FilterModule> filterModule = this.getModule(FilterModule.class);
+        Optional<ItemFilterModule> filterModule = this.getModule(ItemFilterModule.class);
 
         if (inventoryModule.isEmpty()) {
             // Teleport items directly under the minion

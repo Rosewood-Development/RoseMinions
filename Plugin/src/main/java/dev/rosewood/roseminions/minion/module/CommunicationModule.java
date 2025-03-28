@@ -24,9 +24,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import static dev.rosewood.roseminions.minion.module.CommunicatorModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.CommunicationModule.Settings.*;
 
-public class CommunicatorModule extends MinionModule {
+public class CommunicationModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -40,10 +40,10 @@ public class CommunicatorModule extends MinionModule {
         ), "The conversations that the minion can have"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Communicator Module"));
+            define(MinionModule.GUI_TITLE.copy("Communication Module"));
             define(MinionModule.GUI_ICON.copy(Material.COMMAND_BLOCK));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Communicator Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to have", MinionUtils.SECONDARY_COLOR + "conversations with other minions.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Communication Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to communicate", MinionUtils.SECONDARY_COLOR + "with the world around them.")));
         }
 
         private Settings() { }
@@ -70,8 +70,8 @@ public class CommunicatorModule extends MinionModule {
     public int lastMessageIndex; // The last message index
     public Hologram hologram; // The hologram for the conversation
 
-    public CommunicatorModule(Minion minion) {
-        super(minion, DefaultMinionModules.COMMUNICATOR, Settings.INSTANCE);
+    public CommunicationModule(Minion minion) {
+        super(minion, DefaultMinionModules.COMMUNICATION, Settings.INSTANCE);
 
         // TODO: Clear all messages when the the plugin is reloaded or disabled
 
@@ -179,6 +179,7 @@ public class CommunicatorModule extends MinionModule {
 
         mainScreen.addButtonAt(0, GuiFactory.createButton(new ItemStack(Material.BIRCH_SIGN))
                 .setName(HexUtils.colorify("<g:#F7971E:#FFD200>Start Conversation"))
+                .setItemFlags()
                 .setClickAction(inventoryClickEvent -> {
                     this.resetConversation();
                     this.lastConversation = 0;
@@ -202,7 +203,7 @@ public class CommunicatorModule extends MinionModule {
             if (minion == this.minion)
                 continue;
 
-            minion.getModule(CommunicatorModule.class).ifPresent(communicatorModule -> {
+            minion.getModule(CommunicationModule.class).ifPresent(communicationModule -> {
                 // TODO: Maybe move this to a separate method
                 if (reset) {
                     this.resetConversation(); // Reset the conversation
@@ -210,15 +211,15 @@ public class CommunicatorModule extends MinionModule {
                 }
 
                 // Update the other minions
-                communicatorModule.active = this.active;
-                communicatorModule.lastConversation = this.lastConversation;
-                communicatorModule.lastMessage = this.lastMessage;
-                communicatorModule.lastSpeaker = this.lastSpeaker;
+                communicationModule.active = this.active;
+                communicationModule.lastConversation = this.lastConversation;
+                communicationModule.lastMessage = this.lastMessage;
+                communicationModule.lastSpeaker = this.lastSpeaker;
 
-                if (communicatorModule.hologram != null)
-                    communicatorModule.hologram.getWatchers().forEach(communicatorModule.hologram::removeWatcher);
+                if (communicationModule.hologram != null)
+                    communicationModule.hologram.getWatchers().forEach(communicationModule.hologram::removeWatcher);
 
-                communicatorModule.hologram = null;
+                communicationModule.hologram = null;
             });
         }
 

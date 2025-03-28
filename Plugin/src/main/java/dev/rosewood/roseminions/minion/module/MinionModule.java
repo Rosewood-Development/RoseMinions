@@ -12,10 +12,10 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.module.controller.ModuleController;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingHolder;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
+import dev.rosewood.roseminions.model.PDCSerializable;
 import dev.rosewood.roseminions.model.Updatable;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-public abstract class MinionModule implements GuiHolder, SettingHolder, Modular, Updatable {
+public abstract class MinionModule implements GuiHolder, PDCSerializable, Modular, Updatable {
 
     private static final NamespacedKey KEY_SETTINGS = CustomPersistentDataType.KeyHelper.get("settings");
     private static final NamespacedKey KEY_MODULES = CustomPersistentDataType.KeyHelper.get("modules");
@@ -42,7 +42,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
 
     protected final Minion minion;
     protected final String moduleName;
-    protected final SettingsContainer settings;
+    protected final SettingContainer settings;
     protected final Map<Class<? extends MinionModule>, MinionModule> submodules;
     protected final List<ModuleController> activeControllers;
     protected Modular parentModular;
@@ -53,7 +53,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     public MinionModule(Minion minion, String moduleName, ModuleSettings settings) {
         this.minion = minion;
         this.moduleName = moduleName.toLowerCase();
-        this.settings = new SettingsContainer(settings.get());
+        this.settings = new SettingContainer(settings.get());
         this.submodules = new LinkedHashMap<>();
         this.activeControllers = new ArrayList<>();
         this.parentModular = minion;
@@ -87,15 +87,14 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
             this.guiContainer.closeViewers();
     }
 
-    @Override
-    public final SettingsContainer getSettings() {
+    public final SettingContainer getSettings() {
         return this.settings;
     }
 
     @Override
     public void writePDC(PersistentDataContainer container, PersistentDataAdapterContext context) {
         PersistentDataContainer settingsContainer = context.newPersistentDataContainer();
-        SettingHolder.super.writePDC(settingsContainer, context);
+        this.settings.writePDC(settingsContainer, context);
         container.set(KEY_SETTINGS, PersistentDataType.TAG_CONTAINER, settingsContainer);
 
         PersistentDataContainer modulesContainer = context.newPersistentDataContainer();
@@ -111,7 +110,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
     public void readPDC(PersistentDataContainer container) {
         PersistentDataContainer settingsContainer = container.get(KEY_SETTINGS, PersistentDataType.TAG_CONTAINER);
         if (settingsContainer != null)
-            SettingHolder.super.readPDC(settingsContainer);
+            this.settings.readPDC(settingsContainer);
 
         PersistentDataContainer modulesContainer = container.get(KEY_MODULES, PersistentDataType.TAG_CONTAINER);
         if (modulesContainer != null) {
@@ -173,6 +172,7 @@ public abstract class MinionModule implements GuiHolder, SettingHolder, Modular,
                 .setIcon(Material.ARROW)
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Back"))
                 .setLore(List.of("", HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "Click to go back")))
+                .setItemFlags()
                 .setClickAction(event -> {
                     this.minion.openGui((Player) event.getWhoClicked());
                     return ClickAction.NOTHING;

@@ -40,3 +40,8 @@ argument-handler-integer: 'Integer [%input%] must be a whole number between -2^3
 argument-handler-player: 'No Player with the username [%input%] was found online'
 argument-handler-minion-config: 'No minion config named [%input%] exists'
 argument-handler-minion-rank: 'Minion rank [%input%] is not valid. Available ranks: [%ranks%]'
+
+# GUI-related text
+gui:
+  additional-module-icon-lore:
+    - '<#ffaaff>Click to open.'

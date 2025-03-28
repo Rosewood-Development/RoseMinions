@@ -19,48 +19,28 @@ import org.bukkit.persistence.PersistentDataType;
 @SuppressWarnings("unchecked")
 public final class SettingSerializerFactories {
 
-    private static final Map<String, SettingSerializer<?>> DYNAMIC_SERIALIZERS = new HashMap<>();
-
     private SettingSerializerFactories() { }
 
     //region Serializer Factories
     public static <T extends Enum<T>> SettingSerializer<T> ofEnum(Class<T> enumClass) {
-        String key = enumClass.getName();
-        if (DYNAMIC_SERIALIZERS.containsKey(key))
-            return (SettingSerializer<T>) DYNAMIC_SERIALIZERS.get(key);
-
-        SettingSerializer<T> serializer = new SettingSerializer<>(enumClass, CustomPersistentDataType.forEnum(enumClass), Enum::name, x -> Enum.valueOf(enumClass, x)) {
+        return new SettingSerializer<>(enumClass, CustomPersistentDataType.forEnum(enumClass), Enum::name, x -> Enum.valueOf(enumClass, x)) {
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) { config.set(key, value.name(), comments); }
             public T read(ConfigurationSection config, String key) { return Enum.valueOf(enumClass, config.getString(key, "")); }
         };
-
-        DYNAMIC_SERIALIZERS.put(key, serializer);
-        return serializer;
     }
 
     public static <T extends Keyed> SettingSerializer<T> ofKeyed(Class<T> keyedClass, Function<NamespacedKey, T> valueOfFunction) {
-        String key = keyedClass.getName();
-        if (DYNAMIC_SERIALIZERS.containsKey(key))
-            return (SettingSerializer<T>) DYNAMIC_SERIALIZERS.get(key);
-
-        SettingSerializer<T> serializer = new SettingSerializer<>(keyedClass, CustomPersistentDataType.forKeyed(keyedClass, valueOfFunction), x -> translateName(x.getKey()), x -> valueOfFunction.apply(translateKey(x))) {
+        return new SettingSerializer<>(keyedClass, CustomPersistentDataType.forKeyed(keyedClass, valueOfFunction), x -> translateName(x.getKey()), x -> valueOfFunction.apply(translateKey(x))) {
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) { config.set(key, translateName(value.getKey()), comments); }
             public T read(ConfigurationSection config, String key) { return valueOfFunction.apply(translateKey(config.getString(key))); }
         };
-
-        DYNAMIC_SERIALIZERS.put(key, serializer);
-        return serializer;
     }
 
     public static <T> SettingSerializer<T[]> ofArray(SettingSerializer<T> serializer) {
-        String key = serializer.getTypeName() + "[]";
-        if (DYNAMIC_SERIALIZERS.containsKey(key))
-            return (SettingSerializer<T[]>) DYNAMIC_SERIALIZERS.get(key);
-
-        SettingSerializer<T[]> arraySerializer = new SettingSerializer<>(CustomPersistentDataType.forArray(serializer.getPersistentDataType())) {
+        return new SettingSerializer<>(CustomPersistentDataType.forArray(serializer.getPersistentDataType())) {
             public void write(CommentedConfigurationSection config, String key, T[] value, String... comments) {
-                if (serializer.isStringificationAllowed()) {
-                    config.set(key, Arrays.stream(value).map(x -> x == null ? "" : serializer.stringify(x)).toList(), comments);
+                if (serializer.isStringKey()) {
+                    config.set(key, Arrays.stream(value).map(x -> x == null ? "" : serializer.asStringKey(x)).toList(), comments);
                 } else {
                     CommentedConfigurationSection section = getOrCreateSection(config, key, comments);
                     int index = 0;
@@ -74,13 +54,13 @@ public final class SettingSerializerFactories {
                 }
             }
             public T[] read(ConfigurationSection config, String key) {
-                if (serializer.isStringificationAllowed()) {
+                if (serializer.isStringKey()) {
                     List<String> contents = config.getStringList(key);
                     T[] array = (T[]) Array.newInstance(serializer.type, contents.size());
                     for (int i = 0; i < contents.size(); i++) {
                         String content = contents.get(i);
                         if (!content.isEmpty())
-                            array[i] = serializer.parseString(content);
+                            array[i] = serializer.fromStringKey(content);
                     }
                     return array;
                 } else {
@@ -98,24 +78,14 @@ public final class SettingSerializerFactories {
                     return (T[]) Array.newInstance(serializer.type, 0);
                 }
             }
-            public String getTypeName() {
-                return key;
-            }
         };
-
-        DYNAMIC_SERIALIZERS.put(key, arraySerializer);
-        return arraySerializer;
     }
 
     public static <T> SettingSerializer<List<T>> ofList(SettingSerializer<T> serializer) {
-        String key = "List<" + serializer.getTypeName() + ">";
-        if (DYNAMIC_SERIALIZERS.containsKey(key))
-            return (SettingSerializer<List<T>>) DYNAMIC_SERIALIZERS.get(key);
-
-        SettingSerializer<List<T>> listSerializer = new SettingSerializer<>(CustomPersistentDataType.forList(serializer.getPersistentDataType())) {
+        return new SettingSerializer<>(CustomPersistentDataType.forList(serializer.getPersistentDataType())) {
             public void write(CommentedConfigurationSection config, String key, List<T> value, String... comments) {
-                if (serializer.isStringificationAllowed()) {
-                    config.set(key, value.stream().map(serializer::stringify).toList(), comments);
+                if (serializer.isStringKey()) {
+                    config.set(key, value.stream().map(serializer::asStringKey).toList(), comments);
                 } else {
                     CommentedConfigurationSection section = getOrCreateSection(config, key, comments);
                     int index = 0;
@@ -124,8 +94,8 @@ public final class SettingSerializerFactories {
                 }
             }
             public List<T> read(ConfigurationSection config, String key) {
-                if (serializer.isStringificationAllowed()) {
-                    return config.getStringList(key).stream().map(serializer::parseString).toList();
+                if (serializer.isStringKey()) {
+                    return config.getStringList(key).stream().map(serializer::fromStringKey).toList();
                 } else {
                     List<T> list = new ArrayList<>();
                     ConfigurationSection section = config.getConfigurationSection(key);
@@ -139,26 +109,16 @@ public final class SettingSerializerFactories {
                     return list;
                 }
             }
-            public String getTypeName() {
-                return key;
-            }
         };
-
-        DYNAMIC_SERIALIZERS.put(key, listSerializer);
-        return listSerializer;
     }
 
     public static <K, V> SettingSerializer<Map<K, V>> ofMap(SettingSerializer<K> keySerializer, SettingSerializer<V> valueSerializer) {
-        String key = "Map<" + keySerializer.getTypeName() + "," + valueSerializer.getTypeName() + ">";
-        if (DYNAMIC_SERIALIZERS.containsKey(key))
-            return (SettingSerializer<Map<K, V>>) DYNAMIC_SERIALIZERS.get(key);
-
-        SettingSerializer<Map<K, V>> mapSerializer = new SettingSerializer<>(CustomPersistentDataType.forMap(keySerializer.getPersistentDataType(), valueSerializer.getPersistentDataType())) {
+        return new SettingSerializer<>(CustomPersistentDataType.forMap(keySerializer.getPersistentDataType(), valueSerializer.getPersistentDataType())) {
             public void write(CommentedConfigurationSection config, String key, Map<K, V> value, String... comments) {
                 CommentedConfigurationSection section = getOrCreateSection(config, key, comments);
-                if (keySerializer.isStringificationAllowed() && valueSerializer.isStringificationAllowed()) {
+                if (keySerializer.isStringKey() && valueSerializer.isStringKey()) {
                     for (Map.Entry<K, V> entry : value.entrySet())
-                        section.set(keySerializer.stringify(entry.getKey()), valueSerializer.stringify(entry.getValue()));
+                        section.set(keySerializer.asStringKey(entry.getKey()), valueSerializer.asStringKey(entry.getValue()));
                 } else {
                     int index = 0;
                     for (Map.Entry<K, V> entry : value.entrySet()) {
@@ -172,10 +132,10 @@ public final class SettingSerializerFactories {
                 Map<K, V> map = new HashMap<>();
                 ConfigurationSection section = config.getConfigurationSection(key);
                 if (section != null) {
-                    if (keySerializer.isStringificationAllowed() && valueSerializer.isStringificationAllowed()) {
+                    if (keySerializer.isStringKey() && valueSerializer.isStringKey()) {
                         for (String configKey : section.getKeys(false)) {
-                            K k = keySerializer.parseString(configKey);
-                            V v = valueSerializer.parseString(section.getString(configKey, ""));
+                            K k = keySerializer.fromStringKey(configKey);
+                            V v = valueSerializer.fromStringKey(section.getString(configKey, ""));
                             if (k != null && v != null)
                                 map.put(k, v);
                         }
@@ -193,13 +153,7 @@ public final class SettingSerializerFactories {
                 }
                 return map;
             }
-            public String getTypeName() {
-                return key;
-            }
         };
-
-        DYNAMIC_SERIALIZERS.put(key, mapSerializer);
-        return mapSerializer;
     }
 
     public static <T> SettingSerializer<T> ofComplex(Class<T> clazz,
@@ -207,25 +161,21 @@ public final class SettingSerializerFactories {
                                                      Consumer<ComplexSettingWriter> writerConsumer,
                                                      Function<T, Map<String, Object>> toMapFunction,
                                                      Function<Map<String, Object>, T> fromMapFunction) {
-        String key = "Complex:" + clazz.getName();
-        if (DYNAMIC_SERIALIZERS.containsKey(key))
-            return (SettingSerializer<T>) DYNAMIC_SERIALIZERS.get(key);
-
         ComplexSettingWriter builder = new ComplexSettingWriter();
         writerConsumer.accept(builder);
         List<ComplexSettingProperty<?>> properties = builder.getProperties();
 
-        SettingSerializer<T> serializer = new SettingSerializer<>(clazz, persistentDataType) {
+        return new SettingSerializer<>(clazz, persistentDataType) {
             @Override
             public void write(CommentedConfigurationSection config, String key, T value, String... comments) {
                 config.set(key, null, comments);
                 Map<String, Object> data = toMapFunction.apply(value);
                 for (ComplexSettingProperty<?> property : properties) {
-                    SettingSerializer<?> serializer = property.serializer();
-                    if (serializer.isStringificationAllowed()) {
-                        config.set(key + "." + property.name(), serializer.stringify(MinionUtils.forceCast(data.get(property.name()))), property.comments());
+                    SettingSerializer<?> propertySerializer = property.serializer();
+                    if (propertySerializer.isStringKey()) {
+                        config.set(key + "." + property.name(), propertySerializer.asStringKey(MinionUtils.forceCast(data.get(property.name()))), property.comments());
                     } else {
-                        serializer.write(config, key + "." + property.name(), MinionUtils.forceCast(data.get(property.name())), property.comments());
+                        propertySerializer.write(config, key + "." + property.name(), MinionUtils.forceCast(data.get(property.name())), property.comments());
                     }
                 }
             }
@@ -233,23 +183,16 @@ public final class SettingSerializerFactories {
             public T read(ConfigurationSection config, String key) {
                 Map<String, Object> values = new HashMap<>();
                 for (ComplexSettingProperty<?> property : properties) {
-                    SettingSerializer<?> serializer = property.serializer();
-                    if (serializer.isStringificationAllowed()) {
-                        values.put(property.name(), serializer.parseString(config.getString(key + "." + property.name(), "")));
+                    SettingSerializer<?> propertySerializer = property.serializer();
+                    if (propertySerializer.isStringKey()) {
+                        values.put(property.name(), propertySerializer.fromStringKey(config.getString(key + "." + property.name(), "")));
                     } else {
-                        values.put(property.name(), serializer.read(config, key + "." + property.name()));
+                        values.put(property.name(), propertySerializer.read(config, key + "." + property.name()));
                     }
                 }
                 return fromMapFunction.apply(values);
             }
-            @Override
-            public String getTypeName() {
-                return key;
-            }
         };
-
-        DYNAMIC_SERIALIZERS.put(key, serializer);
-        return serializer;
     }
     //endregion
 

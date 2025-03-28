@@ -13,9 +13,9 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import static dev.rosewood.roseminions.minion.module.BreakerModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.BlockBreakModule.Settings.*;
 
-public class BreakerModule extends MinionModule {
+public class BlockBreakModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -27,10 +27,10 @@ public class BreakerModule extends MinionModule {
         public static final SettingAccessor<Material> TARGET_BLOCK = define(SettingAccessor.defineEnum("target-block", Material.COBBLESTONE, "The block to mine"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Miner Module"));
+            define(MinionModule.GUI_TITLE.copy("Block Break Module"));
             define(MinionModule.GUI_ICON.copy(Material.DIAMOND_PICKAXE));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Miner Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Block Break Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to break blocks.")));
         }
 
         private Settings() { }
@@ -49,8 +49,8 @@ public class BreakerModule extends MinionModule {
 
     private long lastMineTime;
 
-    public BreakerModule(Minion minion) {
-        super(minion, DefaultMinionModules.BREAKER, Settings.INSTANCE);
+    public BlockBreakModule(Minion minion) {
+        super(minion, DefaultMinionModules.BLOCK_BREAK, Settings.INSTANCE);
     }
 
     @Override

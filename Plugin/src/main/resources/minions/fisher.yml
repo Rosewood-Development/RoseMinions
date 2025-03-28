@@ -2,7 +2,7 @@ id: fisher
 ranks:
   0:
     modules:
-      fisher:
+      fishing:
         fish-min-delay: 40000
         fish-max-delay: 100000
         reel-in-min-delay: 10000
@@ -22,7 +22,7 @@ ranks:
       texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNThiNTdkZDRhODJhNDJhNDM4OWQ5YzZhZjczYTI3NzE4YThhNDRiOGM0Nzg4Y2Q2ZDY1YWJiZWE3ZTYxODE0MiJ9fX0='
   1:
     modules:
-      fisher:
+      fishing:
         fish-min-delay: 20000
         fish-max-delay: 80000
         reel-in-min-delay: 8000
@@ -34,7 +34,7 @@ ranks:
       display-name: '<#5588ff>Fisher Minion &7[<#bbeeff>Rank 1&7]'
   2:
     modules:
-      fisher:
+      fishing:
         fish-min-delay: 10000
         fish-max-delay: 60000
         reel-in-min-delay: 6000
@@ -46,7 +46,7 @@ ranks:
       display-name: '<#5588ff>Fisher Minion &7[<#bbeeff>Rank 2&7]'
   3:
     modules:
-      fisher:
+      fishing:
         fish-min-delay: 8000
         fish-max-delay: 40000
         reel-in-min-delay: 4000
@@ -58,7 +58,7 @@ ranks:
       display-name: '<#5588ff>Fisher Minion &7[<#bbeeff>Rank 3&7]'
   4:
     modules:
-      fisher:
+      fishing:
         fish-min-delay: 6000
         fish-max-delay: 20000
         reel-in-min-delay: 2000

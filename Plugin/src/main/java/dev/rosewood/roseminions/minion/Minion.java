@@ -9,8 +9,10 @@ import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
+import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.config.MinionConfig;
@@ -20,7 +22,7 @@ import dev.rosewood.roseminions.minion.config.RankConfig;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.module.DefaultMinionModules;
 import dev.rosewood.roseminions.minion.module.MinionModule;
-import dev.rosewood.roseminions.minion.setting.SettingsContainer;
+import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
 import dev.rosewood.roseminions.model.PDCSerializable;
@@ -219,8 +221,11 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, size)
                 .setTitle(ChatColor.stripColor(HexUtils.colorify(this.getRankData().itemSettings().get(MinionItem.DISPLAY_NAME))));
 
+        LocaleManager localeManager = RoseMinions.getInstance().getManager(LocaleManager.class);
+        List<String> additionalModuleLore = localeManager.getLocaleMessages("gui.additional-module-icon-lore", StringPlaceholders.empty());
+
         // Add the appearance item
-        SettingsContainer appearanceSettings = this.appearanceModule.getSettings();
+        SettingContainer appearanceSettings = this.appearanceModule.getSettings();
         ItemStack appearanceItem = new ItemStack(appearanceSettings.get(MinionModule.GUI_ICON));
         ItemMeta meta = appearanceItem.getItemMeta();
         if (meta instanceof SkullMeta skullMeta) {
@@ -228,9 +233,14 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
             appearanceItem.setItemMeta(skullMeta);
         }
 
+        List<String> appearanceLore = new ArrayList<>();
+        appearanceLore.addAll(appearanceSettings.get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList());
+        appearanceLore.addAll(additionalModuleLore);
+
         mainScreen.addButtonAt(10, GuiFactory.createButton(appearanceItem)
                 .setName(HexUtils.colorify(appearanceSettings.get(MinionModule.GUI_ICON_NAME)))
-                .setLore(appearanceSettings.get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList())
+                .setLore(appearanceLore)
+                .setItemFlags()
                 .setClickAction(event -> {
                     this.appearanceModule.openGui((Player) event.getWhoClicked());
                     return ClickAction.NOTHING;
@@ -241,10 +251,15 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
             if (module instanceof AppearanceModule)
                 continue;
 
+            List<String> lore = new ArrayList<>();
+            lore.addAll(module.getSettings().get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList());
+            lore.addAll(additionalModuleLore);
+
             mainScreen.addButtonAt(MODULE_SLOT_FILL_ORDER[moduleIndex++], GuiFactory.createButton()
                     .setIcon(module.getSettings().get(MinionModule.GUI_ICON))
                     .setName(HexUtils.colorify(module.getSettings().get(MinionModule.GUI_ICON_NAME)))
-                    .setLore(module.getSettings().get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList())
+                    .setLore(lore)
+                    .setItemFlags()
                     .setClickAction(event -> {
                         module.openGui((Player) event.getWhoClicked());
                         return ClickAction.NOTHING;

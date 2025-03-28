@@ -14,9 +14,9 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import static dev.rosewood.roseminions.minion.module.BeaconModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.PotionEffectModule.Settings.*;
 
-public class BeaconModule extends MinionModule {
+public class PotionEffectModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -28,10 +28,10 @@ public class BeaconModule extends MinionModule {
         public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 2500L, "How often the beacon will update (in milliseconds)"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Beacon Module"));
+            define(MinionModule.GUI_TITLE.copy("Potion Effect Module"));
             define(MinionModule.GUI_ICON.copy(Material.BEACON));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Beacon Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to create a beacon.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Potion Effect Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to apply potion", MinionUtils.SECONDARY_COLOR + "to nearby entities.")));
         }
 
         private Settings() { }
@@ -50,8 +50,8 @@ public class BeaconModule extends MinionModule {
 
     private long lastUpdate;
 
-    public BeaconModule(Minion minion) {
-        super(minion, DefaultMinionModules.BEACON, Settings.INSTANCE);
+    public PotionEffectModule(Minion minion) {
+        super(minion, DefaultMinionModules.POTION_EFFECT, Settings.INSTANCE);
     }
 
     @Override

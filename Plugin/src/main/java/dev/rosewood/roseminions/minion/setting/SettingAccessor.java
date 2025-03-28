@@ -41,9 +41,9 @@ public class SettingAccessor<T> {
             return;
 
         T defaultValue = this.defaultValueSupplier.get();
-        if (this.serializer.isStringificationAllowed() && defaultValue != null) {
+        if (this.serializer.isStringKey() && defaultValue != null) {
             String[] comments = Arrays.copyOf(this.comments, this.comments.length + 1);
-            comments[comments.length - 1] = "Default: " + this.serializer.stringify(defaultValue);
+            comments[comments.length - 1] = "Default: " + this.serializer.asStringKey(defaultValue);
             this.serializer.write(config, this.key, defaultValue, comments);
         } else {
             this.serializer.write(config, this.key, defaultValue, this.comments);

@@ -2,7 +2,7 @@ id: farmer
 ranks:
   0:
     modules:
-      farmer:
+      farming:
         farm-frequency: 1500
       inventory: {}
       item_pickup: {}
@@ -19,7 +19,7 @@ ranks:
       texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDI3MGMwNjI1MmQ0ZDQxYzE1NzI5YjE5N2IwM2RkOTE1NzY0ZWU3NDkxYTdhOTFlNDEyYmNiMDY1MzAxYzM5NSJ9fX0='
   1:
     modules:
-      farmer:
+      farming:
         farm-frequency: 1250
       inventory:
         inventory-size: 81
@@ -28,7 +28,7 @@ ranks:
       display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 1&7]'
   2:
     modules:
-      farmer:
+      farming:
         farm-frequency: 1000
       inventory:
         inventory-size: 162
@@ -37,7 +37,7 @@ ranks:
       display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 2&7]'
   3:
     modules:
-      farmer:
+      farming:
         farm-frequency: 750
       inventory:
         inventory-size: 243
@@ -46,7 +46,7 @@ ranks:
       display-name: '<#92ff5a>Farmer Minion &7[<#dcffd3>Rank 3&7]'
   4:
     modules:
-      farmer:
+      farming:
         farm-frequency: 500
       inventory:
         inventory-size: 324

@@ -31,8 +31,6 @@ import org.bukkit.potion.PotionEffectType;
 
 public final class CustomPersistentDataType {
 
-
-
     public static final PersistentDataType<PersistentDataContainer, ChunkLocation> CHUNK_LOCATION = new PersistentDataType<>() {
 
         private static final NamespacedKey KEY_WORLD = KeyHelper.get("world");

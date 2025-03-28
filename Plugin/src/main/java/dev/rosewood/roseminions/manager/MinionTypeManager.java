@@ -29,6 +29,8 @@ public class MinionTypeManager extends Manager {
             directory.mkdirs();
 
             // Save default minion types
+            this.rosePlugin.saveResource("minions/farmer.yml", false);
+            this.rosePlugin.saveResource("minions/fisher.yml", false);
             this.rosePlugin.saveResource("minions/slayer.yml", false);
         }
 

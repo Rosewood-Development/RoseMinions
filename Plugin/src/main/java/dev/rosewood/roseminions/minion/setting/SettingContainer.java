@@ -1,6 +1,6 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.roseminions.minion.config.SettingsContainerConfig;
+import dev.rosewood.roseminions.minion.config.SettingContainerConfig;
 import dev.rosewood.roseminions.model.PDCSerializable;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.HashMap;
@@ -12,12 +12,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 
-public class SettingsContainer implements PDCSerializable {
+public class SettingContainer implements PDCSerializable {
 
     private final Map<String, SettingAccessor<?>> settings;
-    private final Map<String, SettingItem<?>> settingValues;
+    private final Map<String, SettingValue<?>> settingValues;
 
-    public SettingsContainer(List<SettingAccessor<?>> settings) {
+    public SettingContainer(List<SettingAccessor<?>> settings) {
         this.settings = new LinkedHashMap<>();
         for (SettingAccessor<?> setting : settings)
             this.settings.put(setting.getKey(), setting);
@@ -31,42 +31,42 @@ public class SettingsContainer implements PDCSerializable {
     }
 
     public <T> void loadDefault(SettingAccessor<T> accessor) {
-        SettingItem<T> settingItem = new SettingItem<>(accessor, accessor.getDefaultValue());
-        this.settingValues.put(accessor.getKey(), settingItem);
+        SettingValue<T> settingValue = new SettingValue<>(accessor, accessor.getDefaultValue());
+        this.settingValues.put(accessor.getKey(), settingValue);
     }
 
     public <T> T get(SettingAccessor<T> accessor) {
-        SettingItem<T> settingItem = this.getItem(accessor);
-        if (settingItem == null)
+        SettingValue<T> settingValue = this.getItem(accessor);
+        if (settingValue == null)
             throw new IllegalArgumentException("SettingsContainer does not have " + accessor.getKey() + " defined");
-        return settingItem.getValue();
+        return settingValue.getValue();
     }
 
     public <T> void set(SettingAccessor<T> accessor, T value) {
-        SettingItem<T> settingItem = this.getItem(accessor);
-        if (settingItem == null)
+        SettingValue<T> settingValue = this.getItem(accessor);
+        if (settingValue == null)
             throw new IllegalArgumentException("SettingsContainer for does not have " + accessor.getKey() + " defined");
-        settingItem.setValue(value);
+        settingValue.setValue(value);
     }
 
-    private <T> SettingItem<T> getItem(SettingAccessor<T> accessor) {
+    private <T> SettingValue<T> getItem(SettingAccessor<T> accessor) {
         return this.getItem(accessor.getKey());
     }
 
     @SuppressWarnings("unchecked")
-    private <T> SettingItem<T> getItem(String key) {
-        return (SettingItem<T>) this.settingValues.get(key);
+    private <T> SettingValue<T> getItem(String key) {
+        return (SettingValue<T>) this.settingValues.get(key);
     }
 
     @Override
     public void writePDC(PersistentDataContainer container, PersistentDataAdapterContext context) {
         // Only write settings that have changed from their default values
-        Map<String, SettingItem<?>> changedSettings = this.settingValues.entrySet()
+        Map<String, SettingValue<?>> changedSettings = this.settingValues.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().isModified())
                 .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
 
-        for (Map.Entry<String, SettingItem<?>> entry : changedSettings.entrySet())
+        for (Map.Entry<String, SettingValue<?>> entry : changedSettings.entrySet())
             entry.getValue().writePDC(container, context);
     }
 
@@ -74,13 +74,13 @@ public class SettingsContainer implements PDCSerializable {
     public void readPDC(PersistentDataContainer container) {
         for (NamespacedKey settingKey : container.getKeys()) {
             String key = settingKey.getKey();
-            SettingItem<?> item = this.getItem(key);
+            SettingValue<?> item = this.getItem(key);
             if (item != null)
                 item.readPDC(container);
         }
     }
 
-    public void setDefaults(SettingsContainerConfig settings) {
+    public void setDefaults(SettingContainerConfig settings) {
         Map<String, Supplier<?>> defaultSettingSuppliers = settings.getSettingDefaultValueSuppliers();
         for (SettingAccessor<?> setting : this.settings.values()) {
             String key = setting.getKey();
@@ -88,8 +88,8 @@ public class SettingsContainer implements PDCSerializable {
             if (supplier == null)
                 continue;
 
-            SettingItem<?> newSettingItem = new SettingItem<>(setting, MinionUtils.forceCast(supplier.get()));
-            this.settingValues.put(key, newSettingItem);
+            SettingValue<?> newSettingValue = new SettingValue<>(setting, MinionUtils.forceCast(supplier.get()));
+            this.settingValues.put(key, newSettingValue);
         }
     }
 

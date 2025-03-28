@@ -21,9 +21,9 @@ import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import static dev.rosewood.roseminions.minion.module.SlayerModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.AttackingModule.Settings.*;
 
-public class SlayerModule extends MinionModule {
+public class AttackingModule extends MinionModule {
 
     private static final Set<EntityType> BLACKLIST_TYPES = EnumSet.of(EntityType.PLAYER, EntityType.ARMOR_STAND);
 
@@ -39,10 +39,10 @@ public class SlayerModule extends MinionModule {
         public static final SettingAccessor<Integer> NUMBER_OF_TARGETS = define(SettingAccessor.defineInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Slayer Module"));
+            define(MinionModule.GUI_TITLE.copy("Attacking Module"));
             define(MinionModule.GUI_ICON.copy(Material.IRON_SWORD));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Slayer Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Attacking Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.")));
         }
 
         private Settings() { }
@@ -61,8 +61,8 @@ public class SlayerModule extends MinionModule {
 
     private long lastAttackTime;
 
-    public SlayerModule(Minion minion) {
-        super(minion, DefaultMinionModules.SLAYER, Settings.INSTANCE);
+    public AttackingModule(Minion minion) {
+        super(minion, DefaultMinionModules.ATTACKING, Settings.INSTANCE);
     }
 
     @Override

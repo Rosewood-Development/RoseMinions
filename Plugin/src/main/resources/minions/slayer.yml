@@ -1,8 +1,8 @@
-id: newslayer
+id: slayer
 ranks:
   0:
     modules:
-      slayer:
+      attacking:
         damage-amount: 2
         attack-frequency: 3000
         number-of-targets: 1
@@ -22,7 +22,7 @@ ranks:
       texture: 'eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDJhZDQ5Yzc0YTdjZGY3NTEzOTVmMmVlNjRiNWMyZDhjZjMyNmE0YzA1MzRlNzZlMzhmNzMzZTQ0YTcwODRkOCJ9fX0='
   1:
     modules:
-      slayer:
+      attacking:
         damage-amount: 4
         attack-frequency: 2500
         number-of-targets: 2
@@ -33,7 +33,7 @@ ranks:
       display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 1&7]'
   2:
     modules:
-      slayer:
+      attacking:
         damage-amount: 6
         attack-frequency: 2000
         number-of-targets: 3
@@ -44,7 +44,7 @@ ranks:
       display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 2&7]'
   3:
     modules:
-      slayer:
+      attacking:
         damage-amount: 8
         attack-frequency: 1500
         number-of-targets: 4
@@ -55,7 +55,7 @@ ranks:
       display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 3&7]'
   4:
     modules:
-      slayer:
+      attacking:
         damage-amount: 10
         attack-frequency: 1000
         number-of-targets: 5

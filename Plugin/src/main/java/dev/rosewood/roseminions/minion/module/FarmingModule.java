@@ -35,9 +35,9 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import static dev.rosewood.roseminions.minion.module.FarmerModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.FarmingModule.Settings.*;
 
-public class FarmerModule extends MinionModule {
+public class FarmingModule extends MinionModule {
 
     private static final BiMap<Material, Material> FARMLAND_CROP_SEED_MATERIALS; // A Map of farmland crop materials to seed materials
 
@@ -67,10 +67,10 @@ public class FarmerModule extends MinionModule {
         public static final SettingAccessor<List<Material>> DESTRUCTIBLE_BLOCKS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MATERIAL), "destructible-blocks", () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS), "Blocks that the minion can till the soil below"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Farmer Module"));
+            define(MinionModule.GUI_TITLE.copy("Farming Module"));
             define(MinionModule.GUI_ICON.copy(Material.DIAMOND_HOE));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Farmer Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to farm nearby crops.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Farming Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to farm nearby crops.")));
         }
 
         private Settings() { }
@@ -95,8 +95,8 @@ public class FarmerModule extends MinionModule {
 
     private final WorkerAreaController workerAreaController;
 
-    public FarmerModule(Minion minion) {
-        super(minion, DefaultMinionModules.FARMER, Settings.INSTANCE);
+    public FarmingModule(Minion minion) {
+        super(minion, DefaultMinionModules.FARMING, Settings.INSTANCE);
 
         this.farmland = new TreeSet<>(this::sortFarmland);
         this.farmlandToTill = new ArrayList<>();

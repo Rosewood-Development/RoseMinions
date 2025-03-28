@@ -17,7 +17,7 @@ public class FakeFishingHook extends FishingHook {
         if (NMSUtil.isPaper()) {
             method_calculateOpenWater = ReflectionUtils.getMethodByName(FishingHook.class, "calculateOpenWater", BlockPos.class);
         } else {
-            method_calculateOpenWater = ReflectionUtils.getMethodByPositionAndTypes(FishingHook.class, 1, BlockPos.class);
+            method_calculateOpenWater = ReflectionUtils.getMethodByPositionAndTypes(FishingHook.class, 0, BlockPos.class);
         }
     }
 

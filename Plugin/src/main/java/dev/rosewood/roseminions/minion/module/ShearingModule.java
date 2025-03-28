@@ -20,9 +20,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Sheep;
 import org.bukkit.inventory.ItemStack;
-import static dev.rosewood.roseminions.minion.module.ShearerModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.ShearingModule.Settings.*;
 
-public class ShearerModule extends MinionModule {
+public class ShearingModule extends MinionModule {
 
     public static class Settings implements ModuleSettings {
 
@@ -34,10 +34,10 @@ public class ShearerModule extends MinionModule {
         public static final SettingAccessor<Integer> MAX_SHEEP = define(SettingAccessor.defineInteger("max-sheep", 5, "The maximum number of sheep that can be sheared at once"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Shearer Module"));
+            define(MinionModule.GUI_TITLE.copy("Shearing Module"));
             define(MinionModule.GUI_ICON.copy(Material.SHEARS));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Shearer Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.", MinionUtils.SECONDARY_COLOR + "Click to open.")));
+            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Shearing Module"));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.")));
         }
 
         private Settings() { }
@@ -54,8 +54,8 @@ public class ShearerModule extends MinionModule {
 
     }
 
-    public ShearerModule(Minion minion) {
-        super(minion, DefaultMinionModules.SHEARER, Settings.INSTANCE);
+    public ShearingModule(Minion minion) {
+        super(minion, DefaultMinionModules.SHEARING, Settings.INSTANCE);
 
         // worst code conceived
         cachedWoolColors = new HashMap<>();

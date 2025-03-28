@@ -7,24 +7,23 @@ import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.MinionItem;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.config.SettingsContainerConfig;
+import dev.rosewood.roseminions.minion.config.SettingContainerConfig;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
-import dev.rosewood.roseminions.minion.module.BeaconModule;
-import dev.rosewood.roseminions.minion.module.BeeKeeperModule;
-import dev.rosewood.roseminions.minion.module.BreakerModule;
-import dev.rosewood.roseminions.minion.module.CommunicatorModule;
+import dev.rosewood.roseminions.minion.module.BeeKeepingModule;
+import dev.rosewood.roseminions.minion.module.BlockBreakModule;
+import dev.rosewood.roseminions.minion.module.CommunicationModule;
 import dev.rosewood.roseminions.minion.module.DefaultMinionModules;
-import dev.rosewood.roseminions.minion.module.ExperienceModule;
-import dev.rosewood.roseminions.minion.module.FarmerModule;
-import dev.rosewood.roseminions.minion.module.FilterModule;
-import dev.rosewood.roseminions.minion.module.FisherModule;
+import dev.rosewood.roseminions.minion.module.ExperiencePickupModule;
+import dev.rosewood.roseminions.minion.module.FarmingModule;
+import dev.rosewood.roseminions.minion.module.ItemFilterModule;
+import dev.rosewood.roseminions.minion.module.FishingModule;
 import dev.rosewood.roseminions.minion.module.InventoryModule;
 import dev.rosewood.roseminions.minion.module.ItemPickupModule;
-import dev.rosewood.roseminions.minion.module.MinerModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
-import dev.rosewood.roseminions.minion.module.PlacerModule;
-import dev.rosewood.roseminions.minion.module.ShearerModule;
-import dev.rosewood.roseminions.minion.module.SlayerModule;
+import dev.rosewood.roseminions.minion.module.BlockPlaceModule;
+import dev.rosewood.roseminions.minion.module.PotionEffectModule;
+import dev.rosewood.roseminions.minion.module.ShearingModule;
+import dev.rosewood.roseminions.minion.module.AttackingModule;
 import dev.rosewood.roseminions.minion.module.UpgradeModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import java.io.File;
@@ -94,10 +93,10 @@ public class MinionModuleManager extends Manager implements Listener {
         return this.registeredModules.containsKey(name.toLowerCase());
     }
 
-    public SettingsContainerConfig getSectionSettings(String name, ConfigurationSection section) {
+    public SettingContainerConfig getSectionSettings(String name, ConfigurationSection section) {
         RegisteredMinionModule<?> registeredModule = this.registeredModules.get(name);
         if (registeredModule != null)
-            return new SettingsContainerConfig(registeredModule.settings(), section);
+            return new SettingContainerConfig(registeredModule.settings(), section);
         return null;
     }
 
@@ -125,20 +124,20 @@ public class MinionModuleManager extends Manager implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onMinionModuleRegistration(MinionModuleRegistrationEvent event) {
         event.registerModule(DefaultMinionModules.APPEARANCE, AppearanceModule::new, AppearanceModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.BEACON, BeaconModule::new, BeaconModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.BEE_KEEPER, BeeKeeperModule::new, BeeKeeperModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.BREAKER, BreakerModule::new, BreakerModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.COMMUNICATOR, CommunicatorModule::new, CommunicatorModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.EXPERIENCE, ExperienceModule::new, ExperienceModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.FARMER, FarmerModule::new, FarmerModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.FILTER, FilterModule::new, FilterModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.FISHER, FisherModule::new, FisherModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.POTION_EFFECT, PotionEffectModule::new, PotionEffectModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.BEE_KEEPING, BeeKeepingModule::new, BeeKeepingModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.BLOCK_BREAK, BlockBreakModule::new, BlockBreakModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.COMMUNICATION, CommunicationModule::new, CommunicationModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.EXPERIENCE_PICKUP, ExperiencePickupModule::new, ExperiencePickupModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.FARMING, FarmingModule::new, FarmingModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.ITEM_FILTER, ItemFilterModule::new, ItemFilterModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.FISHING, FishingModule::new, FishingModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.INVENTORY, InventoryModule::new, InventoryModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.ITEM_PICKUP, ItemPickupModule::new, ItemPickupModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.MINER, MinerModule::new, MinerModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.PLACER, PlacerModule::new, PlacerModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.SHEARER, ShearerModule::new, ShearerModule.Settings.INSTANCE);
-        event.registerModule(DefaultMinionModules.SLAYER, SlayerModule::new, SlayerModule.Settings.INSTANCE);
+//        event.registerModule(DefaultMinionModules.MINER, MinerModule::new, MinerModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.BLOCK_PLACE, BlockPlaceModule::new, BlockPlaceModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.SHEARING, ShearingModule::new, ShearingModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.ATTACKING, AttackingModule::new, AttackingModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.UPGRADE, UpgradeModule::new, UpgradeModule.Settings.INSTANCE);
     }
 
