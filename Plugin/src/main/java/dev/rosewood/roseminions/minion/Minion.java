@@ -90,6 +90,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
     public Minion(ArmorStand displayEntity, PersistentDataContainer container) {
         this(displayEntity);
         this.readPDC(container);
+        this.modules.values().forEach(MinionModule::finalizeLoad);
     }
 
     /**
@@ -100,6 +101,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         this.displayEntity = new WeakReference<>(null);
         this.location = location;
         this.readPDC(container);
+        this.modules.values().forEach(MinionModule::finalizeLoad);
     }
 
     /**
@@ -113,6 +115,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         this.owner = owner;
         this.location = location.clone();
         this.loadRankData();
+        this.modules.values().forEach(MinionModule::finalizeLoad);
     }
 
     @Override

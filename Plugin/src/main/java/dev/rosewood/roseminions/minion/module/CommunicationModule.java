@@ -35,7 +35,7 @@ public class CommunicationModule extends MinionModule {
 
         public static final SettingAccessor<Long> CONVERSATION_FREQUENCY = define(SettingAccessor.defineLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
         public static final SettingAccessor<Long> MESSAGE_FREQUENCY = define(SettingAccessor.defineLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
-        public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(MinionConversation.SERIALIZER), "conversations", () -> List.of(
+        public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS = define(SettingAccessor.defineSetting("conversations", SettingSerializers.ofList(MinionConversation.SERIALIZER), () -> List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
         ), "The conversations that the minion can have"));
 

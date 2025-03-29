@@ -22,9 +22,9 @@ public final class SettingSerializerFactories {
 
     //region Serializer Factories
     public static <T extends Enum<T>> SettingSerializer<T> ofEnum(Class<T> enumClass) {
-        return new SettingSerializer<>(enumClass, CustomPersistentDataType.forEnum(enumClass), Enum::name, x -> Enum.valueOf(enumClass, x)) {
-            public void write(ConfigurationSection config, String key, T value, String... comments) { setWithComments(config, key, value.name(), comments); }
-            public T read(ConfigurationSection config, String key) { return Enum.valueOf(enumClass, config.getString(key, "")); }
+        return new SettingSerializer<>(enumClass, CustomPersistentDataType.forEnum(enumClass), x -> x.name().toLowerCase(), x -> Enum.valueOf(enumClass, x.toUpperCase())) {
+            public void write(ConfigurationSection config, String key, T value, String... comments) { setWithComments(config, key, value.name().toLowerCase(), comments); }
+            public T read(ConfigurationSection config, String key) { return Enum.valueOf(enumClass, config.getString(key, "").toUpperCase()); }
         };
     }
 

@@ -88,6 +88,7 @@ public final class SettingSerializers {
 
     //region Keyed Serializers
     public static final SettingSerializer<Material> MATERIAL = ofKeyed(Material.class, Registry.MATERIAL::get);
+    public static final SettingSerializer<List<Material>> MATERIAL_LIST = ofList(MATERIAL);
     public static final SettingSerializer<Enchantment> ENCHANTMENT = ofKeyed(Enchantment.class, Registry.ENCHANTMENT::get);
     public static final SettingSerializer<PotionEffectType> POTION_EFFECT_TYPE = ofKeyed(PotionEffectType.class, Registry.EFFECT::get);
     public static final SettingSerializer<Sound> SOUND = ofKeyed(Sound.class, Registry.SOUNDS::get);

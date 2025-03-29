@@ -11,6 +11,7 @@ public record WorkerAreaProperties(int radius,
                                    WorkerAreaController.RadiusType radiusType,
                                    Vector centerOffset,
                                    WorkerAreaController.ScanDirection scanDirection,
+                                   boolean shuffleScan,
                                    long updateFrequency) {
 
     public static final SettingSerializer<WorkerAreaProperties> SERIALIZER = RecordSettingSerializerBuilder.create(WorkerAreaProperties.class, instance -> instance.group(
@@ -18,6 +19,7 @@ public record WorkerAreaProperties(int radius,
             new Field<>("radius-type", SettingSerializers.ofEnum(WorkerAreaController.RadiusType.class), WorkerAreaProperties::radiusType, "The shape of the worker area", "Values: circle, square"),
             new Field<>("center-offset", SettingSerializers.VECTOR, WorkerAreaProperties::centerOffset, "The offset from the center of the minion to the center of the worker area"),
             new Field<>("scan-direction", SettingSerializers.ofEnum(WorkerAreaController.ScanDirection.class), WorkerAreaProperties::scanDirection, "The direction to scan for blocks in", "Values: top_down, bottom_up"),
+            new Field<>("shuffle-scan", SettingSerializers.BOOLEAN, WorkerAreaProperties::shuffleScan, "true to shuffle the blocks to be scanned, false to scan in lines"),
             new Field<>("update-frequency", SettingSerializers.LONG, WorkerAreaProperties::updateFrequency, "How often the worker area is refreshed (in milliseconds)")
     ).apply(instance, WorkerAreaProperties::new));
 

@@ -30,7 +30,7 @@ public class ItemFilterModule extends MinionModule {
         private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
         public static final SettingAccessor<Integer> INVENTORY_SIZE = define(SettingAccessor.defineInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
-        public static final SettingAccessor<ItemStack[]> FILTER_ITEMS = define(SettingAccessor.defineHiddenSetting(SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "filter-items", () -> new ItemStack[27]));
+        public static final SettingAccessor<ItemStack[]> FILTER_ITEMS = define(SettingAccessor.defineHiddenSetting("filter-items", SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
         public static final SettingAccessor<FilterType> FILTER_TYPE = define(SettingAccessor.defineEnum("filter-type", FilterType.BLACKLIST, "The type of filter"));
         public static final SettingAccessor<Boolean> MATCH_NBT = define(SettingAccessor.defineBoolean("match-nbt", false, "Whether or not to match NBT data"));
 

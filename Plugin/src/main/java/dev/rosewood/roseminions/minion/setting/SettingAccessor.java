@@ -121,55 +121,55 @@ public class SettingAccessor<T> {
     }
 
     public static SettingAccessor<Boolean> defineBoolean(String name, boolean defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.BOOLEAN, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.BOOLEAN, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<Integer> defineInteger(String name, int defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.INTEGER, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.INTEGER, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<Long> defineLong(String name, long defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.LONG, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.LONG, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<Short> defineShort(String name, short defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.SHORT, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.SHORT, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<Byte> defineByte(String name, byte defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.BYTE, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.BYTE, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<Double> defineDouble(String name, double defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.DOUBLE, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.DOUBLE, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<Float> defineFloat(String name, float defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.FLOAT, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.FLOAT, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<Character> defineCharacter(String name, char defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.CHAR, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.CHAR, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<String> defineString(String name, String defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.STRING, name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.STRING, () -> defaultValue, comments);
     }
 
     public static SettingAccessor<List<String>> defineStringList(String name, List<String> defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.ofList(SettingSerializers.STRING), name, () -> List.copyOf(defaultValue), comments);
+        return defineSetting(name, SettingSerializers.ofList(SettingSerializers.STRING), () -> List.copyOf(defaultValue), comments);
     }
 
     @SuppressWarnings("unchecked")
     public static <T extends Enum<T>> SettingAccessor<T> defineEnum(String name, T defaultValue, String... comments) {
-        return defineSetting(SettingSerializers.ofEnum(defaultValue.getClass()), name, () -> defaultValue, comments);
+        return defineSetting(name, SettingSerializers.ofEnum(defaultValue.getClass()), () -> defaultValue, comments);
     }
 
-    public static <T> SettingAccessor<T> defineSetting(SettingSerializer<T> serializer, String name, Supplier<T> defaultValueSupplier, String... comments) {
+    public static <T> SettingAccessor<T> defineSetting(String name, SettingSerializer<T> serializer, Supplier<T> defaultValueSupplier, String... comments) {
         return new SettingAccessor<>(serializer, name.toLowerCase(), defaultValueSupplier, false, comments != null ? comments : new String[0]);
     }
 
-    public static <T> SettingAccessor<T> defineHiddenSetting(SettingSerializer<T> serializer, String name, Supplier<T> defaultValueSupplier) {
+    public static <T> SettingAccessor<T> defineHiddenSetting(String name, SettingSerializer<T> serializer, Supplier<T> defaultValueSupplier) {
         return new SettingAccessor<>(serializer, name.toLowerCase(), defaultValueSupplier, true);
     }
 

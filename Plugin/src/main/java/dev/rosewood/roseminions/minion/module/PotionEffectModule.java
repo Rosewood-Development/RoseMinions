@@ -23,15 +23,15 @@ public class PotionEffectModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 10, "The radius of the beacon"));
-        public static final SettingAccessor<List<PotionEffect>> EFFECTS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.POTION_EFFECT), "effects", () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects of the beacon"));
-        public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 2500L, "How often the beacon will update (in milliseconds)"));
+        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 10, "The radius in blocks to search for entities"));
+        public static final SettingAccessor<List<PotionEffect>> EFFECTS = define(SettingAccessor.defineSetting("effects", SettingSerializers.ofList(SettingSerializers.POTION_EFFECT), () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects to apply to nearby entities"));
+        public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
 
         static {
             define(MinionModule.GUI_TITLE.copy("Potion Effect Module"));
             define(MinionModule.GUI_ICON.copy(Material.BEACON));
             define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Potion Effect Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to apply potion", MinionUtils.SECONDARY_COLOR + "to nearby entities.")));
+            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to apply potion", MinionUtils.SECONDARY_COLOR + "effects to nearby entities.")));
         }
 
         private Settings() { }

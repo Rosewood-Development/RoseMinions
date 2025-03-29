@@ -43,7 +43,7 @@ public class ExperiencePickupModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> STORED_XP = define(SettingAccessor.defineHiddenSetting(SettingSerializers.INTEGER, "stored-xp", () -> 0));
+        public static final SettingAccessor<Integer> STORED_XP = define(SettingAccessor.defineHiddenSetting("stored-xp", SettingSerializers.INTEGER, () -> 0));
         public static final SettingAccessor<Integer> MAX_EXP = define(SettingAccessor.defineInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
         public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 3000L, "How often the minion will update (in milliseconds)"));
         public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 5, "The radius for the minion to search for items"));

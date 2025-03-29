@@ -13,6 +13,7 @@ import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.model.BlockPosition;
 import dev.rosewood.roseminions.model.NotificationTicket;
+import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.model.WorkerAreaProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
@@ -21,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeSet;
 import org.bukkit.ChatColor;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
@@ -54,17 +54,21 @@ public class FarmingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        public static final SettingAccessor<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(SettingAccessor.defineSetting(WorkerAreaProperties.SERIALIZER, "worker-area-properties",
-                () -> new WorkerAreaProperties(3, WorkerAreaController.RadiusType.SQUARE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, 10000L),
+        public static final SettingAccessor<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(SettingAccessor.defineSetting("worker-area-properties",WorkerAreaProperties.SERIALIZER,
+                () -> new WorkerAreaProperties(3, WorkerAreaController.RadiusType.SQUARE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 10000L),
                 "Settings that control the worker area for this module"));
         public static final SettingAccessor<Long> FARM_FREQUENCY = define(SettingAccessor.defineLong("farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)"));
         public static final SettingAccessor<Integer> FARM_BLOCK_AMOUNT = define(SettingAccessor.defineInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
         public static final SettingAccessor<Boolean> TILL_SOIL = define(SettingAccessor.defineBoolean("till-soil", true, "Whether the minion will till plantable soil"));
+        public static final SettingAccessor<List<Material>> TILLABLE_BLOCKS = define(SettingAccessor.defineSetting("tillable-blocks", SettingSerializers.MATERIAL_LIST, () -> List.of(Material.DIRT, Material.GRASS_BLOCK, Material.DIRT_PATH), "Blocks that the minion can till into soil"));
+        public static final SettingAccessor<PlayableSound> TILL_SOUND = define(SettingAccessor.defineSetting("till-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when tilling soil"));
         public static final SettingAccessor<Boolean> HYDRATE_SOIL = define(SettingAccessor.defineBoolean("hydrate-soil", true, "Whether the minion will hydrate farmland"));
         public static final SettingAccessor<Boolean> HARVEST_CROPS = define(SettingAccessor.defineBoolean("harvest-crops", true, "Whether the minion will harvest crops"));
         public static final SettingAccessor<Boolean> PLANT_SEEDS = define(SettingAccessor.defineBoolean("plant-seeds", true, "Whether the minion will plant seeds"));
+        public static final SettingAccessor<PlayableSound> PLANT_SOUND = define(SettingAccessor.defineSetting("plant-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when planting crops"));
         public static final SettingAccessor<Boolean> BONEMEAL_CROPS = define(SettingAccessor.defineBoolean("bonemeal-crops", true, "Whether the minion will bonemeal crops"));
-        public static final SettingAccessor<List<Material>> DESTRUCTIBLE_BLOCKS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MATERIAL), "destructible-blocks", () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS), "Blocks that the minion can till the soil below"));
+        public static final SettingAccessor<List<Material>> DESTRUCTIBLE_BLOCKS = define(SettingAccessor.defineSetting("destructible-blocks", SettingSerializers.MATERIAL_LIST, () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS), "Blocks that the minion can destroy to till below"));
+//        public static final SettingAccessor<Boolean> STONE_OPTIMIZATION = define(SettingAccessor.defineBoolean("stone-optimization", true, "If enabled, when the minion is scanning for blocks it will", "jump to the next scan coordinate to avoid scanning", "blocks that are not likely to be soil.", "This may prevent underground farms from scanning properly."));
 
         static {
             define(MinionModule.GUI_TITLE.copy("Farming Module"));
@@ -88,17 +92,17 @@ public class FarmingModule extends MinionModule {
     }
 
     private long lastHarvestTime;
-    private final TreeSet<BlockPosition> farmland;
+    private final List<BlockPosition> farmland;
     private final List<BlockPosition> farmlandToTill;
     private final List<BlockPosition> farmlandToHydrate;
-    private BlockPosition lastFarmlandPosition;
+    private int farmlandIndex;
 
     private final WorkerAreaController workerAreaController;
 
     public FarmingModule(Minion minion) {
         super(minion, DefaultMinionModules.FARMING, Settings.INSTANCE);
 
-        this.farmland = new TreeSet<>(this::sortFarmland);
+        this.farmland = new ArrayList<>();
         this.farmlandToTill = new ArrayList<>();
         this.farmlandToHydrate = new ArrayList<>();
 
@@ -144,71 +148,65 @@ public class FarmingModule extends MinionModule {
     }
 
     private void tillSoil() {
-        if (!this.farmlandToTill.isEmpty() && this.settings.get(TILL_SOIL)) {
-            BlockPosition blockPosition = this.farmlandToTill.remove(0);
-            Block block = blockPosition.toBlock(this.minion.getWorld());
-            BlockData blockData = block.getBlockData();
-            Material material = block.getType();
-            switch (material) {
-                case DIRT, GRASS_BLOCK, DIRT_PATH -> {
-                    block.setType(Material.FARMLAND);
-                    block.getWorld().playSound(block.getLocation(), Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1);
-                    block.getWorld().spawnParticle(VersionUtils.BLOCK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
+        if (this.farmlandToTill.isEmpty() || !this.settings.get(TILL_SOIL))
+            return;
 
-                    // Hydrate the soil partially to prevent it from drying out immediately
-                    Farmland farmland = (Farmland) block.getBlockData();
-                    farmland.setMoisture(farmland.getMaximumMoisture() / 2);
-                    block.setBlockData(farmland);
+        BlockPosition blockPosition = this.farmlandToTill.removeFirst();
+        Block block = blockPosition.toBlock(this.minion.getWorld());
+        BlockData blockData = block.getBlockData();
+        Material material = block.getType();
+        if (this.settings.get(TILLABLE_BLOCKS).contains(material)) {
+            Block above = block.getRelative(BlockFace.UP);
+            if (this.settings.get(DESTRUCTIBLE_BLOCKS).contains(above.getType()))
+                above.breakNaturally();
 
-                    if (this.settings.get(HYDRATE_SOIL))
-                        this.farmlandToHydrate.add(blockPosition);
-                }
-            }
+            block.setType(Material.FARMLAND);
+            this.settings.get(TILL_SOUND).play(block.getLocation());
+            block.getWorld().spawnParticle(VersionUtils.BLOCK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
+
+            // Hydrate the soil partially to prevent it from drying out immediately
+            Farmland farmland = (Farmland) block.getBlockData();
+            farmland.setMoisture(farmland.getMaximumMoisture() / 2);
+            block.setBlockData(farmland);
+
+            if (this.settings.get(HYDRATE_SOIL))
+                this.farmlandToHydrate.add(blockPosition);
         }
     }
 
     private void hydrateSoil() {
-        if (!this.farmlandToHydrate.isEmpty() && this.settings.get(HYDRATE_SOIL)) {
-            BlockPosition blockPosition = this.farmlandToHydrate.remove(MinionUtils.RANDOM.nextInt(this.farmlandToHydrate.size()));
-            Block block = blockPosition.toBlock(this.minion.getWorld());
-            if (!(block.getBlockData() instanceof Farmland blockData)) {
-                // If the block is not farmland, add it back to the till list
-                this.farmlandToTill.add(blockPosition);
-                return;
-            }
+        if (this.farmlandToHydrate.isEmpty() || !this.settings.get(HYDRATE_SOIL))
+            return;
 
-            // If the soil is already hydrated, we don't need to do anything
-            if (blockData.getMoisture() == blockData.getMaximumMoisture())
-                return;
-
-            // Hydrate the soil
-            blockData.setMoisture(blockData.getMaximumMoisture());
-            block.setBlockData(blockData);
-            block.getWorld().spawnParticle(VersionUtils.SPLASH, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
+        BlockPosition blockPosition = this.farmlandToHydrate.remove(MinionUtils.RANDOM.nextInt(this.farmlandToHydrate.size()));
+        Block block = blockPosition.toBlock(this.minion.getWorld());
+        if (!(block.getBlockData() instanceof Farmland blockData)) {
+            // If the block is not farmland, add it back to the till list
+            this.farmlandToTill.add(blockPosition);
+            return;
         }
+
+        // If the soil is already hydrated, we don't need to do anything
+        if (blockData.getMoisture() == blockData.getMaximumMoisture())
+            return;
+
+        // Hydrate the soil
+        blockData.setMoisture(blockData.getMaximumMoisture());
+        block.setBlockData(blockData);
+        block.getWorld().spawnParticle(VersionUtils.SPLASH, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
     }
 
     private void harvestAndPlantSeeds() {
         if (this.farmland.isEmpty())
             return;
 
-        // If the farmland index is greater than the farmland list size, reset it
-        BlockPosition farmlandBlockPosition;
-        if (this.lastFarmlandPosition == null) {
-            farmlandBlockPosition = this.farmland.first();
-        } else {
-            farmlandBlockPosition = this.farmland.higher(this.lastFarmlandPosition);
-            if (farmlandBlockPosition == null)
-                farmlandBlockPosition = this.farmland.first();
-        }
-
-        this.lastFarmlandPosition = farmlandBlockPosition;
-
-        Block farmlandBlock = farmlandBlockPosition.toBlock(this.minion.getWorld());
+        // Increment farmland index
+        this.farmlandIndex = (this.farmlandIndex + 1) % this.farmland.size();
+        Block farmlandBlock = this.farmland.get(this.farmlandIndex).toBlock(this.minion.getWorld());
 
         // If the farmland block is no longer farmland, remove it from the list
         if (farmlandBlock.getType() != Material.FARMLAND) {
-            this.farmland.remove(farmlandBlockPosition);
+            this.farmland.remove(this.farmlandIndex);
             return;
         }
 
@@ -248,7 +246,7 @@ public class FarmingModule extends MinionModule {
             if (desiredSeedType != null) {
                 Material seedType = FARMLAND_CROP_SEED_MATERIALS.inverse().get(desiredSeedType);
                 cropBlock.setType(seedType);
-                cropBlock.getWorld().playSound(cropBlock.getLocation(), Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5f, 1.0f);
+                this.settings.get(PLANT_SOUND).play(cropBlock.getLocation());
                 cropBlock.getWorld().spawnParticle(Particle.END_ROD, cropBlock.getLocation().add(0.5, 0.5, 0.5), 3, 0.05, 0.05, 0.05, 0.01);
             }
         }
@@ -301,22 +299,14 @@ public class FarmingModule extends MinionModule {
 //        if (this.isPlantable(material))
 //            return WorkerAreaController.BlockScanResult.SKIP_COLUMN;
 
-        if (material == Material.STONE)
-            return WorkerAreaController.BlockScanResult.SKIP_COLUMN;
+//        if (material == Material.STONE)
+//            return WorkerAreaController.BlockScanResult.SKIP_COLUMN;
 
         return WorkerAreaController.BlockScanResult.EXCLUDE;
     }
 
     private boolean isPlantable(Material material) {
         return material == Material.AIR || material.createBlockData() instanceof Ageable || this.settings.get(DESTRUCTIBLE_BLOCKS).contains(material);
-    }
-
-    private int sortFarmland(BlockPosition o1, BlockPosition o2) {
-        if (o1.x() == o2.x()) {
-            return Integer.compare(o1.z(), o2.z());
-        } else {
-            return Integer.compare(o1.x(), o2.x());
-        }
     }
 
 }

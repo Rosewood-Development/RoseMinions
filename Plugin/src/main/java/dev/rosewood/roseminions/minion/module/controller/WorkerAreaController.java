@@ -5,12 +5,13 @@ import dev.rosewood.roseminions.model.BlockPosition;
 import dev.rosewood.roseminions.model.ChunkLocation;
 import dev.rosewood.roseminions.model.WorkerAreaProperties;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
@@ -78,44 +79,62 @@ public class WorkerAreaController extends ModuleController {
         int centerY = centerLocation.getBlockY();
         int centerZ = centerLocation.getBlockZ();
 
-        Map<BlockPosition, BlockData> includedBlocks = new ConcurrentHashMap<>();
+        Map<BlockPosition, BlockData> includedBlocks = new LinkedHashMap<>();
 
-        IntStream.rangeClosed(-radius, radius).forEach(x -> {
-            for (int z = -radius; z <= radius; z++) {
-                if (circle && x * x + z * z > radiusSquared)
-                    continue;
+        List<Point> positions = new ArrayList<>();
+        for (int x = -radius; x <= radius; x++)
+            for (int z = -radius; z <= radius; z++)
+                if (!circle || x * x + z * z <= radiusSquared)
+                    positions.add(new Point(x, z));
 
-                int targetX = centerX + x;
-                int targetZ = centerZ + z;
+        if (this.properties.shuffleScan())
+            Collections.shuffle(positions);
 
-                ChunkLocation chunkLocation = new ChunkLocation(world, targetX >> 4, targetZ >> 4);
-                ChunkSnapshot chunkSnapshot = this.workerAreaChunks.get(chunkLocation);
-                if (chunkSnapshot == null)
-                    continue; // Chunk not loaded
+        for (Point position : positions) {
+            int targetX = centerX + position.x();
+            int targetZ = centerZ + position.z();
 
-                int relativeX = targetX & 0xF;
-                int relativeZ = targetZ & 0xF;
+            ChunkLocation chunkLocation = new ChunkLocation(world, targetX >> 4, targetZ >> 4);
+            ChunkSnapshot chunkSnapshot = this.workerAreaChunks.get(chunkLocation);
+            if (chunkSnapshot == null)
+                continue; // Chunk not loaded
 
-                int maxY = Math.min(centerY + radius, chunkSnapshot.getHighestBlockYAt(relativeX, relativeZ));
-                int minY = Math.max(centerY - radius, worldMin);
+            int relativeX = targetX & 0xF;
+            int relativeZ = targetZ & 0xF;
 
-                yLevel:
-                for (int y = maxY; y >= minY; y--) {
-                    BlockData blockData = chunkSnapshot.getBlockData(relativeX, y, relativeZ);
-                    BlockScanResult result = this.predicate.test(blockData, relativeX, y, relativeZ, chunkSnapshot);
-                    switch (result) {
-                        case INCLUDE -> includedBlocks.put(new BlockPosition(targetX, y, targetZ), blockData);
-                        case INCLUDE_SKIP_COLUMN -> {
-                            includedBlocks.put(new BlockPosition(targetX, y, targetZ), blockData);
-                            break yLevel;
-                        }
-                        case SKIP_COLUMN -> {
-                            break yLevel;
-                        }
+            int maxY = Math.min(centerY + radius, chunkSnapshot.getHighestBlockYAt(relativeX, relativeZ));
+            int minY = Math.max(centerY - radius, worldMin);
+
+            Function<Integer, Boolean> checkFunction = y -> {
+                BlockData blockData = chunkSnapshot.getBlockData(relativeX, y, relativeZ);
+                BlockScanResult result = this.predicate.test(blockData, relativeX, y, relativeZ, chunkSnapshot);
+                return switch (result) {
+                    case INCLUDE -> {
+                        includedBlocks.put(new BlockPosition(targetX, y, targetZ), blockData);
+                        yield false;
                     }
+                    case INCLUDE_SKIP_COLUMN -> {
+                        includedBlocks.put(new BlockPosition(targetX, y, targetZ), blockData);
+                        yield true;
+                    }
+                    case SKIP_COLUMN -> true;
+                    default -> false;
+                };
+            };
+
+            switch (this.properties.scanDirection()) {
+                case TOP_DOWN -> {
+                    for (int y = maxY; y >= minY; y--)
+                        if (checkFunction.apply(y))
+                            break;
+                }
+                case BOTTOM_UP -> {
+                    for (int y = minY; y <= maxY; y++)
+                        if (checkFunction.apply(y))
+                            break;
                 }
             }
-        });
+        }
 
         this.workerAreaChunks = Map.of();
         this.workerAreaBlocks = includedBlocks;
@@ -166,5 +185,7 @@ public class WorkerAreaController extends ModuleController {
     public interface ScanBlockPredicate {
         BlockScanResult test(BlockData blockData, int x, int y, int z, ChunkSnapshot chunkSnapshot);
     }
+
+    private record Point(int x, int z) { }
 
 }

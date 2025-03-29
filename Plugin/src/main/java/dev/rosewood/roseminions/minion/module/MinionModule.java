@@ -62,6 +62,10 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
 
     protected abstract void buildGui();
 
+    public void finalizeLoad() {
+
+    }
+
     public void unload() {
         this.kickOutViewers(); // Close all viewers
 

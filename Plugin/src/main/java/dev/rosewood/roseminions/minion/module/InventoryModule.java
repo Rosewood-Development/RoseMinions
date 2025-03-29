@@ -30,7 +30,7 @@ public class InventoryModule extends MinionModule {
         private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
         public static final SettingAccessor<Integer> INVENTORY_SIZE = define(SettingAccessor.defineInteger("inventory-size", 27, "How many individual items can be stored"));
-        public static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS = define(SettingAccessor.defineHiddenSetting(SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), "inventory-contents", () -> new ItemStack[27]));
+        public static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS = define(SettingAccessor.defineHiddenSetting("inventory-contents", SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
 
         static {
             define(MinionModule.GUI_TITLE.copy("Inventory Module"));
@@ -55,14 +55,10 @@ public class InventoryModule extends MinionModule {
 
     public InventoryModule(Minion minion) {
         super(minion, DefaultMinionModules.INVENTORY, Settings.INSTANCE);
-
-        MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
     }
 
     @Override
     protected void buildGui() {
-        MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
-
         this.guiContainer = GuiFactory.createContainer();
 
         int rows = Math.max(1, Math.min((int) Math.ceil(this.settings.get(INVENTORY_SIZE) / 9.0), 3));
@@ -77,7 +73,7 @@ public class InventoryModule extends MinionModule {
                     this.settings.set(INVENTORY_CONTENTS, contents);
                 });
 
-        // Fill inventory border with class for util buttons
+        // Fill inventory border with glass for util buttons
         ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
         ItemMeta itemMeta = borderItem.getItemMeta();
         if (itemMeta != null) {
@@ -107,6 +103,11 @@ public class InventoryModule extends MinionModule {
 
         this.guiContainer.addScreen(mainScreen);
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
+    }
+
+    @Override
+    public void finalizeLoad() {
+        MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
     }
 
     /**

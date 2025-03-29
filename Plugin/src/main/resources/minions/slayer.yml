@@ -30,7 +30,7 @@ ranks:
         inventory-size: 81
       # Add upgrade cost
     item:
-      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 1&7]'
+      display-name: '<#ee6969>Slayer Minion &7[<#ffd5ff>Rank 1&7]'
   2:
     modules:
       attacking:
@@ -41,7 +41,7 @@ ranks:
         inventory-size: 162
       # Add upgrade cost
     item:
-      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 2&7]'
+      display-name: '<#ee6969>Slayer Minion &7[<#ffd5ff>Rank 2&7]'
   3:
     modules:
       attacking:
@@ -52,7 +52,7 @@ ranks:
         inventory-size: 243
       # Add upgrade cost
     item:
-      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 3&7]'
+      display-name: '<#ee6969>Slayer Minion &7[<#ffd5ff>Rank 3&7]'
   4:
     modules:
       attacking:
@@ -63,4 +63,4 @@ ranks:
         inventory-size: 324
       # Add upgrade cost ?
     item:
-      display-name: '<#c7a4ff>Slayer Minion &7[<#ffd5ff>Rank 4&7]'
+      display-name: '<#ee6969>Slayer Minion &7[<#ffd5ff>Rank 4&7]'
