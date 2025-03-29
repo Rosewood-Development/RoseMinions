@@ -57,10 +57,9 @@ public class MinionPickupListener implements Listener {
                 throw new IllegalStateException("ItemStack does not have any ItemMeta");
 
             PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
-            PersistentDataAdapterContext adapterContext = pdc.getAdapterContext();
-
-            PersistentDataContainer dataContainer = adapterContext.newPersistentDataContainer();
-            minion.writePDC(dataContainer, adapterContext);
+            PersistentDataAdapterContext context = pdc.getAdapterContext();
+            PersistentDataContainer dataContainer = context.newPersistentDataContainer();
+            minion.writePDC(dataContainer);
             pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER, dataContainer);
             itemStack.setItemMeta(itemMeta);
 

@@ -1,14 +1,11 @@
 package dev.rosewood.roseminions.model;
 
-import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
+import dev.rosewood.roseminions.minion.setting.SettingSerializer;
 import dev.rosewood.roseminions.minion.setting.SettingSerializerFactories;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import dev.rosewood.roseminions.minion.setting.Field;
+import dev.rosewood.roseminions.minion.setting.RecordSettingSerializerBuilder;
 import java.util.List;
-import java.util.Map;
-import org.bukkit.NamespacedKey;
-import org.bukkit.persistence.PersistentDataAdapterContext;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 /**
  * @param participants Number of Participants in the conversation
@@ -20,7 +17,12 @@ public record MinionConversation(int participants,
                                  int radius,
                                  List<String> messages) {
 
-    public static final PersistentDataType<PersistentDataContainer, MinionConversation> PDC_TYPE = new PDCDataType();
+    public static final SettingSerializer<MinionConversation> SERIALIZER = RecordSettingSerializerBuilder.create(MinionConversation.class, instance -> instance.group(
+            new Field<>("participants", SettingSerializers.INTEGER, MinionConversation::participants, "The number of minions to in the conversation"),
+            new Field<>("chance", SettingSerializers.DOUBLE, MinionConversation::chance, "The chance of this conversation happening"),
+            new Field<>("radius", SettingSerializers.INTEGER, MinionConversation::radius, "The radius in blocks to search for nearby minions"),
+            new Field<>("messages", SettingSerializerFactories.ofList(SettingSerializers.STRING), MinionConversation::messages, "The messages for this conversation")
+    ).apply(instance, MinionConversation::new));
 
     /**
      * Creates a new MinionConversation
@@ -31,65 +33,6 @@ public record MinionConversation(int participants,
 
         if (messages.isEmpty())
             throw new IllegalArgumentException("Messages must have at least 1 message");
-    }
-
-    public static void defineComplex(SettingSerializerFactories.ComplexSettingWriter writer) {
-        writer.withProperty("participants", SettingSerializers.INTEGER);
-        writer.withProperty("chance", SettingSerializers.DOUBLE);
-        writer.withProperty("radius", SettingSerializers.INTEGER);
-        writer.withProperty("messages", SettingSerializers.ofList(SettingSerializers.STRING));
-    }
-
-    public static Map<String, Object> toMap(MinionConversation object) {
-        return Map.of(
-                "participants", object.participants(),
-                "chance", object.chance(),
-                "radius", object.radius(),
-                "messages", object.messages()
-        );
-    }
-
-    @SuppressWarnings("unchecked")
-    public static MinionConversation fromMap(Map<String, Object> map) {
-        return new MinionConversation(
-                (int) map.get("participants"),
-                (double) map.get("chance"),
-                (int) map.get("radius"),
-                (List<String>) map.get("messages")
-        );
-    }
-
-    private static class PDCDataType implements PersistentDataType<PersistentDataContainer, MinionConversation> {
-
-        private static final NamespacedKey KEY_PARTICIPANTS = CustomPersistentDataType.KeyHelper.get("participants");
-        private static final NamespacedKey KEY_CHANCE = CustomPersistentDataType.KeyHelper.get("chance");
-        private static final NamespacedKey KEY_RADIUS = CustomPersistentDataType.KeyHelper.get("radius");
-        private static final NamespacedKey KEY_MESSAGES = CustomPersistentDataType.KeyHelper.get("messages");
-
-        public Class<PersistentDataContainer> getPrimitiveType() { return PersistentDataContainer.class; }
-        public Class<MinionConversation> getComplexType() { return MinionConversation.class; }
-
-        @Override
-        public PersistentDataContainer toPrimitive(MinionConversation conversation, PersistentDataAdapterContext context) {
-            PersistentDataContainer container = context.newPersistentDataContainer();
-            container.set(KEY_PARTICIPANTS, PersistentDataType.INTEGER, conversation.participants());
-            container.set(KEY_CHANCE, PersistentDataType.DOUBLE, conversation.chance());
-            container.set(KEY_RADIUS, PersistentDataType.INTEGER, conversation.radius());
-            container.set(KEY_MESSAGES, CustomPersistentDataType.STRING_LIST, conversation.messages());
-            return container;
-        }
-
-        @Override
-        public MinionConversation fromPrimitive(PersistentDataContainer container, PersistentDataAdapterContext context) {
-            Integer participants = container.get(KEY_PARTICIPANTS, PersistentDataType.INTEGER);
-            Double chance = container.get(KEY_CHANCE, PersistentDataType.DOUBLE);
-            Integer radius = container.get(KEY_RADIUS, PersistentDataType.INTEGER);
-            List<String> messages = container.get(KEY_MESSAGES, CustomPersistentDataType.STRING_LIST);
-            if (participants == null || chance == null || radius == null || messages == null)
-                throw new IllegalStateException("Invalid MinionConversation");
-            return new MinionConversation(participants, chance, radius, messages);
-        }
-
     }
 
 }

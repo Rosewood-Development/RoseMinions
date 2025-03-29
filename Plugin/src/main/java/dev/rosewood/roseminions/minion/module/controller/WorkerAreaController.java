@@ -151,8 +151,8 @@ public class WorkerAreaController extends ModuleController {
     }
 
     public enum ScanDirection {
-        TOP_TO_BOTTOM,
-        BOTTOM_TO_TOP
+        TOP_DOWN,
+        BOTTOM_UP
     }
 
     public enum BlockScanResult {

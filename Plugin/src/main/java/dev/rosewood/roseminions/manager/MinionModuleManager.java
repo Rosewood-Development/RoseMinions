@@ -5,25 +5,24 @@ import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.MinionItem;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.config.SettingContainerConfig;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
+import dev.rosewood.roseminions.minion.module.AttackingModule;
 import dev.rosewood.roseminions.minion.module.BeeKeepingModule;
 import dev.rosewood.roseminions.minion.module.BlockBreakModule;
+import dev.rosewood.roseminions.minion.module.BlockPlaceModule;
 import dev.rosewood.roseminions.minion.module.CommunicationModule;
 import dev.rosewood.roseminions.minion.module.DefaultMinionModules;
 import dev.rosewood.roseminions.minion.module.ExperiencePickupModule;
 import dev.rosewood.roseminions.minion.module.FarmingModule;
-import dev.rosewood.roseminions.minion.module.ItemFilterModule;
 import dev.rosewood.roseminions.minion.module.FishingModule;
 import dev.rosewood.roseminions.minion.module.InventoryModule;
+import dev.rosewood.roseminions.minion.module.ItemFilterModule;
 import dev.rosewood.roseminions.minion.module.ItemPickupModule;
 import dev.rosewood.roseminions.minion.module.MinionModule;
-import dev.rosewood.roseminions.minion.module.BlockPlaceModule;
 import dev.rosewood.roseminions.minion.module.PotionEffectModule;
 import dev.rosewood.roseminions.minion.module.ShearingModule;
-import dev.rosewood.roseminions.minion.module.AttackingModule;
 import dev.rosewood.roseminions.minion.module.UpgradeModule;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import java.io.File;
@@ -46,13 +45,6 @@ public class MinionModuleManager extends Manager implements Listener {
         this.registeredModules = new HashMap<>();
 
         Bukkit.getPluginManager().registerEvents(this, this.rosePlugin);
-
-        // Some classes that store settings other than modules need to be statically initialized
-        try {
-            Class.forName(MinionItem.class.getName());
-        } catch (ClassNotFoundException e) {
-            throw new AssertionError(e);
-        }
     }
 
     @Override

@@ -54,8 +54,8 @@ public class FarmingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
-        public static final SettingAccessor<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(SettingAccessor.defineSetting(SettingSerializers.WORKER_AREA_PROPERTIES, "worker-area-properties",
-                () -> new WorkerAreaProperties(3, WorkerAreaController.RadiusType.SQUARE, new Vector(), WorkerAreaController.ScanDirection.TOP_TO_BOTTOM, 10000L),
+        public static final SettingAccessor<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(SettingAccessor.defineSetting(WorkerAreaProperties.SERIALIZER, "worker-area-properties",
+                () -> new WorkerAreaProperties(3, WorkerAreaController.RadiusType.SQUARE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, 10000L),
                 "Settings that control the worker area for this module"));
         public static final SettingAccessor<Long> FARM_FREQUENCY = define(SettingAccessor.defineLong("farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)"));
         public static final SettingAccessor<Integer> FARM_BLOCK_AMOUNT = define(SettingAccessor.defineInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
@@ -231,7 +231,7 @@ public class FarmingModule extends MinionModule {
         }
 
         // If the inventory module is not present, we can't do anything else
-        Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
+        Optional<InventoryModule> inventoryModule = this.getModule(InventoryModule.class);
         if (inventoryModule.isPresent() && this.settings.get(PLANT_SEEDS) && cropBlock.getType() == Material.AIR) {
             // Replant the crop with the same seed type if possible, otherwise pick a random seed from the inventory
             if (desiredSeedType == null) {

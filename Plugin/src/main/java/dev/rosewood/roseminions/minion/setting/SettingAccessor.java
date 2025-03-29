@@ -14,20 +14,12 @@ public class SettingAccessor<T> {
     protected final String[] comments;
     private final boolean hidden;
 
-    protected SettingAccessor(SettingSerializer<T> serializer, String key, Supplier<T> defaultValueSupplier, String... comments) {
+    protected SettingAccessor(SettingSerializer<T> serializer, String key, Supplier<T> defaultValueSupplier, boolean hidden, String... comments) {
         this.serializer = serializer;
         this.key = key;
         this.defaultValueSupplier = defaultValueSupplier;
+        this.hidden = hidden;
         this.comments = comments;
-        this.hidden = false;
-    }
-
-    protected SettingAccessor(SettingSerializer<T> serializer, String key, Supplier<T> defaultValueSupplier) {
-        this.serializer = serializer;
-        this.key = key;
-        this.defaultValueSupplier = defaultValueSupplier;
-        this.comments = new String[0];
-        this.hidden = true;
     }
 
     /**
@@ -91,7 +83,7 @@ public class SettingAccessor<T> {
     }
 
     /**
-     * @return true if this setting should not be written to the config
+     * @return true if this setting should not be written as YAML, it will still be saved as PDC
      */
     public boolean isHidden() {
         return this.hidden;
@@ -105,15 +97,7 @@ public class SettingAccessor<T> {
      * @return a copy of this SettingAccessor with a different default value
      */
     public SettingAccessor<T> copy(T defaultValue) {
-        return new SettingAccessor<>(this.serializer, this.key, () -> defaultValue, this.comments);
-    }
-
-    @Override
-    public String toString() {
-        return "SettingAccessor{" +
-                "key='" + key + '\'' +
-                ", defaultValueSupplier=" + defaultValueSupplier.get() +
-                '}';
+        return new SettingAccessor<>(this.serializer, this.key, () -> defaultValue, false, this.comments);
     }
 
     /**
@@ -125,7 +109,15 @@ public class SettingAccessor<T> {
      * @return a copy of this SettingAccessor with a different default value
      */
     public SettingAccessor<T> copy(Supplier<T> defaultValueSupplier) {
-        return new SettingAccessor<>(this.serializer, this.key, defaultValueSupplier, this.comments);
+        return new SettingAccessor<>(this.serializer, this.key, defaultValueSupplier, false, this.comments);
+    }
+
+    @Override
+    public String toString() {
+        return "SettingAccessor{" +
+                "key='" + this.key + '\'' +
+                ", defaultValueSupplier=" + this.defaultValueSupplier.get() +
+                '}';
     }
 
     public static SettingAccessor<Boolean> defineBoolean(String name, boolean defaultValue, String... comments) {
@@ -174,16 +166,11 @@ public class SettingAccessor<T> {
     }
 
     public static <T> SettingAccessor<T> defineSetting(SettingSerializer<T> serializer, String name, Supplier<T> defaultValueSupplier, String... comments) {
-        String key = name.toLowerCase();
-        if (comments == null) {
-            return new SettingAccessor<>(serializer, key, defaultValueSupplier);
-        } else {
-            return new SettingAccessor<>(serializer, key, defaultValueSupplier, comments);
-        }
+        return new SettingAccessor<>(serializer, name.toLowerCase(), defaultValueSupplier, false, comments != null ? comments : new String[0]);
     }
 
     public static <T> SettingAccessor<T> defineHiddenSetting(SettingSerializer<T> serializer, String name, Supplier<T> defaultValueSupplier) {
-        return defineSetting(serializer, name, defaultValueSupplier, (String[]) null);
+        return new SettingAccessor<>(serializer, name.toLowerCase(), defaultValueSupplier, true);
     }
 
 }

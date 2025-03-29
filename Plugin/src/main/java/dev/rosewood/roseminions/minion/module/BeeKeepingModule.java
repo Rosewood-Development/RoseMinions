@@ -95,7 +95,7 @@ public class BeeKeepingModule extends MinionModule {
         if (beehive.getHoneyLevel() != beehive.getMaximumHoneyLevel())
             return;
 
-        Optional<InventoryModule> inventoryModule = this.minion.getModule(InventoryModule.class);
+        Optional<InventoryModule> inventoryModule = this.getModule(InventoryModule.class);
         ItemStack result = null;
         if (!this.settings.get(Settings.USE_BOTTLES)) {
             result = new ItemStack(Material.HONEYCOMB, 3);

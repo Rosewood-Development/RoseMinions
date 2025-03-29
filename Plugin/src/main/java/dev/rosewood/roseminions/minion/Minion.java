@@ -147,7 +147,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
     }
 
     @Override
-    public void writePDC(PersistentDataContainer container, PersistentDataAdapterContext context) {
+    public void writePDC(PersistentDataContainer container) {
         // Write minion data
         container.set(KEY_CONFIG_ID, PersistentDataType.STRING, this.minionConfig.getId());
         container.set(KEY_RANK, PersistentDataType.STRING, this.rank);
@@ -155,10 +155,11 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         container.set(KEY_LOCATION, CustomPersistentDataType.LOCATION, this.location);
 
         // Write module data
+        PersistentDataAdapterContext context = container.getAdapterContext();
         PersistentDataContainer modulesContainer = context.newPersistentDataContainer();
         for (MinionModule submodule : this.getModules()) {
             PersistentDataContainer moduleContainer = context.newPersistentDataContainer();
-            submodule.writePDC(moduleContainer, context);
+            submodule.writePDC(moduleContainer);
             modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
         }
         container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);

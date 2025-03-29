@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.bukkit.NamespacedKey;
-import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 
 public class SettingContainer implements PDCSerializable {
@@ -59,7 +58,7 @@ public class SettingContainer implements PDCSerializable {
     }
 
     @Override
-    public void writePDC(PersistentDataContainer container, PersistentDataAdapterContext context) {
+    public void writePDC(PersistentDataContainer container) {
         // Only write settings that have changed from their default values
         Map<String, SettingValue<?>> changedSettings = this.settingValues.entrySet()
                 .stream()
@@ -67,7 +66,7 @@ public class SettingContainer implements PDCSerializable {
                 .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
 
         for (Map.Entry<String, SettingValue<?>> entry : changedSettings.entrySet())
-            entry.getValue().writePDC(container, context);
+            entry.getValue().writePDC(container);
     }
 
     @Override

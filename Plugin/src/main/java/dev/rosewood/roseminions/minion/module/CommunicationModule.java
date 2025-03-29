@@ -35,7 +35,7 @@ public class CommunicationModule extends MinionModule {
 
         public static final SettingAccessor<Long> CONVERSATION_FREQUENCY = define(SettingAccessor.defineLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
         public static final SettingAccessor<Long> MESSAGE_FREQUENCY = define(SettingAccessor.defineLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
-        public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MINION_CONVERSATION), "conversations", () -> List.of(
+        public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(MinionConversation.SERIALIZER), "conversations", () -> List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
         ), "The conversations that the minion can have"));
 
@@ -203,7 +203,7 @@ public class CommunicationModule extends MinionModule {
             if (minion == this.minion)
                 continue;
 
-            minion.getModule(CommunicationModule.class).ifPresent(communicationModule -> {
+            this.getModule(CommunicationModule.class).ifPresent(communicationModule -> {
                 // TODO: Maybe move this to a separate method
                 if (reset) {
                     this.resetConversation(); // Reset the conversation

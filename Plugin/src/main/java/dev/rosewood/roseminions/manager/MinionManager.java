@@ -89,10 +89,10 @@ public class MinionManager extends Manager {
         this.loadedMinions.remove(minion);
 
         PersistentDataContainer pdc = minionEntity.getPersistentDataContainer();
-        PersistentDataAdapterContext adapterContext = pdc.getAdapterContext();
+        PersistentDataAdapterContext context = pdc.getAdapterContext();
 
-        PersistentDataContainer dataContainer = adapterContext.newPersistentDataContainer();
-        minion.writePDC(dataContainer, adapterContext);
+        PersistentDataContainer dataContainer = context.newPersistentDataContainer();
+        minion.writePDC(dataContainer);
         pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER, dataContainer);
     }
 

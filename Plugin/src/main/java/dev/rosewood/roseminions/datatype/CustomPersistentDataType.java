@@ -372,6 +372,8 @@ public final class CustomPersistentDataType {
         private static final Map<String, NamespacedKey> CACHE = new HashMap<>();
 
         public static NamespacedKey get(String key) {
+            if (key.indexOf(':') != -1)
+                return CACHE.computeIfAbsent(key, x -> NamespacedKey.fromString(key));
             return CACHE.computeIfAbsent(key, x -> new NamespacedKey(PLUGIN, x));
         }
 
