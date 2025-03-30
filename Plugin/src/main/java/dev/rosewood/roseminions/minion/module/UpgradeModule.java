@@ -7,6 +7,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +25,9 @@ public class UpgradeModule extends MinionModule {
         private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Upgrade Minion"));
-            define(MinionModule.GUI_ICON.copy(Material.IRON_SWORD));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Upgrade Minion"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows upgrading this minion.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Upgrade Minion", Material.IRON_SWORD, MinionUtils.PRIMARY_COLOR + "Upgrade Minion",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows upgrading this minion."))));
         }
 
         private Settings() { }
@@ -54,7 +54,7 @@ public class UpgradeModule extends MinionModule {
         GuiSize fullSize = GuiSize.ROWS_THREE;
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         // Fill inventory with glass for now
         ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);

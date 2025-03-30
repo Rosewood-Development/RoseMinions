@@ -2,6 +2,7 @@ package dev.rosewood.roseminions.model;
 
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.module.MinionModule;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class NotificationTicket {
@@ -47,4 +48,14 @@ public class NotificationTicket {
         return this.placeholderSupplier.get().apply(this.message);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof NotificationTicket that)) return false;
+        return Objects.equals(this.owningModule, that.owningModule) && Objects.equals(this.id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.owningModule, this.id);
+    }
 }

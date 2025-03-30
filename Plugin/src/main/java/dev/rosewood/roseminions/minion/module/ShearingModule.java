@@ -6,6 +6,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,10 +35,9 @@ public class ShearingModule extends MinionModule {
         public static final SettingAccessor<Integer> MAX_SHEEP = define(SettingAccessor.defineInteger("max-sheep", 5, "The maximum number of sheep that can be sheared at once"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Shearing Module"));
-            define(MinionModule.GUI_ICON.copy(Material.SHEARS));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Shearing Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Shearing Module", Material.SHEARS, MinionUtils.PRIMARY_COLOR + "Shearing Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to shear sheep."))));
         }
 
         private Settings() { }
@@ -102,7 +102,7 @@ public class ShearingModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         this.addBackButton(mainScreen);
 

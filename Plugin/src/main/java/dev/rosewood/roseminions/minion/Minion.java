@@ -25,6 +25,7 @@ import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.PDCSerializable;
 import dev.rosewood.roseminions.model.Updatable;
 import dev.rosewood.roseminions.util.SkullUtils;
@@ -230,7 +231,8 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
 
         // Add the appearance item
         SettingContainer appearanceSettings = this.appearanceModule.getSettings();
-        ItemStack appearanceItem = new ItemStack(appearanceSettings.get(MinionModule.GUI_ICON));
+        ModuleGuiProperties appearanceGuiProperties = appearanceSettings.get(MinionModule.GUI_PROPERTIES);
+        ItemStack appearanceItem = new ItemStack(appearanceGuiProperties.icon());
         ItemMeta meta = appearanceItem.getItemMeta();
         if (meta instanceof SkullMeta skullMeta) {
             SkullUtils.setSkullTexture(skullMeta, this.getRankData().itemSettings().get(MinionItem.TEXTURE));
@@ -238,11 +240,11 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         }
 
         List<String> appearanceLore = new ArrayList<>();
-        appearanceLore.addAll(appearanceSettings.get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList());
+        appearanceLore.addAll(appearanceGuiProperties.iconLore().stream().map(HexUtils::colorify).toList());
         appearanceLore.addAll(additionalModuleLore);
 
         mainScreen.addButtonAt(10, GuiFactory.createButton(appearanceItem)
-                .setName(HexUtils.colorify(appearanceSettings.get(MinionModule.GUI_ICON_NAME)))
+                .setName(HexUtils.colorify(appearanceGuiProperties.iconName()))
                 .setLore(appearanceLore)
                 .setItemFlags()
                 .setClickAction(event -> {
@@ -256,12 +258,13 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
                 continue;
 
             List<String> lore = new ArrayList<>();
-            lore.addAll(module.getSettings().get(MinionModule.GUI_ICON_LORE).stream().map(HexUtils::colorify).toList());
+            ModuleGuiProperties moduleGuiProperties = module.getSettings().get(MinionModule.GUI_PROPERTIES);
+            lore.addAll(moduleGuiProperties.iconLore().stream().map(HexUtils::colorify).toList());
             lore.addAll(additionalModuleLore);
 
             mainScreen.addButtonAt(MODULE_SLOT_FILL_ORDER[moduleIndex++], GuiFactory.createButton()
-                    .setIcon(module.getSettings().get(MinionModule.GUI_ICON))
-                    .setName(HexUtils.colorify(module.getSettings().get(MinionModule.GUI_ICON_NAME)))
+                    .setIcon(moduleGuiProperties.icon())
+                    .setName(HexUtils.colorify(moduleGuiProperties.iconName()))
                     .setLore(lore)
                     .setItemFlags()
                     .setClickAction(event -> {

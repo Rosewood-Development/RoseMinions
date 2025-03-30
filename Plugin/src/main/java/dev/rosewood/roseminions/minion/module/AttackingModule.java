@@ -6,6 +6,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,15 +35,14 @@ public class AttackingModule extends MinionModule {
 
         public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 3, "How far away the minion will search for targets"));
         public static final SettingAccessor<Long> ATTACK_FREQUENCY = define(SettingAccessor.defineLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
-        public static final SettingAccessor<Boolean> ONLY_ATTACK_ENEMIES = define(SettingAccessor.defineBoolean("only-attack-enemies", true, "Whether the minion will only attack enemies"));
+        public static final SettingAccessor<Boolean> ONLY_ATTACK_HOSTILES = define(SettingAccessor.defineBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
         public static final SettingAccessor<Integer> DAMAGE_AMOUNT = define(SettingAccessor.defineInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
         public static final SettingAccessor<Integer> NUMBER_OF_TARGETS = define(SettingAccessor.defineInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Attacking Module"));
-            define(MinionModule.GUI_ICON.copy(Material.IRON_SWORD));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Attacking Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Attacking Module", Material.IRON_SWORD, MinionUtils.PRIMARY_COLOR + "Attacking Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to attack mobs."))));
         }
 
         private Settings() { }
@@ -75,10 +75,10 @@ public class AttackingModule extends MinionModule {
         this.lastAttackTime = System.currentTimeMillis();
 
         Predicate<Entity> filter = entity -> {
-            if (BLACKLIST_TYPES.contains(entity.getType()) || !(entity instanceof LivingEntity))
+            if (BLACKLIST_TYPES.contains(entity.getType()) || !(entity instanceof LivingEntity livingEntity))
                 return false;
 
-            return !this.settings.get(ONLY_ATTACK_ENEMIES) || MinionUtils.isMonster(entity.getType());
+            return !this.settings.get(ONLY_ATTACK_HOSTILES) || MinionUtils.isHostile(livingEntity);
         };
 
         // Attack the entity with the least amount of health in range
@@ -96,7 +96,7 @@ public class AttackingModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         this.addBackButton(mainScreen);
 

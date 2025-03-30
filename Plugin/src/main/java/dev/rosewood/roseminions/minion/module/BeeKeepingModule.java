@@ -7,6 +7,7 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,10 +33,9 @@ public class BeeKeepingModule extends MinionModule {
         public static final SettingAccessor<Boolean> USE_BOTTLES = define(SettingAccessor.defineBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Bee Keeping Module"));
-            define(MinionModule.GUI_ICON.copy(Material.BEE_NEST));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Bee Keeping Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey from bee hives.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Bee Keeping Module", Material.BEE_NEST, MinionUtils.PRIMARY_COLOR + "Bee Keeping Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect honey", MinionUtils.SECONDARY_COLOR + "from bee hives."))));
         }
 
         private Settings() { }
@@ -128,7 +128,7 @@ public class BeeKeepingModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
 
         mainScreen.addButtonAt(10, GuiFactory.createButton()

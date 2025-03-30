@@ -16,19 +16,18 @@ import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.data.BlockData;
 
-public class WorkerAreaController extends ModuleController {
+public class WorkerAreaController<T> extends ModuleController {
 
     private WorkerAreaProperties properties;
-    private final Consumer<Map<BlockPosition, BlockData>> onUpdate;
-    private final ScanBlockPredicate predicate;
+    private final Consumer<Map<BlockPosition, T>> onUpdate;
+    private final ScanBlockPredicate<T> predicate;
     private long nextUpdateTime;
     private Map<ChunkLocation, ChunkSnapshot> workerAreaChunks;
-    private Map<BlockPosition, BlockData> workerAreaBlocks;
+    private Map<BlockPosition, T> workerAreaData;
     private volatile boolean processing;
 
-    public WorkerAreaController(MinionModule module, WorkerAreaProperties properties, Consumer<Map<BlockPosition, BlockData>> onUpdate, ScanBlockPredicate predicate) {
+    public WorkerAreaController(MinionModule module, WorkerAreaProperties properties, Consumer<Map<BlockPosition, T>> onUpdate, ScanBlockPredicate<T> predicate) {
         super("worker_area", module);
 
         this.properties = properties;
@@ -37,7 +36,7 @@ public class WorkerAreaController extends ModuleController {
         this.nextUpdateTime = System.currentTimeMillis() + 500;
 
         this.workerAreaChunks = Map.of();
-        this.workerAreaBlocks = Map.of();
+        this.workerAreaData = Map.of();
     }
 
     public void setProperties(WorkerAreaProperties properties) {
@@ -46,9 +45,9 @@ public class WorkerAreaController extends ModuleController {
 
     @Override
     public void update() {
-        if (!this.workerAreaBlocks.isEmpty()) {
-            this.onUpdate.accept(this.workerAreaBlocks);
-            this.workerAreaBlocks = Map.of();
+        if (!this.workerAreaData.isEmpty()) {
+            this.onUpdate.accept(this.workerAreaData);
+            this.workerAreaData = Map.of();
         }
 
         if (System.currentTimeMillis() >= this.nextUpdateTime && this.workerAreaChunks.isEmpty()) {
@@ -79,7 +78,7 @@ public class WorkerAreaController extends ModuleController {
         int centerY = centerLocation.getBlockY();
         int centerZ = centerLocation.getBlockZ();
 
-        Map<BlockPosition, BlockData> includedBlocks = new LinkedHashMap<>();
+        Map<BlockPosition, T> includedData = new LinkedHashMap<>();
 
         List<Point> positions = new ArrayList<>();
         for (int x = -radius; x <= radius; x++)
@@ -106,15 +105,14 @@ public class WorkerAreaController extends ModuleController {
             int minY = Math.max(centerY - radius, worldMin);
 
             Function<Integer, Boolean> checkFunction = y -> {
-                BlockData blockData = chunkSnapshot.getBlockData(relativeX, y, relativeZ);
-                BlockScanResult result = this.predicate.test(blockData, relativeX, y, relativeZ, chunkSnapshot);
-                return switch (result) {
+                BlockScanObject<T> scanObject = this.predicate.test(relativeX, y, relativeZ, chunkSnapshot);
+                return switch (scanObject.result()) {
                     case INCLUDE -> {
-                        includedBlocks.put(new BlockPosition(targetX, y, targetZ), blockData);
+                        includedData.put(new BlockPosition(targetX, y, targetZ), scanObject.data());
                         yield false;
                     }
                     case INCLUDE_SKIP_COLUMN -> {
-                        includedBlocks.put(new BlockPosition(targetX, y, targetZ), blockData);
+                        includedData.put(new BlockPosition(targetX, y, targetZ), scanObject.data());
                         yield true;
                     }
                     case SKIP_COLUMN -> true;
@@ -137,7 +135,7 @@ public class WorkerAreaController extends ModuleController {
         }
 
         this.workerAreaChunks = Map.of();
-        this.workerAreaBlocks = includedBlocks;
+        this.workerAreaData = includedData;
         this.processing = false;
     }
 
@@ -182,8 +180,14 @@ public class WorkerAreaController extends ModuleController {
     }
 
     @FunctionalInterface
-    public interface ScanBlockPredicate {
-        BlockScanResult test(BlockData blockData, int x, int y, int z, ChunkSnapshot chunkSnapshot);
+    public interface ScanBlockPredicate<T> {
+        BlockScanObject<T> test(int x, int y, int z, ChunkSnapshot chunkSnapshot);
+    }
+
+    public record BlockScanObject<T>(BlockScanResult result, T data) {
+        public BlockScanObject(BlockScanResult result) {
+            this(result, null);
+        }
     }
 
     private record Point(int x, int z) { }

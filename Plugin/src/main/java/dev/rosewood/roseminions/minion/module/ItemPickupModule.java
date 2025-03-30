@@ -7,6 +7,7 @@ import dev.rosewood.roseminions.hook.StackerHelper;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
@@ -30,10 +31,9 @@ public class ItemPickupModule extends MinionModule {
         public static final SettingAccessor<Long> PICKUP_FREQUENCY = define(SettingAccessor.defineLong("pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Item Pickup Module"));
-            define(MinionModule.GUI_ICON.copy(Material.HOPPER));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Item Pickup Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Item Pickup Module", Material.HOPPER, MinionUtils.PRIMARY_COLOR + "Item Pickup Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to pick up items."))));
         }
 
         private Settings() { }
@@ -77,7 +77,7 @@ public class ItemPickupModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         this.addBackButton(mainScreen);
 

@@ -13,6 +13,7 @@ import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.NMSHandler;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -61,10 +63,9 @@ public class AppearanceModule extends MinionModule {
         public static final SettingAccessor<Double> ROTATION_SPEED = define(SettingAccessor.defineDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Minion Appearance"));
-            define(MinionModule.GUI_ICON.copy(Material.PLAYER_HEAD));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Minion Appearance"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Minion Appearance", Material.PLAYER_HEAD, MinionUtils.PRIMARY_COLOR + "Minion Appearance",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows modifying the minion's appearance."))));
         }
 
         private Settings() { }
@@ -87,6 +88,7 @@ public class AppearanceModule extends MinionModule {
     private int nametagUpdateTicks;
 
     private final Deque<NotificationTicket> notificationTickets;
+    private NotificationTicket currentTicket;
     private long nextTicketTime;
 
     public AppearanceModule(Minion minion) {
@@ -96,6 +98,7 @@ public class AppearanceModule extends MinionModule {
             thetaUpdateTask = Bukkit.getScheduler().runTaskTimer(RoseMinions.getInstance(), () -> thetaTicks++, 0L, 1L);
 
         this.notificationTickets = new LinkedList<>();
+        this.currentTicket = null;
         this.nextTicketTime = System.currentTimeMillis() + 1000; // Wait a second before starting notifications
     }
 
@@ -117,7 +120,8 @@ public class AppearanceModule extends MinionModule {
                     armorStand.removePassenger(passenger);
                     passenger.remove();
                 }
-            } else {
+                this.currentTicket = null;
+            } else if (!Objects.equals(this.currentTicket, notificationTicket)) {
                 this.resetNotificationTicketTimer(notificationTicket.getDuration());
 
                 // If we don't have a notification entity, create one
@@ -130,6 +134,9 @@ public class AppearanceModule extends MinionModule {
                 // Update the notification entity
                 nmsHandler.setCustomNameUncapped(notificationEntity, HexUtils.colorify(notificationTicket.getMessage()));
                 notificationEntity.setCustomNameVisible(true);
+                this.currentTicket = notificationTicket;
+            } else {
+                this.resetNotificationTicketTimer(notificationTicket.getDuration());
             }
         }
     }
@@ -183,7 +190,7 @@ public class AppearanceModule extends MinionModule {
         GuiSize fullSize = GuiSize.fromRows(rows + 1);
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         // Fill inventory border with glass for now
         ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
@@ -367,7 +374,7 @@ public class AppearanceModule extends MinionModule {
     }
 
     private Entity createNotificationEntity() {
-        return EntitySpawnUtil.spawn(this.minion.getLocation(), AreaEffectCloud.class, entity -> {
+        return EntitySpawnUtil.spawn(this.minion.getLocation().add(0.5, this.minion.getDisplayEntity().getHeight(), 0.5), AreaEffectCloud.class, entity -> {
             //entity.setInvisible(true);
             //entity.setVisible(false);
             entity.setGravity(false);
@@ -378,7 +385,7 @@ public class AppearanceModule extends MinionModule {
             entity.setParticle(VersionUtils.BLOCK, Material.AIR.createBlockData());
             entity.clearCustomEffects();
             //entity.setCanPickupItems(false);
-            entity.setPersistent(true);
+            entity.setPersistent(false);
             entity.getPersistentDataContainer().set(MinionUtils.MINION_NOTIFICATION_KEY, PersistentDataType.BYTE, (byte) 1);
 
 //            Arrays.stream(EquipmentSlot.values()).forEach(x -> {

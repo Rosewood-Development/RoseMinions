@@ -13,6 +13,7 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.SkullUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
@@ -49,10 +50,9 @@ public class ExperiencePickupModule extends MinionModule {
         public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 5, "The radius for the minion to search for items"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Experience Pickup Module"));
-            define(MinionModule.GUI_ICON.copy(Material.EXPERIENCE_BOTTLE));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Experience Pickup Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect XP", MinionUtils.SECONDARY_COLOR + "and store it for later use.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Experience Pickup Module", Material.EXPERIENCE_BOTTLE, MinionUtils.PRIMARY_COLOR + "Experience Pickup Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to collect XP", MinionUtils.SECONDARY_COLOR + "and store it for later use."))));
         }
 
         private Settings() { }
@@ -119,7 +119,7 @@ public class ExperiencePickupModule extends MinionModule {
         GuiSize fullSize = GuiSize.fromRows(rows + 1);
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         // Fill inventory border with glass for now
         ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);

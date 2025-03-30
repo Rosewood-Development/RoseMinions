@@ -11,6 +11,7 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,10 +36,9 @@ public class ItemFilterModule extends MinionModule {
         public static final SettingAccessor<Boolean> MATCH_NBT = define(SettingAccessor.defineBoolean("match-nbt", false, "Whether or not to match NBT data"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Item Filter Module"));
-            define(MinionModule.GUI_ICON.copy(Material.COMPARATOR));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Item Filter Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Item Filter Module", Material.COMPARATOR, MinionUtils.PRIMARY_COLOR + "Item Filter Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items."))));
         }
 
         private Settings() { }
@@ -71,7 +71,7 @@ public class ItemFilterModule extends MinionModule {
         GuiSize fullSize = GuiSize.fromRows(rows + 1);
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE))
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title())
                 .setEditableSection(0, editableSize.getNumSlots() - 1, Arrays.asList(this.settings.get(FILTER_ITEMS)), (player, items) -> {
                     ItemStack[] contents = new ItemStack[this.settings.get(INVENTORY_SIZE)];
                     System.arraycopy(items.toArray(ItemStack[]::new), 0, contents, 0, Math.min(items.size(), contents.length));

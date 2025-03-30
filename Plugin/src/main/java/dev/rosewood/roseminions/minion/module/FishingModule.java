@@ -3,10 +3,13 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
+import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -17,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -49,10 +53,9 @@ public class FishingModule extends MinionModule {
         public static final SettingAccessor<PlayableSound> BOBBER_SOUND = define(SettingAccessor.defineSetting("fish-caught-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Fishing Module"));
-            define(MinionModule.GUI_ICON.copy(Material.FISHING_ROD));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Fishing Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Fishing Module", Material.FISHING_ROD, MinionUtils.PRIMARY_COLOR + "Fishing Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to fish in water."))));
         }
 
         private Settings() { }
@@ -143,6 +146,7 @@ public class FishingModule extends MinionModule {
         // Unable to find water, play some particles around the minion to indicate this
         Location particleCenter = this.minion.getCenterLocation();
         this.minion.getWorld().spawnParticle(VersionUtils.SMOKE, particleCenter, 15, 0.25, 0.25, 0.25, 0.1);
+        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-water", ChatColor.RED + "No nearby water!", 1000, () -> this.targetBlock == null, StringPlaceholders::empty));
         this.resetWaitTime();
     }
 
@@ -151,7 +155,7 @@ public class FishingModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         this.addBackButton(mainScreen);
 

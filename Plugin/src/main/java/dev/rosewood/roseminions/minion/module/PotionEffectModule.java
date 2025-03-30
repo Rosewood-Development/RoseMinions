@@ -7,6 +7,7 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,10 +29,9 @@ public class PotionEffectModule extends MinionModule {
         public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Potion Effect Module"));
-            define(MinionModule.GUI_ICON.copy(Material.BEACON));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Potion Effect Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to apply potion", MinionUtils.SECONDARY_COLOR + "effects to nearby entities.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Potion Effect Module", Material.BEACON, MinionUtils.PRIMARY_COLOR + "Potion Effect Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to apply potion", MinionUtils.SECONDARY_COLOR + "effects to nearby entities."))));
         }
 
         private Settings() { }
@@ -73,7 +73,7 @@ public class PotionEffectModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         // TODO: Add all potion effects to the GUI
 

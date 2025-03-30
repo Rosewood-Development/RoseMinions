@@ -12,6 +12,7 @@ import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.model.MinionConversation;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -40,10 +41,9 @@ public class CommunicationModule extends MinionModule {
         ), "The conversations that the minion can have"));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Communication Module"));
-            define(MinionModule.GUI_ICON.copy(Material.COMMAND_BLOCK));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Communication Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to communicate", MinionUtils.SECONDARY_COLOR + "with the world around them.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Communication Module", Material.COMMAND_BLOCK, MinionUtils.PRIMARY_COLOR + "Communication Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to communicate", MinionUtils.SECONDARY_COLOR + "with the world around them."))));
         }
 
         private Settings() { }
@@ -175,7 +175,7 @@ public class CommunicationModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_FOUR)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         mainScreen.addButtonAt(0, GuiFactory.createButton(new ItemStack(Material.BIRCH_SIGN))
                 .setName(HexUtils.colorify("<g:#F7971E:#FFD200>Start Conversation"))

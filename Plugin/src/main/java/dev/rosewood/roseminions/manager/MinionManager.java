@@ -8,11 +8,12 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
@@ -23,19 +24,19 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class MinionManager extends Manager {
 
-    private final List<Minion> loadedMinions;
+    private final Set<Minion> loadedMinions;
     private final Set<ArmorStand> pendingLoadMinions;
     private BukkitTask minionTask, asyncMinionTask, loadPendingMinionsTask;
 
     public MinionManager(RosePlugin rosePlugin) {
         super(rosePlugin);
 
-        this.loadedMinions = new ArrayList<>();
+        this.loadedMinions = Collections.newSetFromMap(new ConcurrentHashMap<>());
         this.pendingLoadMinions = new HashSet<>();
     }
 
-    public List<Minion> getLoadedMinions() {
-        return Collections.unmodifiableList(this.loadedMinions);
+    public Collection<Minion> getLoadedMinions() {
+        return Collections.unmodifiableCollection(this.loadedMinions);
     }
 
     public void destroyMinion(Minion minion) {
@@ -105,7 +106,7 @@ public class MinionManager extends Manager {
     @Override
     public void reload() {
         this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::update), 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
-        this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, () -> List.copyOf(this.loadedMinions).forEach(Minion::updateAsync), 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
+        this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::updateAsync), 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
         this.loadPendingMinionsTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> {
             this.pendingLoadMinions.stream().filter(ArmorStand::isValid).forEach(this::loadMinion);
             this.pendingLoadMinions.clear();

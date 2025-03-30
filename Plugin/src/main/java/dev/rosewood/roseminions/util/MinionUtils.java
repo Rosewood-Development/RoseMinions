@@ -1,14 +1,22 @@
 package dev.rosewood.roseminions.util;
 
+import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import java.util.Random;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Bee;
 import org.bukkit.entity.Boss;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Monster;
+import org.bukkit.entity.Panda;
+import org.bukkit.entity.PigZombie;
+import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.ItemStack;
 
 public final class MinionUtils {
@@ -27,18 +35,28 @@ public final class MinionUtils {
 
     }
 
-    public static boolean isMonster(EntityType entityType) {
+    public static boolean isHostile(LivingEntity entity) {
+        EntityType entityType = entity.getType();
         Class<? extends Entity> entityClass = entityType.getEntityClass();
         if (entityClass == null)
             return false;
 
-        if (Monster.class.isAssignableFrom(entityClass) || Boss.class.isAssignableFrom(entityClass))
+        if (NMSUtil.isPaper() && entity instanceof Mob mob && mob.isAggressive())
             return true;
 
-        // Handle exceptions
-        return switch (entityType) {
-            case SLIME, MAGMA_CUBE -> true;
-            default -> false;
+        return switch (entityType.getKey().getKey()) {
+            case "wolf" -> ((Wolf) entity).isAngry();
+            case "bee" -> ((Bee) entity).getAnger() > 0;
+            case "zombified_piglin", "zombie_pigman" -> ((PigZombie) entity).isAngry();
+            case "rabbit" -> ((Rabbit) entity).getRabbitType() == Rabbit.Type.THE_KILLER_BUNNY;
+            case "panda" -> {
+                Panda panda = ((Panda) entity);
+                Panda.Gene main = panda.getMainGene();
+                Panda.Gene hidden = panda.getHiddenGene();
+                yield (main.isRecessive() ? (main == hidden ? main : Panda.Gene.NORMAL) : main) == Panda.Gene.AGGRESSIVE;
+            }
+            case "slime", "magma_cube" -> true;
+            default -> Monster.class.isAssignableFrom(entityClass) || Boss.class.isAssignableFrom(entityClass);
         };
     }
 

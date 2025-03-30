@@ -10,6 +10,7 @@
 //import dev.rosewood.roseminions.minion.config.ModuleSettings;
 //import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 //import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+//import dev.rosewood.roseminions.model.ModuleGuiProperties;
 //import dev.rosewood.roseminions.util.MinionUtils;
 //import dev.rosewood.roseminions.util.SkullUtils;
 //import java.util.ArrayList;
@@ -42,10 +43,9 @@
 //        public static final SettingAccessor<List<Material>> BLACKLISTED_BLOCKS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", () -> List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine"));
 //
 //        static {
-//            define(MinionModule.GUI_TITLE.copy("Miner Module"));
-//            define(MinionModule.GUI_ICON.copy(Material.DIAMOND_PICKAXE));
-//            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Miner Module"));
-//            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks.")));
+//            define(MinionModule.GUI_PROPERTIES.copy(() ->
+//                    new ModuleGuiProperties("Miner Module", Material.DIAMOND_PICKAXE, MinionUtils.PRIMARY_COLOR + "Miner Module",
+//                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to mine blocks."))));
 //        }
 //
 //        private Settings() { }

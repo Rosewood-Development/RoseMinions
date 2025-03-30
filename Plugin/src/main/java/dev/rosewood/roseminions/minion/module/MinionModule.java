@@ -15,6 +15,7 @@ import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import dev.rosewood.roseminions.model.GuiHolder;
 import dev.rosewood.roseminions.model.Modular;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.PDCSerializable;
 import dev.rosewood.roseminions.model.Updatable;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -35,10 +36,10 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
     private static final NamespacedKey KEY_SETTINGS = CustomPersistentDataType.KeyHelper.get("settings");
     private static final NamespacedKey KEY_MODULES = CustomPersistentDataType.KeyHelper.get("modules");
 
-    public static final SettingAccessor<String> GUI_TITLE = SettingAccessor.defineString("gui-title", "GUI Title", "The title of the GUI");
-    public static final SettingAccessor<Material> GUI_ICON = SettingAccessor.defineEnum("gui-icon", Material.BARRIER, "The icon to use for this module in the minion GUI");
-    public static final SettingAccessor<String> GUI_ICON_NAME = SettingAccessor.defineString("gui-icon-name", "Module", "The name to use for this module in the minion GUI");
-    public static final SettingAccessor<List<String>> GUI_ICON_LORE = SettingAccessor.defineStringList("gui-icon-lore", List.of("", MinionUtils.SECONDARY_COLOR + "A minion module.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings."), "The lore to use for this module in the minion GUI");
+    public static final SettingAccessor<ModuleGuiProperties> GUI_PROPERTIES = SettingAccessor.defineSetting("gui", ModuleGuiProperties.SERIALIZER, () ->
+            new ModuleGuiProperties("GUI Title", Material.BARRIER, "Module",
+                    List.of("", MinionUtils.SECONDARY_COLOR + "A minion module.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings.")),
+            "Module GUI properties");
 
     protected final Minion minion;
     protected final String moduleName;

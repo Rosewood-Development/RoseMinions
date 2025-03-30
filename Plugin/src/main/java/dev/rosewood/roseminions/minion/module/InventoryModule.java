@@ -11,6 +11,7 @@ import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,10 +34,9 @@ public class InventoryModule extends MinionModule {
         public static final SettingAccessor<ItemStack[]> INVENTORY_CONTENTS = define(SettingAccessor.defineHiddenSetting("inventory-contents", SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Inventory Module"));
-            define(MinionModule.GUI_ICON.copy(Material.CHEST));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Inventory Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Inventory Module", Material.CHEST, MinionUtils.PRIMARY_COLOR + "Inventory Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to store items."))));
         }
 
         private Settings() { }
@@ -66,7 +66,7 @@ public class InventoryModule extends MinionModule {
         GuiSize fullSize = GuiSize.fromRows(rows + 1);
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE))
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title())
                 .setEditableSection(0, editableSize.getNumSlots() - 1, Arrays.asList(this.settings.get(INVENTORY_CONTENTS)), (player, items) -> {
                     ItemStack[] contents = new ItemStack[this.settings.get(INVENTORY_SIZE)];
                     System.arraycopy(items.toArray(ItemStack[]::new), 0, contents, 0, Math.min(items.size(), contents.length));

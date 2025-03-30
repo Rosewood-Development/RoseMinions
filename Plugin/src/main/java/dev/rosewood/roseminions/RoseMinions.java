@@ -1,8 +1,10 @@
 package dev.rosewood.roseminions;
 
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
+import dev.rosewood.roseminions.config.SettingKey;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
 import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
@@ -60,6 +62,11 @@ public class RoseMinions extends RosePlugin {
     @Override
     public void disable() {
 
+    }
+
+    @Override
+    protected List<RoseSetting<?>> getRoseConfigSettings() {
+        return SettingKey.getKeys();
     }
 
     @Override

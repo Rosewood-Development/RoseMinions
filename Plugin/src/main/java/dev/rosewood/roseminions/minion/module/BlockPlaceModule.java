@@ -7,6 +7,7 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.config.ModuleSettings;
 import dev.rosewood.roseminions.minion.setting.SettingAccessor;
+import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -31,10 +32,9 @@ public class BlockPlaceModule extends MinionModule {
         public static final SettingAccessor<Boolean> REQUIRE_UNOBSTRUCTED = define(SettingAccessor.defineBoolean("require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block."));
 
         static {
-            define(MinionModule.GUI_TITLE.copy("Block Place Module"));
-            define(MinionModule.GUI_ICON.copy(Material.GRASS_BLOCK));
-            define(MinionModule.GUI_ICON_NAME.copy(MinionUtils.PRIMARY_COLOR + "Block Place Module"));
-            define(MinionModule.GUI_ICON_LORE.copy(List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to place blocks.")));
+            define(MinionModule.GUI_PROPERTIES.copy(() ->
+                    new ModuleGuiProperties("Block Place Module", Material.GRASS_BLOCK, MinionUtils.PRIMARY_COLOR + "Block Place Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to place blocks."))));
         }
 
         private Settings() { }
@@ -126,7 +126,7 @@ public class BlockPlaceModule extends MinionModule {
         this.guiContainer = GuiFactory.createContainer();
 
         GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, GuiSize.ROWS_THREE)
-                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 
         this.addBackButton(mainScreen);
 
