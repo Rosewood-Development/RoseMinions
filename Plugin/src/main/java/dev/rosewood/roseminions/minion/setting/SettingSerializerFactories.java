@@ -2,11 +2,13 @@ package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
 import dev.rosewood.rosegarden.utils.NMSUtil;
+import dev.rosewood.rosegarden.utils.RoseGardenUtils;
 import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -77,6 +79,31 @@ public final class SettingSerializerFactories {
                     return (T[]) Array.newInstance(serializer.type, 0);
                 }
             }
+            protected String getDefaultCommentText(T[] values) {
+                if (!serializer.isStringKey() || values.length > 5)
+                    return null;
+                StringBuilder builder = new StringBuilder("Default: [");
+                Iterator<T> iterator = Arrays.stream(values).iterator();
+                boolean hasNext = iterator.hasNext();
+                while (hasNext) {
+                    T value = iterator.next();
+                    String defaultValueStringKey = serializer.asStringKey(value);
+                    if (RoseGardenUtils.containsConfigSpecialCharacters(defaultValueStringKey)) {
+                        builder.append('\'').append(defaultValueStringKey).append('\'');
+                    } else if (defaultValueStringKey.isEmpty()) {
+                        builder.append("''");
+                    } else {
+                        builder.append(defaultValueStringKey);
+                    }
+                    hasNext = iterator.hasNext();
+                    if (hasNext)
+                        builder.append(", ");
+                }
+                builder.append(']');
+                if (builder.length() > 60)
+                    return null;
+                return builder.toString();
+            }
         };
     }
 
@@ -107,6 +134,31 @@ public final class SettingSerializerFactories {
                     }
                     return list;
                 }
+            }
+            protected String getDefaultCommentText(List<T> values) {
+                if (!serializer.isStringKey() || values.size() > 5)
+                    return null;
+                StringBuilder builder = new StringBuilder("Default: [");
+                Iterator<T> iterator = values.iterator();
+                boolean hasNext = iterator.hasNext();
+                while (hasNext) {
+                    T value = iterator.next();
+                    String defaultValueStringKey = serializer.asStringKey(value);
+                    if (RoseGardenUtils.containsConfigSpecialCharacters(defaultValueStringKey)) {
+                        builder.append('\'').append(defaultValueStringKey).append('\'');
+                    } else if (defaultValueStringKey.isEmpty()) {
+                        builder.append("''");
+                    } else {
+                        builder.append(defaultValueStringKey);
+                    }
+                    hasNext = iterator.hasNext();
+                    if (hasNext)
+                        builder.append(", ");
+                }
+                builder.append(']');
+                if (builder.length() > 60)
+                    return null;
+                return builder.toString();
             }
         };
     }

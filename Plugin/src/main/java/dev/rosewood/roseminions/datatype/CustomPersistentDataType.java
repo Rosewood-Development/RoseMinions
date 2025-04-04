@@ -276,7 +276,7 @@ public final class CustomPersistentDataType {
             private static final NamespacedKey KEY_SIZE = KeyHelper.get("size");
 
             public Class<PersistentDataContainer> getPrimitiveType() { return PersistentDataContainer.class; }
-            public Class<List<T>> getComplexType() { return (Class<List<T>>) (Class<?>) List.class; } // Lists types aren't real they can't hurt you
+            public Class<List<T>> getComplexType() { return (Class<List<T>>) (Class<?>) List.class; }
 
             @Override
             public PersistentDataContainer toPrimitive(List<T> list, PersistentDataAdapterContext context) {
@@ -315,7 +315,7 @@ public final class CustomPersistentDataType {
             private static final NamespacedKey KEY_SIZE = KeyHelper.get("size");
 
             public Class<PersistentDataContainer> getPrimitiveType() { return PersistentDataContainer.class; }
-            public Class<Map<K, V>> getComplexType() { return (Class<Map<K, V>>) (Class<?>) Map.class; } // Map types aren't real they can't hurt you
+            public Class<Map<K, V>> getComplexType() { return (Class<Map<K, V>>) (Class<?>) Map.class; }
 
             @Override
             public PersistentDataContainer toPrimitive(Map<K, V> map, PersistentDataAdapterContext context) {

@@ -19,8 +19,8 @@ import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.SkullUtils;
-import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -31,12 +31,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.conversations.Conversable;
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.ConversationFactory;
 import org.bukkit.conversations.Prompt;
 import org.bukkit.conversations.StringPrompt;
-import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EntityEquipment;
@@ -121,7 +122,7 @@ public class AppearanceModule extends MinionModule {
                     passenger.remove();
                 }
                 this.currentTicket = null;
-            } else if (!Objects.equals(this.currentTicket, notificationTicket)) {
+            } else if (!Objects.equals(this.currentTicket, notificationTicket) || armorStand.getPassengers().isEmpty()) {
                 this.resetNotificationTicketTimer(notificationTicket.getDuration());
 
                 // If we don't have a notification entity, create one
@@ -208,7 +209,6 @@ public class AppearanceModule extends MinionModule {
                 .setIcon(Material.NAME_TAG)
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Name"))
                 .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "The name of the minion"))
-                .setItemFlags()
                 .setClickAction(event -> {
                     event.getWhoClicked().sendMessage((HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Enter the new name of the minion:")));
                     this.createConversation((Conversable) event.getWhoClicked(), newName -> {
@@ -228,7 +228,6 @@ public class AppearanceModule extends MinionModule {
                 .setIcon(Material.ARMOR_STAND)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Small: " + MinionUtils.SECONDARY_COLOR + this.settings.get(SMALL))))
                 .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "Toggle the size of the minion"))
-                .setItemFlags()
                 .setClickAction(event -> {
                     this.settings.set(SMALL, !this.settings.get(SMALL));
                     this.updateEntity();
@@ -246,7 +245,6 @@ public class AppearanceModule extends MinionModule {
                 .setIcon(Material.PLAYER_HEAD)
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Texture"))
                 .setLore(HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "The texture of the minion"))
-                .setItemFlags()
                 .setClickAction(event -> {
                     event.getWhoClicked().sendMessage(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Enter the new texture of the minion:"));
                     this.createConversation((Conversable) event.getWhoClicked(), newTexture -> {
@@ -291,7 +289,8 @@ public class AppearanceModule extends MinionModule {
     }
 
     public void registerNotificationTicket(NotificationTicket ticket) {
-        this.notificationTickets.addLast(ticket);
+        if (!this.notificationTickets.contains(ticket))
+            this.notificationTickets.addLast(ticket);
     }
 
     public void unregisterNotificationTicket(MinionModule minionModule, String id) {
@@ -374,24 +373,28 @@ public class AppearanceModule extends MinionModule {
     }
 
     private Entity createNotificationEntity() {
-        return EntitySpawnUtil.spawn(this.minion.getLocation().add(0.5, this.minion.getDisplayEntity().getHeight(), 0.5), AreaEffectCloud.class, entity -> {
-            //entity.setInvisible(true);
-            //entity.setVisible(false);
+        return EntitySpawnUtil.spawn(this.minion.getLocation().add(0.5, this.minion.getDisplayEntity().getHeight(), 0.5), ArmorStand.class, entity -> {
+            entity.setInvisible(true);
+            entity.setVisible(false);
             entity.setGravity(false);
-            //entity.setSmall(true);
+            entity.setSmall(true);
             entity.setSilent(true);
             entity.setInvulnerable(true);
-            entity.setRadius(0.5F);
-            entity.setParticle(VersionUtils.BLOCK, Material.AIR.createBlockData());
-            entity.clearCustomEffects();
-            //entity.setCanPickupItems(false);
+//            entity.setRadius(0.5F);
+//            entity.setParticle(VersionUtils.BLOCK, Material.AIR.createBlockData());
+//            entity.setDuration(Integer.MAX_VALUE);
+//            entity.clearCustomEffects();
+            entity.setCanPickupItems(false);
             entity.setPersistent(false);
             entity.getPersistentDataContainer().set(MinionUtils.MINION_NOTIFICATION_KEY, PersistentDataType.BYTE, (byte) 1);
+            AttributeInstance attribute = entity.getAttribute(Attribute.SCALE);
+            if (attribute != null)
+                attribute.setBaseValue(0.5);
 
-//            Arrays.stream(EquipmentSlot.values()).forEach(x -> {
-//                entity.addEquipmentLock(x, ArmorStand.LockType.ADDING_OR_CHANGING);
-//                entity.addEquipmentLock(x, ArmorStand.LockType.REMOVING_OR_CHANGING);
-//            });
+            Arrays.stream(EquipmentSlot.values()).forEach(x -> {
+                entity.addEquipmentLock(x, ArmorStand.LockType.ADDING_OR_CHANGING);
+                entity.addEquipmentLock(x, ArmorStand.LockType.REMOVING_OR_CHANGING);
+            });
         });
     }
 

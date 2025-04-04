@@ -1,7 +1,6 @@
 package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.CommentedConfigurationSection;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import org.bukkit.configuration.ConfigurationSection;
@@ -24,7 +23,6 @@ public class SettingAccessor<T> {
 
     /**
      * Writes the setting and its default value to the given config.
-     * Adds the default setting value to the end of the comments.
      *
      * @param config the config to write to
      */
@@ -33,13 +31,7 @@ public class SettingAccessor<T> {
             return;
 
         T defaultValue = this.defaultValueSupplier.get();
-        if (this.serializer.isStringKey() && defaultValue != null) {
-            String[] comments = Arrays.copyOf(this.comments, this.comments.length + 1);
-            comments[comments.length - 1] = "Default: " + this.serializer.asStringKey(defaultValue);
-            this.serializer.write(config, this.key, defaultValue, comments);
-        } else {
-            this.serializer.write(config, this.key, defaultValue, this.comments);
-        }
+        this.serializer.writeWithDefault(config, this.key, defaultValue, this.comments);
     }
 
     /**
@@ -116,7 +108,7 @@ public class SettingAccessor<T> {
     public String toString() {
         return "SettingAccessor{" +
                 "key='" + this.key + '\'' +
-                ", defaultValueSupplier=" + this.defaultValueSupplier.get() +
+                ", defaultValue=" + this.defaultValueSupplier.get() +
                 '}';
     }
 

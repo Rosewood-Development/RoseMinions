@@ -179,7 +179,6 @@ public class CommunicationModule extends MinionModule {
 
         mainScreen.addButtonAt(0, GuiFactory.createButton(new ItemStack(Material.BIRCH_SIGN))
                 .setName(HexUtils.colorify("<g:#F7971E:#FFD200>Start Conversation"))
-                .setItemFlags()
                 .setClickAction(inventoryClickEvent -> {
                     this.resetConversation();
                     this.lastConversation = 0;

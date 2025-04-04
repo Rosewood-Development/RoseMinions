@@ -137,7 +137,6 @@ public class ExperiencePickupModule extends MinionModule {
                 .setIcon(Material.EXPERIENCE_BOTTLE)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Stored XP: " + MinionUtils.SECONDARY_COLOR + this.settings.get(STORED_XP))))
                 .setLore("", HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "This is all the experience"), HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "the minion has collected."))
-                .setItemFlags()
         );
 
         // Deposit XP
@@ -146,7 +145,6 @@ public class ExperiencePickupModule extends MinionModule {
                 .setIcon(GuiFactory.createIcon(Material.PLAYER_HEAD, itemMeta -> SkullUtils.setSkullTexture((SkullMeta) itemMeta, depositTexture)))
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Deposit XP"))
                 .setLore("", HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "Deposit your experience"), HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "into the minion."))
-                .setItemFlags()
                 .setClickAction(event -> {
                     int amountDeposited = this.depositExp((Player) event.getWhoClicked());
                     event.getWhoClicked().sendMessage(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Deposited " + MinionUtils.SECONDARY_COLOR + amountDeposited + MinionUtils.PRIMARY_COLOR + " XP into the minion"));
@@ -160,7 +158,6 @@ public class ExperiencePickupModule extends MinionModule {
                 .setIcon(GuiFactory.createIcon(Material.PLAYER_HEAD, itemMeta -> SkullUtils.setSkullTexture((SkullMeta) itemMeta, withdrawTexture)))
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Withdraw XP"))
                 .setLore("", HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "Withdraw your experience"), HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "from the minion."))
-                .setItemFlags()
                 .setClickAction(event -> {
                     int amountWithdrawn = this.withdrawExp((Player) event.getWhoClicked());
                     event.getWhoClicked().sendMessage(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Withdrew " + MinionUtils.SECONDARY_COLOR + amountWithdrawn + MinionUtils.PRIMARY_COLOR + " XP from the minion"));

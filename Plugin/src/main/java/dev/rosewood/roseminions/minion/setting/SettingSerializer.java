@@ -1,5 +1,6 @@
 package dev.rosewood.roseminions.minion.setting;
 
+import dev.rosewood.rosegarden.utils.RoseGardenUtils;
 import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import java.util.function.Function;
 import org.bukkit.configuration.ConfigurationSection;
@@ -34,7 +35,7 @@ public abstract class SettingSerializer<T> {
     }
 
     /**
-     * Writes an object to a ConfigurationSection, including comments if it is a CommentedConfigurationSection
+     * Writes an object to a ConfigurationSection, including comments
      *
      * @param config The ConfigurationSection to write to
      * @param key The key path to save in the config
@@ -42,6 +43,47 @@ public abstract class SettingSerializer<T> {
      * @param comments Comments to write above the setting in the config
      */
     public abstract void write(ConfigurationSection config, String key, T value, String... comments);
+
+    /**
+     * Writes an object to a ConfigurationSection, including comments with a default value if this serializer has
+     * a string key value.
+     *
+     * @param config The ConfigurationSection to write to
+     * @param key The key path to save in the config
+     * @param value The value to save
+     * @param comments Comments to write above the setting in the config
+     */
+    public void writeWithDefault(ConfigurationSection config, String key, T value, String... comments) {
+        String[] newComments = appendDefaultComment(this, value, comments);
+        this.write(config, key, value, newComments);
+    }
+
+    protected String getDefaultCommentText(T value) {
+        if (!this.isStringKey())
+            return null;
+
+        String defaultValueStringKey = this.asStringKey(value);
+        String defaultComment = "Default: ";
+        if (RoseGardenUtils.containsConfigSpecialCharacters(defaultValueStringKey)) {
+            defaultComment += '\'' + defaultValueStringKey + '\'';
+        } else if (defaultValueStringKey.isEmpty()) {
+            defaultComment += "''";
+        } else {
+            defaultComment += defaultValueStringKey;
+        }
+        return defaultComment;
+    }
+
+    static <T> String[] appendDefaultComment(SettingSerializer<T> serializer, T value, String[] comments) {
+        String defaultComment = serializer.getDefaultCommentText(value);
+        if (defaultComment == null)
+            return comments;
+
+        String[] newComments = new String[comments.length + 1];
+        System.arraycopy(comments, 0, newComments, 0, comments.length);
+        newComments[comments.length] = defaultComment;
+        return newComments;
+    }
 
     /**
      * Writes an object to a PersistentDataContainer

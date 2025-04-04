@@ -71,7 +71,6 @@ public class UpgradeModule extends MinionModule {
 //        mainScreen.addButtonAt(fullSize.getNumSlots() - 5, GuiFactory.createButton()
 //                .setIcon(Material.HOPPER)
 //                .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Filter Type (" + MinionUtils.SECONDARY_COLOR + this.settings.get(FILTER_TYPE).name() + MinionUtils.PRIMARY_COLOR + ")")))
-//                .setItemFlags()
 //                .setClickAction(event -> {
 //                    FilterModule.FilterType filterType = this.settings.get(FILTER_TYPE);
 //                    filterType = filterType == FilterModule.FilterType.BLACKLIST ? FilterModule.FilterType.WHITELIST : FilterModule.FilterType.BLACKLIST;
@@ -83,7 +82,6 @@ public class UpgradeModule extends MinionModule {
 //        mainScreen.addButtonAt(fullSize.getNumSlots() - 3, GuiFactory.createButton()
 //                .setIcon(Material.NETHER_STAR)
 //                .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Match NBT (" + MinionUtils.SECONDARY_COLOR + this.settings.get(MATCH_NBT) + MinionUtils.PRIMARY_COLOR + ")")))
-//                .setItemFlags()
 //                .setClickAction(event -> {
 //                    return ClickAction.CLOSE;
 //                }));

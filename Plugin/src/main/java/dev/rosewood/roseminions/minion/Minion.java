@@ -246,7 +246,6 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         mainScreen.addButtonAt(10, GuiFactory.createButton(appearanceItem)
                 .setName(HexUtils.colorify(appearanceGuiProperties.iconName()))
                 .setLore(appearanceLore)
-                .setItemFlags()
                 .setClickAction(event -> {
                     this.appearanceModule.openGui((Player) event.getWhoClicked());
                     return ClickAction.NOTHING;
@@ -266,7 +265,6 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
                     .setIcon(moduleGuiProperties.icon())
                     .setName(HexUtils.colorify(moduleGuiProperties.iconName()))
                     .setLore(lore)
-                    .setItemFlags()
                     .setClickAction(event -> {
                         module.openGui((Player) event.getWhoClicked());
                         return ClickAction.NOTHING;
@@ -284,7 +282,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         Map<String, ModuleConfig> moduleData = rank.moduleData();
         ModuleConfig appearanceModuleConfig = moduleData.get(DefaultMinionModules.APPEARANCE);
         if (appearanceModuleConfig != null) {
-            this.appearanceModule.getSettings().setDefaults(appearanceModuleConfig.settings());
+            this.appearanceModule.getSettings().loadConfig(appearanceModuleConfig.settings());
             this.appearanceModule.updateEntity();
         }
 
@@ -300,7 +298,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
             MinionModule module = minionModuleManager.createModule(name, this);
             if (module == null)
                 throw new IllegalStateException("Failed to create module " + name + "!");
-            module.getSettings().setDefaults(data.settings());
+            module.getSettings().loadConfig(data.settings());
             Map<Class<? extends MinionModule>, MinionModule> submodules = this.loadModules(data.subModules(), minionModuleManager);
             module.setSubModules(submodules);
             modules.put(module.getClass(), module);

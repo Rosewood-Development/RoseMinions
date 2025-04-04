@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataContainer;
 
@@ -63,7 +64,7 @@ public class SettingContainer implements PDCSerializable {
         Map<String, SettingValue<?>> changedSettings = this.settingValues.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().isModified())
-                .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
+                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
 
         for (Map.Entry<String, SettingValue<?>> entry : changedSettings.entrySet())
             entry.getValue().writePDC(container);
@@ -79,7 +80,7 @@ public class SettingContainer implements PDCSerializable {
         }
     }
 
-    public void setDefaults(SettingContainerConfig settings) {
+    public void loadConfig(SettingContainerConfig settings) {
         Map<String, Supplier<?>> defaultSettingSuppliers = settings.getSettingDefaultValueSuppliers();
         for (SettingAccessor<?> setting : this.settings.values()) {
             String key = setting.getKey();

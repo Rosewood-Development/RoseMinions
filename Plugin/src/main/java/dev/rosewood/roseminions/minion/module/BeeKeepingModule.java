@@ -134,7 +134,6 @@ public class BeeKeepingModule extends MinionModule {
         mainScreen.addButtonAt(10, GuiFactory.createButton()
                 .setIcon(Material.BEE_NEST)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Total Hives: " + MinionUtils.SECONDARY_COLOR + this.hives.size())))
-                .setItemFlags()
         );
 
         this.addBackButton(mainScreen);

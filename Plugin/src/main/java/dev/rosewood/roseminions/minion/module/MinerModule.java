@@ -157,7 +157,6 @@
 //        DIRECTION_TEXTURES.forEach((face, texture) -> mainScreen.addButtonAt(SLOT_MAPPING[slotIndex.getAndIncrement()], GuiFactory.createButton()
 //                .setIcon(GuiFactory.createIcon(Material.PLAYER_HEAD, itemMeta -> SkullUtils.setSkullTexture((SkullMeta) itemMeta, texture)))
 //                .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Mine " + face.name().toLowerCase().replace("_", " ")))
-//                .setItemFlags()
 //                .setClickAction(event -> {
 //                    this.settings.set(MINING_DIRECTION, face);
 //                    return ClickAction.CLOSE;

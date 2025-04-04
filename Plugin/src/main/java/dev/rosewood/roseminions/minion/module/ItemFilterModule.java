@@ -92,7 +92,6 @@ public class ItemFilterModule extends MinionModule {
         mainScreen.addButtonAt(fullSize.getNumSlots() - 6, GuiFactory.createButton()
                         .setIcon(Material.PAPER)
                         .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Previous Page (" + MinionUtils.SECONDARY_COLOR + GuiUtil.PREVIOUS_PAGE_NUMBER_PLACEHOLDER + "/" + GuiUtil.MAX_PAGE_NUMBER_PLACEHOLDER + MinionUtils.PRIMARY_COLOR + ")"))
-                        .setItemFlags()
                         .setClickAction(event -> event.isShiftClick() ? ClickAction.PAGE_FIRST : ClickAction.PAGE_BACKWARDS)
                         .setFlags(GuiButtonFlag.HIDE_IF_FIRST_PAGE)
                         .setHiddenReplacement(borderItem))
@@ -107,7 +106,6 @@ public class ItemFilterModule extends MinionModule {
         mainScreen.addButtonAt(fullSize.getNumSlots() - 5, GuiFactory.createButton()
                 .setIcon(Material.HOPPER)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Filter Type (" + MinionUtils.SECONDARY_COLOR + this.settings.get(FILTER_TYPE).name() + MinionUtils.PRIMARY_COLOR + ")")))
-                .setItemFlags()
                 .setClickAction(event -> {
                     FilterType filterType = this.settings.get(FILTER_TYPE);
                     filterType = filterType == FilterType.BLACKLIST ? FilterType.WHITELIST : FilterType.BLACKLIST;
@@ -119,7 +117,6 @@ public class ItemFilterModule extends MinionModule {
         mainScreen.addButtonAt(fullSize.getNumSlots() - 3, GuiFactory.createButton()
                 .setIcon(Material.NETHER_STAR)
                 .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Match NBT (" + MinionUtils.SECONDARY_COLOR + this.settings.get(MATCH_NBT) + MinionUtils.PRIMARY_COLOR + ")")))
-                .setItemFlags()
                 .setClickAction(event -> {
                     boolean matchNbt = this.settings.get(MATCH_NBT);
                     this.settings.set(MATCH_NBT, !matchNbt);

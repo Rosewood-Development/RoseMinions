@@ -118,6 +118,11 @@ public class RecordSettingSerializerBuilder<O> {
                 field1.settingSerializer().write(section, field1.key(), field1.getter().apply(value), field1.comments());
             }
             @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+            }
+            @Override
             public O read(ConfigurationSection config, String key) {
                 ConfigurationSection section = config.getConfigurationSection(key);
                 T1 value1 = field1.settingSerializer().read(section, field1.key());
@@ -159,6 +164,12 @@ public class RecordSettingSerializerBuilder<O> {
                 ConfigurationSection section = getOrCreateSection(config, key, comments);
                 field1.settingSerializer().write(section, field1.key(), field1.getter().apply(value), field1.comments());
                 field2.settingSerializer().write(section, field2.key(), field2.getter().apply(value), field2.comments());
+            }
+            @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+                field2.settingSerializer().writeWithDefault(section, field2.key(), field2.getter().apply(value), field2.comments());
             }
             @Override
             public O read(ConfigurationSection config, String key) {
@@ -207,6 +218,13 @@ public class RecordSettingSerializerBuilder<O> {
                 field1.settingSerializer().write(section, field1.key(), field1.getter().apply(value), field1.comments());
                 field2.settingSerializer().write(section, field2.key(), field2.getter().apply(value), field2.comments());
                 field3.settingSerializer().write(section, field3.key(), field3.getter().apply(value), field3.comments());
+            }
+            @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+                field2.settingSerializer().writeWithDefault(section, field2.key(), field2.getter().apply(value), field2.comments());
+                field3.settingSerializer().writeWithDefault(section, field3.key(), field3.getter().apply(value), field3.comments());
             }
             @Override
             public O read(ConfigurationSection config, String key) {
@@ -260,6 +278,14 @@ public class RecordSettingSerializerBuilder<O> {
                 field2.settingSerializer().write(section, field2.key(), field2.getter().apply(value), field2.comments());
                 field3.settingSerializer().write(section, field3.key(), field3.getter().apply(value), field3.comments());
                 field4.settingSerializer().write(section, field4.key(), field4.getter().apply(value), field4.comments());
+            }
+            @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+                field2.settingSerializer().writeWithDefault(section, field2.key(), field2.getter().apply(value), field2.comments());
+                field3.settingSerializer().writeWithDefault(section, field3.key(), field3.getter().apply(value), field3.comments());
+                field4.settingSerializer().writeWithDefault(section, field4.key(), field4.getter().apply(value), field4.comments());
             }
             @Override
             public O read(ConfigurationSection config, String key) {
@@ -318,6 +344,15 @@ public class RecordSettingSerializerBuilder<O> {
                 field3.settingSerializer().write(section, field3.key(), field3.getter().apply(value), field3.comments());
                 field4.settingSerializer().write(section, field4.key(), field4.getter().apply(value), field4.comments());
                 field5.settingSerializer().write(section, field5.key(), field5.getter().apply(value), field5.comments());
+            }
+            @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+                field2.settingSerializer().writeWithDefault(section, field2.key(), field2.getter().apply(value), field2.comments());
+                field3.settingSerializer().writeWithDefault(section, field3.key(), field3.getter().apply(value), field3.comments());
+                field4.settingSerializer().writeWithDefault(section, field4.key(), field4.getter().apply(value), field4.comments());
+                field5.settingSerializer().writeWithDefault(section, field5.key(), field5.getter().apply(value), field5.comments());
             }
             @Override
             public O read(ConfigurationSection config, String key) {
@@ -381,6 +416,16 @@ public class RecordSettingSerializerBuilder<O> {
                 field4.settingSerializer().write(section, field4.key(), field4.getter().apply(value), field4.comments());
                 field5.settingSerializer().write(section, field5.key(), field5.getter().apply(value), field5.comments());
                 field6.settingSerializer().write(section, field6.key(), field6.getter().apply(value), field6.comments());
+            }
+            @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+                field2.settingSerializer().writeWithDefault(section, field2.key(), field2.getter().apply(value), field2.comments());
+                field3.settingSerializer().writeWithDefault(section, field3.key(), field3.getter().apply(value), field3.comments());
+                field4.settingSerializer().writeWithDefault(section, field4.key(), field4.getter().apply(value), field4.comments());
+                field5.settingSerializer().writeWithDefault(section, field5.key(), field5.getter().apply(value), field5.comments());
+                field6.settingSerializer().writeWithDefault(section, field6.key(), field6.getter().apply(value), field6.comments());
             }
             @Override
             public O read(ConfigurationSection config, String key) {
@@ -449,6 +494,17 @@ public class RecordSettingSerializerBuilder<O> {
                 field5.settingSerializer().write(section, field5.key(), field5.getter().apply(value), field5.comments());
                 field6.settingSerializer().write(section, field6.key(), field6.getter().apply(value), field6.comments());
                 field7.settingSerializer().write(section, field7.key(), field7.getter().apply(value), field7.comments());
+            }
+            @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+                field2.settingSerializer().writeWithDefault(section, field2.key(), field2.getter().apply(value), field2.comments());
+                field3.settingSerializer().writeWithDefault(section, field3.key(), field3.getter().apply(value), field3.comments());
+                field4.settingSerializer().writeWithDefault(section, field4.key(), field4.getter().apply(value), field4.comments());
+                field5.settingSerializer().writeWithDefault(section, field5.key(), field5.getter().apply(value), field5.comments());
+                field6.settingSerializer().writeWithDefault(section, field6.key(), field6.getter().apply(value), field6.comments());
+                field7.settingSerializer().writeWithDefault(section, field7.key(), field7.getter().apply(value), field7.comments());
             }
             @Override
             public O read(ConfigurationSection config, String key) {
@@ -522,6 +578,18 @@ public class RecordSettingSerializerBuilder<O> {
                 field6.settingSerializer().write(section, field6.key(), field6.getter().apply(value), field6.comments());
                 field7.settingSerializer().write(section, field7.key(), field7.getter().apply(value), field7.comments());
                 field8.settingSerializer().write(section, field8.key(), field8.getter().apply(value), field8.comments());
+            }
+            @Override
+            public void writeWithDefault(ConfigurationSection config, String key, O value, String... comments) {
+                ConfigurationSection section = getOrCreateSection(config, key, comments);
+                field1.settingSerializer().writeWithDefault(section, field1.key(), field1.getter().apply(value), field1.comments());
+                field2.settingSerializer().writeWithDefault(section, field2.key(), field2.getter().apply(value), field2.comments());
+                field3.settingSerializer().writeWithDefault(section, field3.key(), field3.getter().apply(value), field3.comments());
+                field4.settingSerializer().writeWithDefault(section, field4.key(), field4.getter().apply(value), field4.comments());
+                field5.settingSerializer().writeWithDefault(section, field5.key(), field5.getter().apply(value), field5.comments());
+                field6.settingSerializer().writeWithDefault(section, field6.key(), field6.getter().apply(value), field6.comments());
+                field7.settingSerializer().writeWithDefault(section, field7.key(), field7.getter().apply(value), field7.comments());
+                field8.settingSerializer().writeWithDefault(section, field8.key(), field8.getter().apply(value), field8.comments());
             }
             @Override
             public O read(ConfigurationSection config, String key) {

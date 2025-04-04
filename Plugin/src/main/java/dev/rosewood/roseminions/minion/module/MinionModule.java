@@ -178,7 +178,6 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
                 .setIcon(Material.ARROW)
                 .setName(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Back"))
                 .setLore(List.of("", HexUtils.colorify(MinionUtils.SECONDARY_COLOR + "Click to go back")))
-                .setItemFlags()
                 .setClickAction(event -> {
                     this.minion.openGui((Player) event.getWhoClicked());
                     return ClickAction.NOTHING;

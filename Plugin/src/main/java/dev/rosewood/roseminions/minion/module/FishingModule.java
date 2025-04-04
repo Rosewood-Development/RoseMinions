@@ -77,11 +77,13 @@ public class FishingModule extends MinionModule {
 
     private Block targetBlock;
     private long reelInTime;
+    private boolean noWater;
 
     public FishingModule(Minion minion) {
         super(minion, DefaultMinionModules.FISHING, Settings.INSTANCE);
 
         this.lastEventTime = System.currentTimeMillis();
+        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-water", ChatColor.RED + "No nearby water!", 1000, () -> this.noWater, StringPlaceholders::empty));
     }
 
     @Override
@@ -137,6 +139,7 @@ public class FishingModule extends MinionModule {
                     this.targetBlock = block;
                     this.reelInTime = ThreadLocalRandom.current().nextLong(this.settings.get(REEL_IN_MIN_DELAY), this.settings.get(REEL_IN_MAX_DELAY));
                     this.settings.get(BOBBER_SOUND).play(block.getLocation());
+                    this.noWater = false;
                     return;
                 }
                 block = block.getRelative(BlockFace.DOWN);
@@ -146,8 +149,8 @@ public class FishingModule extends MinionModule {
         // Unable to find water, play some particles around the minion to indicate this
         Location particleCenter = this.minion.getCenterLocation();
         this.minion.getWorld().spawnParticle(VersionUtils.SMOKE, particleCenter, 15, 0.25, 0.25, 0.25, 0.1);
-        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-water", ChatColor.RED + "No nearby water!", 1000, () -> this.targetBlock == null, StringPlaceholders::empty));
         this.resetWaitTime();
+        this.noWater = true;
     }
 
     @Override
