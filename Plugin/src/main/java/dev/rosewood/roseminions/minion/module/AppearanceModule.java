@@ -7,12 +7,12 @@ import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiIcon;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.nms.NMSAdapter;
@@ -53,15 +53,15 @@ import static dev.rosewood.roseminions.minion.module.AppearanceModule.Settings.*
 
 public class AppearanceModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Boolean> SMALL = define(SettingAccessor.defineBoolean("small", true, "If the skull should be small"));
-        public static final SettingAccessor<String> TEXTURE = define(SettingAccessor.defineString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
-        public static final SettingAccessor<String> DISPLAY_NAME = define(SettingAccessor.defineString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
-        public static final SettingAccessor<Double> ROTATION_SPEED = define(SettingAccessor.defineDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
+        public static final RoseSetting<Boolean> SMALL = define(RoseSetting.forBoolean("small", true, "If the skull should be small"));
+        public static final RoseSetting<String> TEXTURE = define(RoseSetting.forString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
+        public static final RoseSetting<String> DISPLAY_NAME = define(RoseSetting.forString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
+        public static final RoseSetting<Double> ROTATION_SPEED = define(RoseSetting.forDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -72,13 +72,13 @@ public class AppearanceModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

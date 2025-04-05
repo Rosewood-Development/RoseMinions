@@ -1,6 +1,6 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.roseminions.minion.config.SettingContainerConfig;
+import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.roseminions.model.PDCSerializable;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.HashMap;
@@ -14,43 +14,43 @@ import org.bukkit.persistence.PersistentDataContainer;
 
 public class SettingContainer implements PDCSerializable {
 
-    private final Map<String, SettingAccessor<?>> settings;
+    private final Map<String, RoseSetting<?>> settings;
     private final Map<String, SettingValue<?>> settingValues;
 
-    public SettingContainer(List<SettingAccessor<?>> settings) {
+    public SettingContainer(List<RoseSetting<?>> settings) {
         this.settings = new LinkedHashMap<>();
-        for (SettingAccessor<?> setting : settings)
+        for (RoseSetting<?> setting : settings)
             this.settings.put(setting.getKey(), setting);
         this.settingValues = new HashMap<>();
         this.loadDefaults();
     }
 
-    public void loadDefaults() {
-        for (SettingAccessor<?> accessor : this.settings.values())
-            this.loadDefault(accessor);
+    private void loadDefaults() {
+        for (RoseSetting<?> setting : this.settings.values())
+            this.loadDefault(setting);
     }
 
-    public <T> void loadDefault(SettingAccessor<T> accessor) {
-        SettingValue<T> settingValue = new SettingValue<>(accessor, accessor.getDefaultValue());
-        this.settingValues.put(accessor.getKey(), settingValue);
+    private <T> void loadDefault(RoseSetting<T> setting) {
+        SettingValue<T> settingValue = new SettingValue<>(setting, setting.getDefaultValue());
+        this.settingValues.put(setting.getKey(), settingValue);
     }
 
-    public <T> T get(SettingAccessor<T> accessor) {
-        SettingValue<T> settingValue = this.getItem(accessor);
+    public <T> T get(RoseSetting<T> setting) {
+        SettingValue<T> settingValue = this.getItem(setting);
         if (settingValue == null)
-            throw new IllegalArgumentException("SettingsContainer does not have " + accessor.getKey() + " defined");
+            throw new IllegalArgumentException("SettingsContainer does not have " + setting.getKey() + " defined");
         return settingValue.getValue();
     }
 
-    public <T> void set(SettingAccessor<T> accessor, T value) {
-        SettingValue<T> settingValue = this.getItem(accessor);
+    public <T> void set(RoseSetting<T> setting, T value) {
+        SettingValue<T> settingValue = this.getItem(setting);
         if (settingValue == null)
-            throw new IllegalArgumentException("SettingsContainer for does not have " + accessor.getKey() + " defined");
+            throw new IllegalArgumentException("SettingsContainer for does not have " + setting.getKey() + " defined");
         settingValue.setValue(value);
     }
 
-    private <T> SettingValue<T> getItem(SettingAccessor<T> accessor) {
-        return this.getItem(accessor.getKey());
+    private <T> SettingValue<T> getItem(RoseSetting<T> setting) {
+        return this.getItem(setting.getKey());
     }
 
     @SuppressWarnings("unchecked")
@@ -64,7 +64,7 @@ public class SettingContainer implements PDCSerializable {
         Map<String, SettingValue<?>> changedSettings = this.settingValues.entrySet()
                 .stream()
                 .filter(entry -> entry.getValue().isModified())
-                .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         for (Map.Entry<String, SettingValue<?>> entry : changedSettings.entrySet())
             entry.getValue().writePDC(container);
@@ -82,7 +82,7 @@ public class SettingContainer implements PDCSerializable {
 
     public void loadConfig(SettingContainerConfig settings) {
         Map<String, Supplier<?>> defaultSettingSuppliers = settings.getSettingDefaultValueSuppliers();
-        for (SettingAccessor<?> setting : this.settings.values()) {
+        for (RoseSetting<?> setting : this.settings.values()) {
             String key = setting.getKey();
             Supplier<?> supplier = defaultSettingSuppliers.get(key);
             if (supplier == null)

@@ -1,7 +1,7 @@
-package dev.rosewood.roseminions.minion.config;
+package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingContainer;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,21 +14,21 @@ import org.bukkit.configuration.ConfigurationSection;
  */
 public class SettingContainerConfig {
 
-    private final Map<String, SettingAccessor<?>> settings;
+    private final Map<String, RoseSetting<?>> settings;
     private final Map<String, Supplier<?>> settingDefaultValueSuppliers;
 
-    public SettingContainerConfig(ModuleSettings settings, ConfigurationSection section) {
+    public SettingContainerConfig(SettingHolder settings, ConfigurationSection section) {
         this.settings = new LinkedHashMap<>();
-        for (SettingAccessor<?> setting : settings.get())
+        for (RoseSetting<?> setting : settings.get())
             this.settings.put(setting.getKey(), setting);
         this.settingDefaultValueSuppliers = new HashMap<>();
 
         if (section == null)
             return;
 
-        for (SettingAccessor<?> accessor : this.settings.values())
-            if (!accessor.isHidden() && section.contains(accessor.getKey()))
-                this.settingDefaultValueSuppliers.put(accessor.getKey(), () -> accessor.read(section));
+        for (RoseSetting<?> setting : this.settings.values())
+            if (!setting.isHidden() && section.contains(setting.getKey()))
+                this.settingDefaultValueSuppliers.put(setting.getKey(), () -> setting.read(section));
     }
 
     private SettingContainerConfig(SettingContainerConfig other) {
@@ -41,9 +41,9 @@ public class SettingContainerConfig {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(SettingAccessor<T> accessor) {
-        Supplier<T> supplier = (Supplier<T>) this.settingDefaultValueSuppliers.get(accessor.getKey());
-        return supplier != null ? supplier.get() : accessor.getDefaultValue();
+    public <T> T get(RoseSetting<T> setting) {
+        Supplier<T> supplier = (Supplier<T>) this.settingDefaultValueSuppliers.get(setting.getKey());
+        return supplier != null ? supplier.get() : setting.getDefaultValue();
     }
 
     public void merge(SettingContainerConfig other) {
@@ -56,7 +56,10 @@ public class SettingContainerConfig {
 
     @Override
     public String toString() {
-        return "SettingsContainerConfig{" + this.settingDefaultValueSuppliers.entrySet().stream().map(x -> x.getKey() + "->" + x.getValue().get()).collect(Collectors.joining(",")) + "}";
+        return "SettingsContainerConfig{" +
+                this.settingDefaultValueSuppliers.entrySet().stream()
+                        .map(x -> x.getKey() + "->" + x.getValue().get())
+                        .collect(Collectors.joining(",")) + "}";
     }
 
 }

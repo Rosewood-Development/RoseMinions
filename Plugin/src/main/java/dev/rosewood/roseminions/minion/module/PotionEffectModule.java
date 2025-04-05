@@ -3,10 +3,11 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.SettingSerializers;
+import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -19,14 +20,14 @@ import static dev.rosewood.roseminions.minion.module.PotionEffectModule.Settings
 
 public class PotionEffectModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 10, "The radius in blocks to search for entities"));
-        public static final SettingAccessor<List<PotionEffect>> EFFECTS = define(SettingAccessor.defineSetting("effects", SettingSerializers.ofList(SettingSerializers.POTION_EFFECT), () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects to apply to nearby entities"));
-        public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 10, "The radius in blocks to search for entities"));
+        public static final RoseSetting<List<PotionEffect>> EFFECTS = define(RoseSetting.of("effects", SettingSerializers.ofList(MinionSettingSerializers.POTION_EFFECT), () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects to apply to nearby entities"));
+        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.forLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -37,13 +38,13 @@ public class PotionEffectModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

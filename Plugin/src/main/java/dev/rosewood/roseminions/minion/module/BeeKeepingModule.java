@@ -3,10 +3,10 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -22,15 +22,15 @@ import static dev.rosewood.roseminions.minion.module.BeeKeepingModule.Settings.*
 
 public class BeeKeepingModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 3, "The radius for the beekeeper to search for bee hives"));
-        public static final SettingAccessor<Long> FARMING_FREQUENCY = define(SettingAccessor.defineLong("farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)"));
-        public static final SettingAccessor<Long> FARM_UPDATE_FREQUENCY = define(SettingAccessor.defineLong("farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
-        public static final SettingAccessor<Boolean> USE_BOTTLES = define(SettingAccessor.defineBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 3, "The radius for the beekeeper to search for bee hives"));
+        public static final RoseSetting<Long> FARMING_FREQUENCY = define(RoseSetting.forLong("farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)"));
+        public static final RoseSetting<Long> FARM_UPDATE_FREQUENCY = define(RoseSetting.forLong("farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
+        public static final RoseSetting<Boolean> USE_BOTTLES = define(RoseSetting.forBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -41,13 +41,13 @@ public class BeeKeepingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

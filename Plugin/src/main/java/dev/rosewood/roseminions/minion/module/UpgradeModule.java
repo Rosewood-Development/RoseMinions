@@ -4,9 +4,9 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.framework.util.GuiUtil;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -19,10 +19,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class UpgradeModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -33,13 +33,13 @@ public class UpgradeModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

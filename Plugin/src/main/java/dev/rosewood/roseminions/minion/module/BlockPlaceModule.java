@@ -3,10 +3,10 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -21,15 +21,15 @@ import static dev.rosewood.roseminions.minion.module.BlockPlaceModule.Settings.*
 
 public class BlockPlaceModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 2, "The radius in which to break blocks"));
-        public static final SettingAccessor<Long> PLACE_FREQUENCY = define(SettingAccessor.defineLong("place-frequency", 1000L, "How often blocks will be placed (in milliseconds)"));
-        public static final SettingAccessor<Material> TARGET_BLOCK = define(SettingAccessor.defineEnum("target-block", Material.COBBLESTONE, "The block to place"));
-        public static final SettingAccessor<Boolean> REQUIRE_UNOBSTRUCTED = define(SettingAccessor.defineBoolean("require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block."));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 2, "The radius in which to break blocks"));
+        public static final RoseSetting<Long> PLACE_FREQUENCY = define(RoseSetting.forLong("place-frequency", 1000L, "How often blocks will be placed (in milliseconds)"));
+        public static final RoseSetting<Material> TARGET_BLOCK = define(RoseSetting.forEnum("target-block", Material.COBBLESTONE, "The block to place"));
+        public static final RoseSetting<Boolean> REQUIRE_UNOBSTRUCTED = define(RoseSetting.forBoolean("require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block."));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -40,13 +40,13 @@ public class BlockPlaceModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

@@ -1,9 +1,10 @@
 package dev.rosewood.roseminions.model;
 
-import dev.rosewood.roseminions.minion.setting.Field;
-import dev.rosewood.roseminions.minion.setting.RecordSettingSerializerBuilder;
-import dev.rosewood.roseminions.minion.setting.SettingSerializer;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
+import dev.rosewood.rosegarden.config.RecordSettingSerializerBuilder;
+import dev.rosewood.rosegarden.config.SettingField;
+import dev.rosewood.rosegarden.config.SettingSerializer;
+import dev.rosewood.rosegarden.config.SettingSerializers;
+import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -16,11 +17,11 @@ public record PlayableSound(boolean enabled,
                             float pitch) {
 
     public static final SettingSerializer<PlayableSound> SERIALIZER = RecordSettingSerializerBuilder.create(PlayableSound.class, instance -> instance.group(
-            new Field<>("enabled", SettingSerializers.BOOLEAN, PlayableSound::enabled, "Whether or not the sound should play"),
-            new Field<>("sound", SettingSerializers.SOUND, PlayableSound::sound, "The sound key to play"),
-            new Field<>("category", SettingSerializers.SOUND_CATEGORY, PlayableSound::category, "The audio category of the sound to play in"),
-            new Field<>("volume", SettingSerializers.FLOAT, PlayableSound::volume, "The volume to play at, 1.0 for normal volume"),
-            new Field<>("pitch", SettingSerializers.FLOAT, PlayableSound::pitch, "The pitch to play at, 1.0 for normal pitch")
+            new SettingField<>("enabled", SettingSerializers.BOOLEAN, PlayableSound::enabled, "Whether or not the sound should play"),
+            new SettingField<>("sound", MinionSettingSerializers.SOUND, PlayableSound::sound, "The sound key to play"),
+            new SettingField<>("category", MinionSettingSerializers.SOUND_CATEGORY, PlayableSound::category, "The audio category of the sound to play in"),
+            new SettingField<>("volume", SettingSerializers.FLOAT, PlayableSound::volume, "The volume to play at, 1.0 for normal volume"),
+            new SettingField<>("pitch", SettingSerializers.FLOAT, PlayableSound::pitch, "The pitch to play at, 1.0 for normal pitch")
     ).apply(instance, PlayableSound::new));
 
     public void play(Location location) {

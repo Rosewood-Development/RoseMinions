@@ -5,14 +5,14 @@ import dev.rosewood.guiframework.framework.util.GuiUtil;
 import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.SettingSerializers;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.SkullUtils;
@@ -39,15 +39,15 @@ import static dev.rosewood.roseminions.minion.module.ExperiencePickupModule.Sett
 
 public class ExperiencePickupModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> STORED_XP = define(SettingAccessor.defineHiddenSetting("stored-xp", SettingSerializers.INTEGER, () -> 0));
-        public static final SettingAccessor<Integer> MAX_EXP = define(SettingAccessor.defineInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
-        public static final SettingAccessor<Long> UPDATE_FREQUENCY = define(SettingAccessor.defineLong("update-frequency", 3000L, "How often the minion will update (in milliseconds)"));
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 5, "The radius for the minion to search for items"));
+        public static final RoseSetting<Integer> STORED_XP = define(RoseSetting.forHidden("stored-xp", SettingSerializers.INTEGER, () -> 0));
+        public static final RoseSetting<Integer> MAX_EXP = define(RoseSetting.forInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
+        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.forLong("update-frequency", 3000L, "How often the minion will update (in milliseconds)"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 5, "The radius for the minion to search for items"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -58,13 +58,13 @@ public class ExperiencePickupModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

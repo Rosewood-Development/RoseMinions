@@ -6,11 +6,12 @@ import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiButtonFlag;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.SettingSerializers;
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -25,15 +26,15 @@ import static dev.rosewood.roseminions.minion.module.ItemFilterModule.Settings.*
 
 public class ItemFilterModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> INVENTORY_SIZE = define(SettingAccessor.defineInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
-        public static final SettingAccessor<ItemStack[]> FILTER_ITEMS = define(SettingAccessor.defineHiddenSetting("filter-items", SettingSerializers.ofArray(SettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
-        public static final SettingAccessor<FilterType> FILTER_TYPE = define(SettingAccessor.defineEnum("filter-type", FilterType.BLACKLIST, "The type of filter"));
-        public static final SettingAccessor<Boolean> MATCH_NBT = define(SettingAccessor.defineBoolean("match-nbt", false, "Whether or not to match NBT data"));
+        public static final RoseSetting<Integer> INVENTORY_SIZE = define(RoseSetting.forInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
+        public static final RoseSetting<ItemStack[]> FILTER_ITEMS = define(RoseSetting.forHidden("filter-items", SettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
+        public static final RoseSetting<FilterType> FILTER_TYPE = define(RoseSetting.forEnum("filter-type", FilterType.BLACKLIST, "The type of filter"));
+        public static final RoseSetting<Boolean> MATCH_NBT = define(RoseSetting.forBoolean("match-nbt", false, "Whether or not to match NBT data"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -44,13 +45,13 @@ public class ItemFilterModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

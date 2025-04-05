@@ -1,5 +1,6 @@
 package dev.rosewood.roseminions.minion.config;
 
+import dev.rosewood.roseminions.minion.setting.SettingContainerConfig;
 import java.util.HashMap;
 import java.util.Map;
 

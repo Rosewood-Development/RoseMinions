@@ -3,11 +3,12 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.SettingSerializers;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
+import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
 import dev.rosewood.roseminions.model.PlayableSound;
@@ -36,21 +37,21 @@ import static dev.rosewood.roseminions.minion.module.FishingModule.Settings.*;
 
 public class FishingModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 5, "How far away the minion will search for water"));
-        public static final SettingAccessor<Long> FISH_MIN_DELAY = define(SettingAccessor.defineLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
-        public static final SettingAccessor<Long> FISH_MAX_DELAY = define(SettingAccessor.defineLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
-        public static final SettingAccessor<Long> FISH_LURE_DELAY_OFFSET = define(SettingAccessor.defineLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
-        public static final SettingAccessor<Long> REEL_IN_MIN_DELAY = define(SettingAccessor.defineLong("reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)"));
-        public static final SettingAccessor<Long> REEL_IN_MAX_DELAY = define(SettingAccessor.defineLong("reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)"));
-        public static final SettingAccessor<Integer> WATER_LOOKUP_ATTEMPTS = define(SettingAccessor.defineInteger("water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up"));
-        public static final SettingAccessor<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS = define(SettingAccessor.defineSetting("tool-enchantments", SettingSerializers.ofMap(SettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod"));
-        public static final SettingAccessor<PlayableSound> REEL_IN_SOUND = define(SettingAccessor.defineSetting("reel-in-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish"));
-        public static final SettingAccessor<PlayableSound> BOBBER_SOUND = define(SettingAccessor.defineSetting("fish-caught-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 5, "How far away the minion will search for water"));
+        public static final RoseSetting<Long> FISH_MIN_DELAY = define(RoseSetting.forLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
+        public static final RoseSetting<Long> FISH_MAX_DELAY = define(RoseSetting.forLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
+        public static final RoseSetting<Long> FISH_LURE_DELAY_OFFSET = define(RoseSetting.forLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
+        public static final RoseSetting<Long> REEL_IN_MIN_DELAY = define(RoseSetting.forLong("reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final RoseSetting<Long> REEL_IN_MAX_DELAY = define(RoseSetting.forLong("reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final RoseSetting<Integer> WATER_LOOKUP_ATTEMPTS = define(RoseSetting.forInteger("water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up"));
+        public static final RoseSetting<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS = define(RoseSetting.of("tool-enchantments", SettingSerializers.ofMap(MinionSettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod"));
+        public static final RoseSetting<PlayableSound> REEL_IN_SOUND = define(RoseSetting.of("reel-in-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish"));
+        public static final RoseSetting<PlayableSound> BOBBER_SOUND = define(RoseSetting.of("fish-caught-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -61,13 +62,13 @@ public class FishingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

@@ -2,10 +2,6 @@ package dev.rosewood.roseminions.datatype;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.roseminions.RoseMinions;
-import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
-import dev.rosewood.roseminions.model.ChunkLocation;
-import dev.rosewood.roseminions.nms.NMSAdapter;
-import java.awt.Color;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -18,48 +14,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
 import org.bukkit.World;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionEffectType;
 
 public final class CustomPersistentDataType {
-
-    public static final PersistentDataType<PersistentDataContainer, ChunkLocation> CHUNK_LOCATION = new PersistentDataType<>() {
-
-        private static final NamespacedKey KEY_WORLD = KeyHelper.get("world");
-        private static final NamespacedKey KEY_X = KeyHelper.get("x");
-        private static final NamespacedKey KEY_Z = KeyHelper.get("z");
-
-        public Class<PersistentDataContainer> getPrimitiveType() { return PersistentDataContainer.class; }
-        public Class<ChunkLocation> getComplexType() { return ChunkLocation.class; }
-
-        @Override
-        public PersistentDataContainer toPrimitive(ChunkLocation chunkLocation, PersistentDataAdapterContext context) {
-            PersistentDataContainer container = context.newPersistentDataContainer();
-            container.set(KEY_WORLD, PersistentDataType.STRING, chunkLocation.world());
-            container.set(KEY_X, PersistentDataType.INTEGER, chunkLocation.x());
-            container.set(KEY_Z, PersistentDataType.INTEGER, chunkLocation.z());
-            return container;
-        }
-
-        @Override
-        public ChunkLocation fromPrimitive(PersistentDataContainer container, PersistentDataAdapterContext context) {
-            String world = container.get(KEY_WORLD, PersistentDataType.STRING);
-            Integer x = container.get(KEY_X, PersistentDataType.INTEGER);
-            Integer z = container.get(KEY_Z, PersistentDataType.INTEGER);
-            if (world == null || x == null || z == null)
-                throw new IllegalArgumentException("Invalid ChunkLocation");
-            return new ChunkLocation(world, x, z);
-        }
-
-    };
 
     public static final PersistentDataType<PersistentDataContainer, Location> LOCATION = new PersistentDataType<>() {
 
@@ -103,57 +65,6 @@ public final class CustomPersistentDataType {
 
     };
 
-    public static final PersistentDataType<Integer, Color> JAVA_COLOR = new PersistentDataType<>() {
-
-        public Class<Integer> getPrimitiveType() { return Integer.class; }
-        public Class<Color> getComplexType() { return Color.class; }
-
-        @Override
-        public Integer toPrimitive(Color color, PersistentDataAdapterContext context) {
-            return color.getRGB();
-        }
-
-        @Override
-        public Color fromPrimitive(Integer primitive, PersistentDataAdapterContext context) {
-            return new Color(primitive);
-        }
-
-    };
-
-    public static final PersistentDataType<String, BlockData> BLOCK_DATA = new PersistentDataType<>() {
-
-        public Class<String> getPrimitiveType() { return String.class; }
-        public Class<BlockData> getComplexType() { return BlockData.class; }
-
-        @Override
-        public String toPrimitive(BlockData blockData, PersistentDataAdapterContext context) {
-            return blockData.getAsString();
-        }
-
-        @Override
-        public BlockData fromPrimitive(String primitive, PersistentDataAdapterContext context) {
-            return Bukkit.getServer().createBlockData(primitive);
-        }
-
-    };
-
-    public static final PersistentDataType<byte[], ItemStack> ITEMSTACK = new PersistentDataType<>() {
-
-        public Class<byte[]> getPrimitiveType() { return byte[].class; }
-        public Class<ItemStack> getComplexType() { return ItemStack.class; }
-
-        @Override
-        public byte[] toPrimitive(ItemStack itemStack, PersistentDataAdapterContext context) {
-            return NMSAdapter.getHandler().serializeItemStack(itemStack);
-        }
-
-        @Override
-        public ItemStack fromPrimitive(byte[] primitive, PersistentDataAdapterContext context) {
-            return NMSAdapter.getHandler().deserializeItemStack(primitive);
-        }
-
-    };
-
     public static final PersistentDataType<byte[], UUID> UUID = new PersistentDataType<>() {
 
         public Class<byte[]> getPrimitiveType() { return byte[].class; }
@@ -188,6 +99,26 @@ public final class CustomPersistentDataType {
         @Override
         public Character fromPrimitive(String primitive, PersistentDataAdapterContext context) {
             return primitive.charAt(0);
+        }
+
+    };
+
+    // Rather than throwing exceptions, print the stack trace and fail gracefully by still returning values, albeit empty ones
+    public static final PersistentDataType<PersistentDataContainer, ConfigurationSection> SECTION = new PersistentDataType<>() {
+
+        public Class<PersistentDataContainer> getPrimitiveType() { return PersistentDataContainer.class; }
+        public Class<ConfigurationSection> getComplexType() { return ConfigurationSection.class; }
+
+        @Override
+        public PersistentDataContainer toPrimitive(ConfigurationSection container, PersistentDataAdapterContext context) {
+            new RuntimeException("Unsupported usage of PersistentDataType#toPrimitive for ConfigurationSection").printStackTrace();
+            return context.newPersistentDataContainer();
+        }
+
+        @Override
+        public ConfigurationSection fromPrimitive(PersistentDataContainer primitive, PersistentDataAdapterContext context) {
+            new RuntimeException("Unsupported usage of PersistentDataType#fromPrimitive for ConfigurationSection").printStackTrace();
+            return new YamlConfiguration();
         }
 
     };
@@ -358,13 +289,6 @@ public final class CustomPersistentDataType {
 
         };
     }
-
-    public static final PersistentDataType<PersistentDataContainer, List<String>> STRING_LIST = forList(PersistentDataType.STRING);
-    public static final PersistentDataType<String, Sound> SOUND = forKeyed(Sound.class, Registry.SOUNDS::get);
-    public static final PersistentDataType<String, SoundCategory> SOUND_CATEGORY = forEnum(SoundCategory.class);
-    public static final PersistentDataType<String, WorkerAreaController.RadiusType> RADIUS_TYPE = forEnum(WorkerAreaController.RadiusType.class);
-    public static final PersistentDataType<String, WorkerAreaController.ScanDirection> SCAN_DIRECTION = forEnum(WorkerAreaController.ScanDirection.class);
-    public static final PersistentDataType<String, PotionEffectType> POTION_EFFECT_TYPE = forKeyed(PotionEffectType.class, Registry.EFFECT::get);
 
     public static class KeyHelper {
 

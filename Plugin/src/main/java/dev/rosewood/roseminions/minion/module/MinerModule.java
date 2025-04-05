@@ -5,11 +5,11 @@
 //import dev.rosewood.guiframework.gui.ClickAction;
 //import dev.rosewood.guiframework.gui.GuiSize;
 //import dev.rosewood.guiframework.gui.screen.GuiScreen;
+//import dev.rosewood.rosegarden.config.RoseSetting;
+//import dev.rosewood.rosegarden.config.SettingHolder;
+//import dev.rosewood.rosegarden.config.SettingSerializers;
 //import dev.rosewood.rosegarden.utils.HexUtils;
 //import dev.rosewood.roseminions.minion.Minion;
-//import dev.rosewood.roseminions.minion.config.ModuleSettings;
-//import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-//import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 //import dev.rosewood.roseminions.model.ModuleGuiProperties;
 //import dev.rosewood.roseminions.util.MinionUtils;
 //import dev.rosewood.roseminions.util.SkullUtils;
@@ -29,18 +29,18 @@
 //
 //public class MinerModule extends MinionModule {
 //
-//    public static class Settings implements ModuleSettings {
+//    public static class Settings implements SettingHolder {
 //
 //        public static final Settings INSTANCE = new Settings();
-//        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+//        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 //
-//        public static final SettingAccessor<BlockFace> MINING_DIRECTION = define(SettingAccessor.defineEnum("mining-direction", BlockFace.SELF, "The direction in which to mine blocks"));
-//        public static final SettingAccessor<Integer> MINING_DISTANCE = define(SettingAccessor.defineHiddenSetting(SettingSerializers.INTEGER, "mining-distance", () -> 1));
-//        public static final SettingAccessor<Integer> MIN_MINING_DISTANCE = define(SettingAccessor.defineInteger("min-mining-distance", 1, "The minimum distance in which to mine blocks"));
-//        public static final SettingAccessor<Integer> MAX_MINING_DISTANCE = define(SettingAccessor.defineInteger("max-mining-distance", 5, "The maximum distance in which to mine blocks"));
-//        public static final SettingAccessor<Integer> MINING_HEIGHT = define(SettingAccessor.defineInteger("mining-height", 1, "The height in which to mine blocks up and down from the minion", "1 = only mine the same y level as the minion)"));
-//        public static final SettingAccessor<Long> MINING_FREQUENCY = define(SettingAccessor.defineLong("mining-frequency", 1000L, "How often blocks will be mined (in milliseconds)"));
-//        public static final SettingAccessor<List<Material>> BLACKLISTED_BLOCKS = define(SettingAccessor.defineSetting(SettingSerializers.ofList(SettingSerializers.MATERIAL), "blacklisted-blocks", () -> List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine"));
+//        public static final RoseSetting<BlockFace> MINING_DIRECTION = define(RoseSetting.forEnum("mining-direction", BlockFace.SELF, "The direction in which to mine blocks"));
+//        public static final RoseSetting<Integer> MINING_DISTANCE = define(RoseSetting.forHidden("mining-distance", SettingSerializers.INTEGER, () -> 1));
+//        public static final RoseSetting<Integer> MIN_MINING_DISTANCE = define(RoseSetting.forInteger("min-mining-distance", 1, "The minimum distance in which to mine blocks"));
+//        public static final RoseSetting<Integer> MAX_MINING_DISTANCE = define(RoseSetting.forInteger("max-mining-distance", 5, "The maximum distance in which to mine blocks"));
+//        public static final RoseSetting<Integer> MINING_HEIGHT = define(RoseSetting.forInteger("mining-height", 1, "The height in which to mine blocks up and down from the minion", "1 = only mine the same y level as the minion)"));
+//        public static final RoseSetting<Long> MINING_FREQUENCY = define(RoseSetting.forLong("mining-frequency", 1000L, "How often blocks will be mined (in milliseconds)"));
+//        public static final RoseSetting<List<Material>> BLACKLISTED_BLOCKS = define(RoseSetting.of("blacklisted-blocks", SettingSerializers.ofList(SettingSerializers.MATERIAL), () -> List.of(Material.BEDROCK, Material.BARRIER, Material.STRUCTURE_VOID), "The blocks that the minion will not mine"));
 //
 //        static {
 //            define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -51,13 +51,13 @@
 //        private Settings() { }
 //
 //        @Override
-//        public List<SettingAccessor<?>> get() {
-//            return Collections.unmodifiableList(ACCESSORS);
+//        public List<RoseSetting<?>> get() {
+//            return Collections.unmodifiableList(SETTINGS);
 //        }
 //
-//        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-//            ACCESSORS.add(accessor);
-//            return accessor;
+//        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+//            SETTINGS.add(setting);
+//            return setting;
 //        }
 //
 //    }
@@ -133,7 +133,7 @@
 //        GuiSize fullSize = GuiSize.fromRows(rows + 1);
 //
 //        GuiScreen mainScreen = GuiFactory.createScreen(this.guiContainer, fullSize)
-//                .setTitle(this.settings.get(MinionModule.GUI_TITLE));
+//                .setTitle(this.settings.get(MinionModule.GUI_PROPERTIES).title());
 //
 //        // Fill inventory border with glass for now
 //        ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);

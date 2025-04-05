@@ -4,13 +4,13 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.SettingSerializers;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
-import dev.rosewood.roseminions.minion.setting.SettingSerializers;
 import dev.rosewood.roseminions.model.MinionConversation;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.nms.NMSAdapter;
@@ -29,14 +29,14 @@ import static dev.rosewood.roseminions.minion.module.CommunicationModule.Setting
 
 public class CommunicationModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Long> CONVERSATION_FREQUENCY = define(SettingAccessor.defineLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
-        public static final SettingAccessor<Long> MESSAGE_FREQUENCY = define(SettingAccessor.defineLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
-        public static final SettingAccessor<List<MinionConversation>> CONVERSATIONS = define(SettingAccessor.defineSetting("conversations", SettingSerializers.ofList(MinionConversation.SERIALIZER), () -> List.of(
+        public static final RoseSetting<Long> CONVERSATION_FREQUENCY = define(RoseSetting.forLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
+        public static final RoseSetting<Long> MESSAGE_FREQUENCY = define(RoseSetting.forLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
+        public static final RoseSetting<List<MinionConversation>> CONVERSATIONS = define(RoseSetting.of("conversations", SettingSerializers.ofList(MinionConversation.SERIALIZER), () -> List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
         ), "The conversations that the minion can have"));
 
@@ -49,13 +49,13 @@ public class CommunicationModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

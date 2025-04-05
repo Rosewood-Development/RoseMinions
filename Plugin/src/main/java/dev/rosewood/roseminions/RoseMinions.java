@@ -1,10 +1,10 @@
 package dev.rosewood.roseminions;
 
 import dev.rosewood.rosegarden.RosePlugin;
-import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
-import dev.rosewood.roseminions.config.SettingKey;
+import dev.rosewood.roseminions.config.Settings;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
 import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
@@ -65,8 +65,20 @@ public class RoseMinions extends RosePlugin {
     }
 
     @Override
-    protected List<RoseSetting<?>> getRoseConfigSettings() {
-        return SettingKey.getKeys();
+    protected SettingHolder getRoseConfigSettingHolder() {
+        return Settings.INSTANCE;
+    }
+
+    @Override
+    protected String[] getRoseConfigHeader() {
+        return new String[]{
+                "__________                       _____   __        __",
+                "\\______   \\ ____  ______ ____   /     \\ |__| ____ |__| ____   ____   ______",
+                " |       _//  _ \\/  ___// __ \\ /  \\ /  \\|  |/    \\|  |/  _ \\ /    \\ /  ___/",
+                " |    |   (  <_> )___ \\\\  ___//    Y    \\  |   |  \\  (  <_> )   |  \\\\___ \\",
+                " |____|_  /\\____/____  >\\___  >____|__  /__|___|  /__|\\____/|___|  /____  >",
+                "        \\/           \\/     \\/        \\/        \\/               \\/     \\/"
+        };
     }
 
     @Override

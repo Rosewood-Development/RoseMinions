@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.util;
 
+import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import java.util.Random;
 import org.bukkit.NamespacedKey;
@@ -64,11 +64,11 @@ public final class MinionUtils {
      * Snaps the inventory size to the nearest valid value (9, 18, 27, or intervals of 27)
      *
      * @param settings The settings container
-     * @param sizeAccessor The setting accessor for the inventory size
-     * @param inventoryAccessor The setting accessor for the inventory
+     * @param sizeSetting The setting for the inventory size
+     * @param inventorySetting The setting for the inventory
      */
-    public static void snapInventorySize(SettingContainer settings, SettingAccessor<Integer> sizeAccessor, SettingAccessor<ItemStack[]> inventoryAccessor) {
-        int originalSize = settings.get(sizeAccessor);
+    public static void snapInventorySize(SettingContainer settings, RoseSetting<Integer> sizeSetting, RoseSetting<ItemStack[]> inventorySetting) {
+        int originalSize = settings.get(sizeSetting);
         int inventorySize = originalSize;
         if (inventorySize % 9 != 0) {
             if (inventorySize < 9) {
@@ -84,15 +84,15 @@ public final class MinionUtils {
             inventorySize = (int) Math.ceil(inventorySize / 27.0) * 27;
 
         if (inventorySize != originalSize)
-            settings.set(sizeAccessor, inventorySize);
+            settings.set(sizeSetting, inventorySize);
 
         // Adjust the inventory size if needed
-        int size = settings.get(sizeAccessor);
-        ItemStack[] contents = settings.get(inventoryAccessor);
+        int size = settings.get(sizeSetting);
+        ItemStack[] contents = settings.get(inventorySetting);
         if (contents.length != size) {
             ItemStack[] newContents = new ItemStack[size];
             System.arraycopy(contents, 0, newContents, 0, Math.min(contents.length, size));
-            settings.set(inventoryAccessor, newContents);
+            settings.set(inventorySetting, newContents);
         }
     }
 

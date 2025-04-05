@@ -3,6 +3,7 @@ package dev.rosewood.roseminions.minion.config;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
+import dev.rosewood.roseminions.minion.setting.SettingContainerConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

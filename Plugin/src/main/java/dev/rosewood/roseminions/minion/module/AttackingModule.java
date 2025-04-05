@@ -3,9 +3,9 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -28,16 +28,16 @@ public class AttackingModule extends MinionModule {
 
     private static final Set<EntityType> BLACKLIST_TYPES = EnumSet.of(EntityType.PLAYER, EntityType.ARMOR_STAND);
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 3, "How far away the minion will search for targets"));
-        public static final SettingAccessor<Long> ATTACK_FREQUENCY = define(SettingAccessor.defineLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
-        public static final SettingAccessor<Boolean> ONLY_ATTACK_HOSTILES = define(SettingAccessor.defineBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
-        public static final SettingAccessor<Integer> DAMAGE_AMOUNT = define(SettingAccessor.defineInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
-        public static final SettingAccessor<Integer> NUMBER_OF_TARGETS = define(SettingAccessor.defineInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 3, "How far away the minion will search for targets"));
+        public static final RoseSetting<Long> ATTACK_FREQUENCY = define(RoseSetting.forLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
+        public static final RoseSetting<Boolean> ONLY_ATTACK_HOSTILES = define(RoseSetting.forBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
+        public static final RoseSetting<Integer> DAMAGE_AMOUNT = define(RoseSetting.forInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
+        public static final RoseSetting<Integer> NUMBER_OF_TARGETS = define(RoseSetting.forInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -48,13 +48,13 @@ public class AttackingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }

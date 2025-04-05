@@ -1,21 +1,22 @@
 package dev.rosewood.roseminions.minion.setting;
 
+import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.roseminions.model.PDCSerializable;
 import org.bukkit.persistence.PersistentDataContainer;
 
-public class SettingValue<T> implements PDCSerializable {
+class SettingValue<T> implements PDCSerializable {
 
-    private final SettingAccessor<T> accessor;
+    private final RoseSetting<T> setting;
     private T value;
     private boolean modified;
 
-    public SettingValue(SettingAccessor<T> accessor, T value) {
-        this.accessor = accessor;
+    public SettingValue(RoseSetting<T> setting, T value) {
+        this.setting = setting;
         this.value = value;
     }
 
-    public SettingAccessor<T> getAccessor() {
-        return this.accessor;
+    public RoseSetting<T> getSetting() {
+        return this.setting;
     }
 
     public T getValue() {
@@ -28,17 +29,17 @@ public class SettingValue<T> implements PDCSerializable {
     }
 
     public boolean isModified() {
-        return this.modified || this.accessor.isHidden();
+        return this.modified || this.setting.isHidden();
     }
 
     @Override
     public void writePDC(PersistentDataContainer container) {
-        this.accessor.getSerializer().write(container, this.accessor.getKey(), this.value);
+        this.setting.getSerializer().write(container, this.setting.getKey(), this.value);
     }
 
     @Override
     public void readPDC(PersistentDataContainer container) {
-        this.value = this.accessor.getSerializer().read(container, this.accessor.getKey());
+        this.value = this.setting.getSerializer().read(container, this.setting.getKey());
         this.modified = true;
     }
 

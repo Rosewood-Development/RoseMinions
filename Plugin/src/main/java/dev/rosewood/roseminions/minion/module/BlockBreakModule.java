@@ -3,9 +3,9 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.config.ModuleSettings;
-import dev.rosewood.roseminions.minion.setting.SettingAccessor;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -18,14 +18,14 @@ import static dev.rosewood.roseminions.minion.module.BlockBreakModule.Settings.*
 
 public class BlockBreakModule extends MinionModule {
 
-    public static class Settings implements ModuleSettings {
+    public static class Settings implements SettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<SettingAccessor<?>> ACCESSORS = new ArrayList<>();
+        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final SettingAccessor<Integer> RADIUS = define(SettingAccessor.defineInteger("radius", 2, "The radius in which to break blocks"));
-        public static final SettingAccessor<Long> BREAK_FREQUENCY = define(SettingAccessor.defineLong("break-frequency", 1000L, "How often blocks will be broken (in milliseconds)"));
-        public static final SettingAccessor<Material> TARGET_BLOCK = define(SettingAccessor.defineEnum("target-block", Material.COBBLESTONE, "The block to mine"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 2, "The radius in which to break blocks"));
+        public static final RoseSetting<Long> BREAK_FREQUENCY = define(RoseSetting.forLong("break-frequency", 1000L, "How often blocks will be broken (in milliseconds)"));
+        public static final RoseSetting<Material> TARGET_BLOCK = define(RoseSetting.forEnum("target-block", Material.COBBLESTONE, "The block to mine"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -36,13 +36,13 @@ public class BlockBreakModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<SettingAccessor<?>> get() {
-            return Collections.unmodifiableList(ACCESSORS);
+        public List<RoseSetting<?>> get() {
+            return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> SettingAccessor<T> define(SettingAccessor<T> accessor) {
-            ACCESSORS.add(accessor);
-            return accessor;
+        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+            SETTINGS.add(setting);
+            return setting;
         }
 
     }
