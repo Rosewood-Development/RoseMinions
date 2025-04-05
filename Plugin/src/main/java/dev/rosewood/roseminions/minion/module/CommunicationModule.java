@@ -91,9 +91,7 @@ public class CommunicationModule extends MinionModule {
     }
 
     @Override
-    public void update() {
-        super.update();
-
+    public void tick() {
         if (System.currentTimeMillis() - this.lastMessage <= this.settings.get(MESSAGE_FREQUENCY))
             return;
 

@@ -88,9 +88,7 @@ public class FishingModule extends MinionModule {
     }
 
     @Override
-    public void update() {
-        super.update();
-
+    public void tick() {
         if (this.targetBlock != null) {
             if (System.currentTimeMillis() - this.lastEventTime <= this.reelInTime) {
                 Location particleCenter = this.targetBlock.getLocation().add(0.5, 1.0, 0.5);

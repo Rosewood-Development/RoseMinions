@@ -79,9 +79,7 @@ public class ExperiencePickupModule extends MinionModule {
     private final NamespacedKey xpKey;
 
     @Override
-    public void update() {
-        super.update();
-
+    public void tick() {
         if (System.currentTimeMillis() - this.lastUpdate < this.settings.get(UPDATE_FREQUENCY))
             return;
 

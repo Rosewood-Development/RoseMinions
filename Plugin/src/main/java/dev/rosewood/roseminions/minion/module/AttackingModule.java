@@ -7,26 +7,25 @@ import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
+import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Damageable;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import static dev.rosewood.roseminions.minion.module.AttackingModule.Settings.*;
 
 public class AttackingModule extends MinionModule {
-
-    private static final Set<EntityType> BLACKLIST_TYPES = EnumSet.of(EntityType.PLAYER, EntityType.ARMOR_STAND);
 
     public static class Settings implements SettingHolder {
 
@@ -36,8 +35,10 @@ public class AttackingModule extends MinionModule {
         public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 3, "How far away the minion will search for targets"));
         public static final RoseSetting<Long> ATTACK_FREQUENCY = define(RoseSetting.forLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
         public static final RoseSetting<Boolean> ONLY_ATTACK_HOSTILES = define(RoseSetting.forBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
+        public static final RoseSetting<Boolean> ATTACK_NON_OWNING_PLAYERS = define(RoseSetting.forBoolean("attack-non-owning-players", false, "Whether the minion will attack players that are not its owner"));
         public static final RoseSetting<Integer> DAMAGE_AMOUNT = define(RoseSetting.forInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
         public static final RoseSetting<Integer> NUMBER_OF_TARGETS = define(RoseSetting.forInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
+        public static final RoseSetting<PlayableSound> ATTACK_SOUND = define(RoseSetting.of("attack-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when attacking"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -66,16 +67,18 @@ public class AttackingModule extends MinionModule {
     }
 
     @Override
-    public void update() {
-        super.update();
-
+    public void tick() {
         if (System.currentTimeMillis() - this.lastAttackTime <= this.settings.get(ATTACK_FREQUENCY))
             return;
 
         this.lastAttackTime = System.currentTimeMillis();
+        boolean attackPlayers = this.settings.get(ATTACK_NON_OWNING_PLAYERS);
 
         Predicate<Entity> filter = entity -> {
-            if (BLACKLIST_TYPES.contains(entity.getType()) || !(entity instanceof LivingEntity livingEntity))
+            if (!(entity instanceof LivingEntity livingEntity) || entity.getType() == EntityType.ARMOR_STAND || entity.isDead())
+                return false;
+
+            if (entity instanceof Player player && (!attackPlayers || player.getUniqueId().equals(this.minion.getOwner())))
                 return false;
 
             return !this.settings.get(ONLY_ATTACK_HOSTILES) || MinionUtils.isHostile(livingEntity);
@@ -83,12 +86,17 @@ public class AttackingModule extends MinionModule {
 
         // Attack the entity with the least amount of health in range
         int radius = this.settings.get(RADIUS);
-        this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, filter)
+        List<LivingEntity> entities = this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, filter)
                 .stream()
                 .map(x -> (LivingEntity) x)
                 .limit(this.settings.get(NUMBER_OF_TARGETS))
                 .sorted(Comparator.comparingDouble(Damageable::getHealth))
-                .forEach(this::attack);
+                .toList();
+        if (!entities.isEmpty()) {
+            Entity entity = this.minion.getDisplayEntity();
+            this.settings.get(ATTACK_SOUND).play(entity);
+        }
+        entities.forEach(this::attack);
     }
 
     @Override
@@ -106,7 +114,6 @@ public class AttackingModule extends MinionModule {
 
     private void attack(LivingEntity entity) {
         entity.getWorld().spawnParticle(Particle.SWEEP_ATTACK, entity.getLocation().add(0, entity.getHeight() / 2, 0), 1);
-        entity.getWorld().playSound(entity, Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1, 1);
         entity.damage(this.settings.get(DAMAGE_AMOUNT));
     }
 

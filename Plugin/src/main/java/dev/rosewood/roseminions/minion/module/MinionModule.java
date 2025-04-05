@@ -147,16 +147,26 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
         return this.parentModular.getModule(moduleClass);
     }
 
-    @Override
-    public void update() {
-        this.submodules.values().forEach(MinionModule::update);
-        this.activeControllers.forEach(ModuleController::update);
+    public void tick() {
+
+    }
+
+    public void tickAsync() {
+
     }
 
     @Override
-    public void updateAsync() {
+    public final void update() {
+        this.submodules.values().forEach(MinionModule::update);
+        this.activeControllers.forEach(ModuleController::update);
+        this.tick();
+    }
+
+    @Override
+    public final void updateAsync() {
         this.submodules.values().forEach(MinionModule::updateAsync);
         this.activeControllers.forEach(ModuleController::updateAsync);
+        this.tickAsync();
     }
 
     public final Minion getMinion() {

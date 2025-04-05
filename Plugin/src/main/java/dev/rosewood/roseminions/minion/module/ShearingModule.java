@@ -70,9 +70,7 @@ public class ShearingModule extends MinionModule {
     private long lastUpdate;
 
     @Override
-    public void update() {
-        super.update();
-
+    public void tick() {
         if (System.currentTimeMillis() - this.lastUpdate < this.settings.get(UPDATE_FREQUENCY))
             return;
 

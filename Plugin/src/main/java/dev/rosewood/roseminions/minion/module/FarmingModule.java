@@ -122,9 +122,7 @@ public class FarmingModule extends MinionModule {
     }
 
     @Override
-    public void update() {
-        super.update();
-
+    public void tick() {
         boolean readyToHarvest = System.currentTimeMillis() - this.lastHarvestTime > this.settings.get(FARM_FREQUENCY);
         for (int i = 0; i < this.settings.get(FARM_BLOCK_AMOUNT); i++) {
             this.tillSoil();

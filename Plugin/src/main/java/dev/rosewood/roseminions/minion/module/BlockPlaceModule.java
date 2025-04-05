@@ -67,9 +67,7 @@ public class BlockPlaceModule extends MinionModule {
     }
 
     @Override
-    public void update() {
-        super.update();
-
+    public void tick() {
         if (System.currentTimeMillis() - this.lastMineTime <= this.settings.get(PLACE_FREQUENCY))
             return;
 
