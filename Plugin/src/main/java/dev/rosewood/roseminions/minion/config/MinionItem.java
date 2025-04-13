@@ -11,9 +11,9 @@ public final class MinionItem implements SettingHolder {
     public static final MinionItem INSTANCE = new MinionItem();
     private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-    public static final RoseSetting<String> DISPLAY_NAME = define(RoseSetting.forString("display-name", "&cMissing display-name"));
-    public static final RoseSetting<List<String>> LORE = define(RoseSetting.forStringList("lore", List.of("", "<#c0ffee>Missing lore")));
-    public static final RoseSetting<String> TEXTURE = define(RoseSetting.forString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0="));
+    public static final RoseSetting<String> DISPLAY_NAME = define(RoseSetting.ofString("display-name", "&cMissing display-name"));
+    public static final RoseSetting<List<String>> LORE = define(RoseSetting.ofStringList("lore", List.of("", "<#c0ffee>Missing lore")));
+    public static final RoseSetting<String> TEXTURE = define(RoseSetting.ofString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0="));
 
     private MinionItem() { }
 

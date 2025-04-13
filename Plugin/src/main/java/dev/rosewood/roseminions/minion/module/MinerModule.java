@@ -34,7 +34,7 @@
 //        public static final Settings INSTANCE = new Settings();
 //        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 //
-//        public static final RoseSetting<BlockFace> MINING_DIRECTION = define(RoseSetting.forEnum("mining-direction", BlockFace.SELF, "The direction in which to mine blocks"));
+//        public static final RoseSetting<BlockFace> MINING_DIRECTION = define(RoseSetting.forEnum("mining-direction", BlockFace.class, BlockFace.SELF, "The direction in which to mine blocks"));
 //        public static final RoseSetting<Integer> MINING_DISTANCE = define(RoseSetting.forHidden("mining-distance", SettingSerializers.INTEGER, () -> 1));
 //        public static final RoseSetting<Integer> MIN_MINING_DISTANCE = define(RoseSetting.forInteger("min-mining-distance", 1, "The minimum distance in which to mine blocks"));
 //        public static final RoseSetting<Integer> MAX_MINING_DISTANCE = define(RoseSetting.forInteger("max-mining-distance", 5, "The maximum distance in which to mine blocks"));

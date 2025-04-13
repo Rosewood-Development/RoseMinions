@@ -26,10 +26,10 @@ public class BlockPlaceModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 2, "The radius in which to break blocks"));
-        public static final RoseSetting<Long> PLACE_FREQUENCY = define(RoseSetting.forLong("place-frequency", 1000L, "How often blocks will be placed (in milliseconds)"));
-        public static final RoseSetting<Material> TARGET_BLOCK = define(RoseSetting.forEnum("target-block", Material.COBBLESTONE, "The block to place"));
-        public static final RoseSetting<Boolean> REQUIRE_UNOBSTRUCTED = define(RoseSetting.forBoolean("require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block."));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 2, "The radius in which to break blocks"));
+        public static final RoseSetting<Long> PLACE_FREQUENCY = define(RoseSetting.ofLong("place-frequency", 1000L, "How often blocks will be placed (in milliseconds)"));
+        public static final RoseSetting<Material> TARGET_BLOCK = define(RoseSetting.ofEnum("target-block", Material.class, Material.COBBLESTONE, "The block to place"));
+        public static final RoseSetting<Boolean> REQUIRE_UNOBSTRUCTED = define(RoseSetting.ofBoolean("require-unobstructed", true, "Whether the minion should only place blocks if the area is unobstructed.", "An obstructed area is an area with a block that is not the target block."));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

@@ -23,9 +23,9 @@ public class BlockBreakModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 2, "The radius in which to break blocks"));
-        public static final RoseSetting<Long> BREAK_FREQUENCY = define(RoseSetting.forLong("break-frequency", 1000L, "How often blocks will be broken (in milliseconds)"));
-        public static final RoseSetting<Material> TARGET_BLOCK = define(RoseSetting.forEnum("target-block", Material.COBBLESTONE, "The block to mine"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 2, "The radius in which to break blocks"));
+        public static final RoseSetting<Long> BREAK_FREQUENCY = define(RoseSetting.ofLong("break-frequency", 1000L, "How often blocks will be broken (in milliseconds)"));
+        public static final RoseSetting<Material> TARGET_BLOCK = define(RoseSetting.ofEnum("target-block", Material.class, Material.COBBLESTONE, "The block to mine"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

@@ -31,10 +31,10 @@ public class ItemFilterModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> INVENTORY_SIZE = define(RoseSetting.forInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
-        public static final RoseSetting<ItemStack[]> FILTER_ITEMS = define(RoseSetting.forHidden("filter-items", SettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
-        public static final RoseSetting<FilterType> FILTER_TYPE = define(RoseSetting.forEnum("filter-type", FilterType.BLACKLIST, "The type of filter"));
-        public static final RoseSetting<Boolean> MATCH_NBT = define(RoseSetting.forBoolean("match-nbt", false, "Whether or not to match NBT data"));
+        public static final RoseSetting<Integer> INVENTORY_SIZE = define(RoseSetting.ofInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
+        public static final RoseSetting<ItemStack[]> FILTER_ITEMS = define(RoseSetting.ofHidden("filter-items", SettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
+        public static final RoseSetting<FilterType> FILTER_TYPE = define(RoseSetting.ofEnum("filter-type", FilterType.class, FilterType.BLACKLIST, "The type of filter"));
+        public static final RoseSetting<Boolean> MATCH_NBT = define(RoseSetting.ofBoolean("match-nbt", false, "Whether or not to match NBT data"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

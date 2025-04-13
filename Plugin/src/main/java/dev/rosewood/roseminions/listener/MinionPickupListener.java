@@ -28,7 +28,7 @@ public class MinionPickupListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onMinionBreak(PlayerArmorStandManipulateEvent event) {
+    public void onMinionPickup(PlayerArmorStandManipulateEvent event) {
         ArmorStand armorStand = event.getRightClicked();
         if (event.getSlot() != EquipmentSlot.HEAD)
             return;

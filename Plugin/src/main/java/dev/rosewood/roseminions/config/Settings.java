@@ -25,7 +25,7 @@ public final class Settings implements SettingHolder {
     }
 
     private static <T> RoseSetting<T> create(String key, SettingSerializer<T> serializer, T defaultValue, String... comments) {
-        RoseSetting<T> setting = RoseSetting.forBackedValue(key, RoseMinions.getInstance(), serializer, defaultValue, comments);
+        RoseSetting<T> setting = RoseSetting.ofBackedValue(key, RoseMinions.getInstance(), serializer, defaultValue, comments);
         SETTINGS.add(setting);
         return setting;
     }

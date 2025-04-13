@@ -7,7 +7,10 @@ import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
+import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.util.MinionUtils;
+import dev.rosewood.rosestacker.lib.rosegarden.compatibility.CompatibilityAdapter;
+import dev.rosewood.rosestacker.lib.rosegarden.compatibility.handler.ShearedHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,6 +20,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Sheep;
@@ -30,9 +35,10 @@ public class ShearingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 3, "The radius in which to shear sheep"));
-        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.forLong("update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)"));
-        public static final RoseSetting<Integer> MAX_SHEEP = define(RoseSetting.forInteger("max-sheep", 5, "The maximum number of sheep that can be sheared at once"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 3, "The radius in which to shear sheep"));
+        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.ofLong("update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)"));
+        public static final RoseSetting<Integer> NUMBER_OF_TARGETS = define(RoseSetting.ofInteger("number-of-targets", 5, "The number of sheep that can be sheared at once"));
+        public static final RoseSetting<PlayableSound> SHEAR_SOUND = define(RoseSetting.of("shear-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_SHEEP_SHEAR, SoundCategory.NEUTRAL, 0.5F, 1.0F), "The sound to play when a sheep is sheared"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -56,17 +62,20 @@ public class ShearingModule extends MinionModule {
 
     public ShearingModule(Minion minion) {
         super(minion, DefaultMinionModules.SHEARING, Settings.INSTANCE);
+    }
 
-        // worst code conceived
-        cachedWoolColors = new HashMap<>();
+    private static final Map<DyeColor, Material> WOOL_COLORS;
+    private static final ShearedHandler SHEARED_HANDLER;
+    static {
+        WOOL_COLORS = new HashMap<>();
         Arrays.stream(DyeColor.values()).forEach(color -> {
             Material woolColor = Material.matchMaterial(color.name() + "_WOOL");
             if (woolColor != null)
-                cachedWoolColors.put(color, woolColor);
+                WOOL_COLORS.put(color, woolColor);
         });
+        SHEARED_HANDLER = CompatibilityAdapter.getShearedHandler();
     }
 
-    private static Map<DyeColor, Material> cachedWoolColors;
     private long lastUpdate;
 
     @Override
@@ -76,23 +85,20 @@ public class ShearingModule extends MinionModule {
 
         this.lastUpdate = System.currentTimeMillis();
 
-        Predicate<Entity> predicate = entity -> entity.getType() == EntityType.SHEEP && !((Sheep) entity).isSheared();
+        Predicate<Entity> predicate = entity -> entity.getType() == EntityType.SHEEP && !SHEARED_HANDLER.isSheared((Sheep) entity);
         int radius = this.settings.get(RADIUS);
-        this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, predicate)
+        List<Sheep> entities = this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, predicate)
                 .stream()
-                .limit(this.settings.get(MAX_SHEEP))
-                .forEach(entity -> {
-                    Sheep sheep = (Sheep) entity;
-                    sheep.setSheared(true);
-
-                    int random = (int) (Math.random() * 3) + 1;
-                    DyeColor color = sheep.getColor();
-                    if (color == null)
-                        color = DyeColor.WHITE;
-
-                    Material woolColor = cachedWoolColors.get(color);
-                    sheep.getWorld().dropItemNaturally(sheep.getLocation(), new ItemStack(woolColor, random));
-                });
+                .limit(this.settings.get(NUMBER_OF_TARGETS))
+                .map(Sheep.class::cast)
+                .toList();
+        if (entities.size() == 1) {
+            Sheep sheep = entities.getFirst();
+            this.settings.get(SHEAR_SOUND).play(sheep);
+        } else if (!entities.isEmpty()) {
+            this.settings.get(SHEAR_SOUND).play(this.minion.getDisplayEntity());
+        }
+        entities.forEach(this::shear);
     }
 
     @Override
@@ -108,5 +114,16 @@ public class ShearingModule extends MinionModule {
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
     }
 
+    private void shear(Sheep sheep) {
+        SHEARED_HANDLER.setSheared(sheep, true);
+
+        int random = MinionUtils.RANDOM.nextInt(1, 4);
+        DyeColor color = sheep.getColor();
+        if (color == null)
+            color = DyeColor.WHITE;
+
+        Material woolColor = WOOL_COLORS.get(color);
+        sheep.getWorld().dropItemNaturally(sheep.getLocation(), new ItemStack(woolColor, random));
+    }
 
 }

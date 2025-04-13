@@ -15,6 +15,7 @@ import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
+import dev.rosewood.roseminions.model.PlayableParticle;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -49,6 +51,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 import static dev.rosewood.roseminions.minion.module.AppearanceModule.Settings.*;
 
 public class AppearanceModule extends MinionModule {
@@ -58,10 +61,12 @@ public class AppearanceModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Boolean> SMALL = define(RoseSetting.forBoolean("small", true, "If the skull should be small"));
-        public static final RoseSetting<String> TEXTURE = define(RoseSetting.forString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
-        public static final RoseSetting<String> DISPLAY_NAME = define(RoseSetting.forString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
-        public static final RoseSetting<Double> ROTATION_SPEED = define(RoseSetting.forDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
+        public static final RoseSetting<Boolean> SMALL = define(RoseSetting.ofBoolean("small", true, "If the skull should be small"));
+        public static final RoseSetting<String> TEXTURE = define(RoseSetting.ofString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
+        public static final RoseSetting<String> DISPLAY_NAME = define(RoseSetting.ofString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
+        public static final RoseSetting<Double> ROTATION_SPEED = define(RoseSetting.ofDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
+        public static final RoseSetting<Double> AMBIENT_PARTICLE_CHANCE = define(RoseSetting.ofDouble("ambient-particle-chance", 0.1, "The chance of an ambient particle being spawned each tick"));
+        public static final RoseSetting<PlayableParticle> AMBIENT_PARTICLE = define(RoseSetting.of("ambient-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 1, new Vector(0.25, 0.25, 0.25), 0, false), "The ambient particle to display around the minion while it's working"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -155,8 +160,8 @@ public class AppearanceModule extends MinionModule {
             }
         }
 
-        if (MinionUtils.RANDOM.nextInt(10) == 0)
-            armorStand.getWorld().spawnParticle(Particle.END_ROD, this.getCenterVisibleLocation(), 1, 0.25, 0.25, 0.25, 0);
+        if (MinionUtils.checkChance(this.settings.get(AMBIENT_PARTICLE_CHANCE)))
+            this.settings.get(AMBIENT_PARTICLE).play(this.getCenterVisibleLocation());
     }
 
     @Override
@@ -392,6 +397,16 @@ public class AppearanceModule extends MinionModule {
                 entity.addEquipmentLock(x, ArmorStand.LockType.REMOVING_OR_CHANGING);
             });
         });
+    }
+
+    public static Color getRainbowColorState() {
+        java.awt.Color rgb = java.awt.Color.getHSBColor((thetaTicks % 360) / 360F, 1.0F, 1.0F);
+        return Color.fromRGB(rgb.getRed(), rgb.getGreen(), rgb.getBlue());
+    }
+
+    public static Color getOppositeRainbowColorState() {
+        java.awt.Color rgb = java.awt.Color.getHSBColor(((thetaTicks + 180) % 360) / 360F, 1.0F, 1.0F);
+        return Color.fromRGB(rgb.getRed(), rgb.getGreen(), rgb.getBlue());
     }
 
 }

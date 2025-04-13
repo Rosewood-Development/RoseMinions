@@ -14,6 +14,7 @@ import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
 import dev.rosewood.roseminions.model.BlockPosition;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
+import dev.rosewood.roseminions.model.PlayableParticle;
 import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.model.WorkerAreaProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -60,20 +61,24 @@ public class FarmingModule extends MinionModule {
         public static final RoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(RoseSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
                 () -> new WorkerAreaProperties(3, WorkerAreaController.RadiusType.SQUARE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 10000L),
                 "Settings that control the worker area for this module"));
-        public static final RoseSetting<Long> FARM_FREQUENCY = define(RoseSetting.forLong("farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)"));
-        public static final RoseSetting<Integer> FARM_BLOCK_AMOUNT = define(RoseSetting.forInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
-        public static final RoseSetting<Boolean> TILL_SOIL = define(RoseSetting.forBoolean("till-soil", true, "Whether the minion will till plantable soil"));
-        public static final RoseSetting<Boolean> HYDRATE_SOIL = define(RoseSetting.forBoolean("hydrate-soil", true, "Whether the minion will hydrate farmland"));
-        public static final RoseSetting<Boolean> HARVEST_CROPS = define(RoseSetting.forBoolean("harvest-crops", true, "Whether the minion will harvest crops"));
-        public static final RoseSetting<Boolean> PLANT_SEEDS = define(RoseSetting.forBoolean("plant-seeds", true, "Whether the minion will plant seeds"));
-        public static final RoseSetting<Boolean> BONEMEAL_CROPS = define(RoseSetting.forBoolean("bonemeal-crops", true, "Whether the minion will bonemeal crops"));
-        public static final RoseSetting<Boolean> ALLOW_MULTIPLE_VERTICAL_FARMLAND = define(RoseSetting.forBoolean("allow-multiple-vertical-farmland", false, "If true, multiple farmland can be detected per column scanned"));
-        public static final RoseSetting<Boolean> PRIORITIZE_FARMLAND_WITH_SEEDS = define(RoseSetting.forBoolean("prioritize-farmland-with-seeds", true, "If true, farmland with seeds will be prioritized for fertilizing and harvesting"));
+        public static final RoseSetting<Long> FARM_FREQUENCY = define(RoseSetting.ofLong("farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)"));
+        public static final RoseSetting<Integer> FARM_BLOCK_AMOUNT = define(RoseSetting.ofInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
+        public static final RoseSetting<Boolean> TILL_SOIL = define(RoseSetting.ofBoolean("till-soil", true, "Whether the minion will till plantable soil"));
+        public static final RoseSetting<Boolean> HYDRATE_SOIL = define(RoseSetting.ofBoolean("hydrate-soil", true, "Whether the minion will hydrate farmland"));
+        public static final RoseSetting<Boolean> HARVEST_CROPS = define(RoseSetting.ofBoolean("harvest-crops", true, "Whether the minion will harvest crops"));
+        public static final RoseSetting<Boolean> PLANT_SEEDS = define(RoseSetting.ofBoolean("plant-seeds", true, "Whether the minion will plant seeds"));
+        public static final RoseSetting<Boolean> FERTILIZE_CROPS = define(RoseSetting.ofBoolean("fertilize-crops", true, "Whether the minion will fertilize crops (auto-growth)"));
+        public static final RoseSetting<Boolean> ALLOW_MULTIPLE_VERTICAL_FARMLAND = define(RoseSetting.ofBoolean("allow-multiple-vertical-farmland", false, "If true, multiple farmland can be detected per column scanned"));
+        public static final RoseSetting<Boolean> PRIORITIZE_FARMLAND_WITH_SEEDS = define(RoseSetting.ofBoolean("prioritize-farmland-with-seeds", true, "If true, farmland with seeds will be prioritized for fertilizing and harvesting"));
         public static final RoseSetting<List<Material>> TILLABLE_BLOCKS = define(RoseSetting.of("tillable-blocks", SettingSerializers.MATERIAL_LIST, () -> List.of(Material.DIRT, Material.GRASS_BLOCK, Material.DIRT_PATH), "Blocks that the minion can till into soil"));
         public static final RoseSetting<List<Material>> DESTRUCTIBLE_BLOCKS = define(RoseSetting.of("destructible-blocks", SettingSerializers.MATERIAL_LIST, () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS), "Blocks that the minion can destroy to till below"));
         public static final RoseSetting<PlayableSound> TILL_SOUND = define(RoseSetting.of("till-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when tilling soil"));
         public static final RoseSetting<PlayableSound> PLANT_SOUND = define(RoseSetting.of("plant-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when planting crops"));
-//        public static final RoseSetting<Boolean> STONE_OPTIMIZATION = define(RoseSetting.forBoolean("stone-optimization", true, "If enabled, when the minion is scanning for blocks it will", "jump to the next scan coordinate to avoid scanning", "blocks that are not likely to be soil.", "This may prevent underground farms from scanning properly."));
+        public static final RoseSetting<PlayableParticle> TILL_PARTICLE = define(RoseSetting.of("till-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.BLOCK, new PlayableParticle.BlockDataData(Material.BARRIER), 10, new Vector(0.25, 0.25, 0.25), 0.1F, false)));
+        public static final RoseSetting<PlayableParticle> HYDRATE_PARTICLE = define(RoseSetting.of("hydrate-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.SPLASH, null, 10, new Vector(0.25, 0.25, 0.25), 0.1F, false)));
+        public static final RoseSetting<PlayableParticle> PLANT_PARTICLE = define(RoseSetting.of("plant-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 3, new Vector(0.05, 0.05, 0.05), 0.01F, false)));
+        public static final RoseSetting<PlayableParticle> FERTILIZE_PARTICLE = define(RoseSetting.of("hydrate-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.HAPPY_VILLAGER, null, 10, new Vector(0.25, 0.25, 0.25), 0.1F, false)));
+        //        public static final RoseSetting<Boolean> STONE_OPTIMIZATION = define(RoseSetting.forBoolean("stone-optimization", true, "If enabled, when the minion is scanning for blocks it will", "jump to the next scan coordinate to avoid scanning", "blocks that are not likely to be soil.", "This may prevent underground farms from scanning properly."));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -164,7 +169,7 @@ public class FarmingModule extends MinionModule {
 
             block.setType(Material.FARMLAND);
             this.settings.get(TILL_SOUND).play(block.getLocation());
-            block.getWorld().spawnParticle(VersionUtils.BLOCK, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1, blockData);
+            this.settings.get(TILL_PARTICLE).play(block.getLocation().add(0.5, 1, 0.5), blockData);
 
             // Hydrate the soil partially to prevent it from drying out immediately
             Farmland farmland = (Farmland) block.getBlockData();
@@ -195,7 +200,7 @@ public class FarmingModule extends MinionModule {
         // Hydrate the soil
         blockData.setMoisture(blockData.getMaximumMoisture());
         block.setBlockData(blockData);
-        block.getWorld().spawnParticle(VersionUtils.SPLASH, block.getLocation().add(0.5, 1, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
+        this.settings.get(HYDRATE_PARTICLE).play(block.getLocation().add(0.5, 1, 0.5));
     }
 
     private void harvestAndPlantSeeds() {
@@ -226,10 +231,10 @@ public class FarmingModule extends MinionModule {
                 desiredSeedType = FARMLAND_CROP_SEED_MATERIALS.get(cropBlock.getType());
                 cropBlock.breakNaturally();
                 didSomething = true;
-            } else if (this.settings.get(BONEMEAL_CROPS)) {
+            } else if (this.settings.get(FERTILIZE_CROPS)) {
                 ageable.setAge(ageable.getAge() + 1);
                 cropBlock.setBlockData(ageable);
-                cropBlock.getWorld().spawnParticle(VersionUtils.HAPPY_VILLAGER, cropBlock.getLocation().add(0.5, 0.5, 0.5), 10, 0.25, 0.25, 0.25, 0.1);
+                this.settings.get(FERTILIZE_PARTICLE).play(cropBlock);
                 return;
             }
         }
@@ -253,7 +258,7 @@ public class FarmingModule extends MinionModule {
                 Material seedType = FARMLAND_CROP_SEED_MATERIALS.inverse().get(desiredSeedType);
                 cropBlock.setType(seedType);
                 this.settings.get(PLANT_SOUND).play(cropBlock.getLocation());
-                cropBlock.getWorld().spawnParticle(Particle.END_ROD, cropBlock.getLocation().add(0.5, 0.5, 0.5), 3, 0.05, 0.05, 0.05, 0.01);
+                this.settings.get(PLANT_PARTICLE).play(cropBlock);
                 if (this.settings.get(PRIORITIZE_FARMLAND_WITH_SEEDS)) {
                     BlockPosition farmland = this.farmland.remove(this.farmlandIndex);
                     this.farmland.addFirst(farmland);

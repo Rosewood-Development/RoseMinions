@@ -7,6 +7,7 @@ import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
+import dev.rosewood.roseminions.model.PlayableParticle;
 import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import static dev.rosewood.roseminions.minion.module.AttackingModule.Settings.*;
 
 public class AttackingModule extends MinionModule {
@@ -32,13 +34,14 @@ public class AttackingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 3, "How far away the minion will search for targets"));
-        public static final RoseSetting<Long> ATTACK_FREQUENCY = define(RoseSetting.forLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
-        public static final RoseSetting<Boolean> ONLY_ATTACK_HOSTILES = define(RoseSetting.forBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
-        public static final RoseSetting<Boolean> ATTACK_NON_OWNING_PLAYERS = define(RoseSetting.forBoolean("attack-non-owning-players", false, "Whether the minion will attack players that are not its owner"));
-        public static final RoseSetting<Integer> DAMAGE_AMOUNT = define(RoseSetting.forInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
-        public static final RoseSetting<Integer> NUMBER_OF_TARGETS = define(RoseSetting.forInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 3, "How far away the minion will search for targets"));
+        public static final RoseSetting<Long> ATTACK_FREQUENCY = define(RoseSetting.ofLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
+        public static final RoseSetting<Boolean> ONLY_ATTACK_HOSTILES = define(RoseSetting.ofBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
+        public static final RoseSetting<Boolean> ATTACK_NON_OWNING_PLAYERS = define(RoseSetting.ofBoolean("attack-non-owning-players", false, "Whether the minion will attack players that are not its owner"));
+        public static final RoseSetting<Integer> DAMAGE_AMOUNT = define(RoseSetting.ofInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
+        public static final RoseSetting<Integer> NUMBER_OF_TARGETS = define(RoseSetting.ofInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
         public static final RoseSetting<PlayableSound> ATTACK_SOUND = define(RoseSetting.of("attack-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when attacking"));
+        public static final RoseSetting<PlayableParticle> ATTACK_PARTICLE = define(RoseSetting.of("attack-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.SWEEP_ATTACK, null, 1, new Vector(), 0, false), "The particle to display at the entity when attacking"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -92,7 +95,9 @@ public class AttackingModule extends MinionModule {
                 .limit(this.settings.get(NUMBER_OF_TARGETS))
                 .sorted(Comparator.comparingDouble(Damageable::getHealth))
                 .toList();
-        if (!entities.isEmpty()) {
+        if (entities.size() == 1) {
+            this.settings.get(ATTACK_SOUND).play(entities.getFirst());
+        } else if (!entities.isEmpty()) {
             Entity entity = this.minion.getDisplayEntity();
             this.settings.get(ATTACK_SOUND).play(entity);
         }
@@ -113,7 +118,7 @@ public class AttackingModule extends MinionModule {
     }
 
     private void attack(LivingEntity entity) {
-        entity.getWorld().spawnParticle(Particle.SWEEP_ATTACK, entity.getLocation().add(0, entity.getHeight() / 2, 0), 1);
+        this.settings.get(ATTACK_PARTICLE).play(entity);
         entity.damage(this.settings.get(DAMAGE_AMOUNT));
     }
 

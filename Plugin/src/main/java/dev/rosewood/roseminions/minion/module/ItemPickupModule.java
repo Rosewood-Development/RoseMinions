@@ -27,8 +27,8 @@ public class ItemPickupModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 5, "The radius in which to pick up items"));
-        public static final RoseSetting<Long> PICKUP_FREQUENCY = define(RoseSetting.forLong("pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 5, "The radius in which to pick up items"));
+        public static final RoseSetting<Long> PICKUP_FREQUENCY = define(RoseSetting.ofLong("pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

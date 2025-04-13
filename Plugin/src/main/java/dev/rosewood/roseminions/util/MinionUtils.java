@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.util;
 
 import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.datatype.CustomPersistentDataType;
 import dev.rosewood.rosegarden.utils.NMSUtil;
-import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import java.util.Random;
 import org.bukkit.NamespacedKey;
@@ -33,6 +33,16 @@ public final class MinionUtils {
 
     private MinionUtils() {
 
+    }
+
+    /**
+     * Checks if a chance between 0-1 passes
+     *
+     * @param chance The chance
+     * @return true if the chance passed, otherwise false
+     */
+    public static boolean checkChance(double chance) {
+        return RANDOM.nextDouble() <= chance;
     }
 
     public static boolean isHostile(LivingEntity entity) {

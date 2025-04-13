@@ -11,6 +11,7 @@ import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.NotificationTicket;
+import dev.rosewood.roseminions.model.PlayableParticle;
 import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.util.MinionUtils;
@@ -42,16 +43,18 @@ public class FishingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 5, "How far away the minion will search for water"));
-        public static final RoseSetting<Long> FISH_MIN_DELAY = define(RoseSetting.forLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
-        public static final RoseSetting<Long> FISH_MAX_DELAY = define(RoseSetting.forLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
-        public static final RoseSetting<Long> FISH_LURE_DELAY_OFFSET = define(RoseSetting.forLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
-        public static final RoseSetting<Long> REEL_IN_MIN_DELAY = define(RoseSetting.forLong("reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)"));
-        public static final RoseSetting<Long> REEL_IN_MAX_DELAY = define(RoseSetting.forLong("reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)"));
-        public static final RoseSetting<Integer> WATER_LOOKUP_ATTEMPTS = define(RoseSetting.forInteger("water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 5, "How far away the minion will search for water"));
+        public static final RoseSetting<Long> FISH_MIN_DELAY = define(RoseSetting.ofLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
+        public static final RoseSetting<Long> FISH_MAX_DELAY = define(RoseSetting.ofLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
+        public static final RoseSetting<Long> FISH_LURE_DELAY_OFFSET = define(RoseSetting.ofLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
+        public static final RoseSetting<Long> REEL_IN_MIN_DELAY = define(RoseSetting.ofLong("reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final RoseSetting<Long> REEL_IN_MAX_DELAY = define(RoseSetting.ofLong("reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final RoseSetting<Integer> WATER_LOOKUP_ATTEMPTS = define(RoseSetting.ofInteger("water-lookup-attempts", 10, "The number of times the minion will attempt to find water before giving up"));
         public static final RoseSetting<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS = define(RoseSetting.of("tool-enchantments", SettingSerializers.ofMap(MinionSettingSerializers.ENCHANTMENT, SettingSerializers.INTEGER), () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod"));
         public static final RoseSetting<PlayableSound> REEL_IN_SOUND = define(RoseSetting.of("reel-in-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish"));
         public static final RoseSetting<PlayableSound> BOBBER_SOUND = define(RoseSetting.of("fish-caught-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
+        public static final RoseSetting<PlayableParticle> REEL_IN_PARTICLES = define(RoseSetting.of("reel-in-particles", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.SPLASH, null, 3, new Vector(0.3, 0.1, 0.3), 0.1f, false), "Particles to play when reeling in a fish"));
+        public static final RoseSetting<PlayableParticle> REEL_IN_BUBBLE_PARTICLES = define(RoseSetting.of("reel-in-bubble-particles", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.BUBBLE, null, 2, new Vector(0.2, 0.1, 0.2), 0.1f, false), "Secondary particles to play when reeling in a fish"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -92,8 +95,8 @@ public class FishingModule extends MinionModule {
         if (this.targetBlock != null) {
             if (System.currentTimeMillis() - this.lastEventTime <= this.reelInTime) {
                 Location particleCenter = this.targetBlock.getLocation().add(0.5, 1.0, 0.5);
-                this.targetBlock.getWorld().spawnParticle(VersionUtils.BUBBLE, particleCenter, 2, 0.2, 0.1, 0.2, 0.1);
-                this.targetBlock.getWorld().spawnParticle(VersionUtils.SPLASH, particleCenter, 3, 0.3, 0.1, 0.3, 0.1);
+                this.settings.get(REEL_IN_BUBBLE_PARTICLES).play(particleCenter);
+                this.settings.get(REEL_IN_PARTICLES).play(particleCenter);
                 return;
             }
 

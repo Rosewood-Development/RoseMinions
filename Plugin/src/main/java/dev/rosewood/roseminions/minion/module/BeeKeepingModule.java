@@ -27,10 +27,10 @@ public class BeeKeepingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 3, "The radius for the beekeeper to search for bee hives"));
-        public static final RoseSetting<Long> FARMING_FREQUENCY = define(RoseSetting.forLong("farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)"));
-        public static final RoseSetting<Long> FARM_UPDATE_FREQUENCY = define(RoseSetting.forLong("farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
-        public static final RoseSetting<Boolean> USE_BOTTLES = define(RoseSetting.forBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 3, "The radius for the beekeeper to search for bee hives"));
+        public static final RoseSetting<Long> FARMING_FREQUENCY = define(RoseSetting.ofLong("farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)"));
+        public static final RoseSetting<Long> FARM_UPDATE_FREQUENCY = define(RoseSetting.ofLong("farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
+        public static final RoseSetting<Boolean> USE_BOTTLES = define(RoseSetting.ofBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

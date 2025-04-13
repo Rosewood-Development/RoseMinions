@@ -31,8 +31,8 @@ public class InventoryModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> INVENTORY_SIZE = define(RoseSetting.forInteger("inventory-size", 27, "How many individual items can be stored"));
-        public static final RoseSetting<ItemStack[]> INVENTORY_CONTENTS = define(RoseSetting.forHidden("inventory-contents", SettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
+        public static final RoseSetting<Integer> INVENTORY_SIZE = define(RoseSetting.ofInteger("inventory-size", 27, "How many individual items can be stored"));
+        public static final RoseSetting<ItemStack[]> INVENTORY_CONTENTS = define(RoseSetting.ofHidden("inventory-contents", SettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

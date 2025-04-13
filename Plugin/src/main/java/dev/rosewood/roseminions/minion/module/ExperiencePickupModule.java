@@ -14,6 +14,8 @@ import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
+import dev.rosewood.roseminions.model.PlayableParticle;
+import dev.rosewood.roseminions.model.PlayableSound;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.SkullUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
@@ -21,10 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
@@ -34,6 +37,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 import static dev.rosewood.roseminions.minion.module.ExperiencePickupModule.Settings.*;
 
@@ -44,10 +48,12 @@ public class ExperiencePickupModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> STORED_XP = define(RoseSetting.forHidden("stored-xp", SettingSerializers.INTEGER, () -> 0));
-        public static final RoseSetting<Integer> MAX_EXP = define(RoseSetting.forInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
-        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.forLong("update-frequency", 3000L, "How often the minion will update (in milliseconds)"));
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 5, "The radius for the minion to search for items"));
+        public static final RoseSetting<Integer> STORED_XP = define(RoseSetting.ofHidden("stored-xp", SettingSerializers.INTEGER, () -> 0));
+        public static final RoseSetting<Integer> MAX_EXP = define(RoseSetting.ofInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
+        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.ofLong("update-frequency", 3000L, "How often the minion will update (in milliseconds)"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 5, "The radius for the minion to search for items"));
+        public static final RoseSetting<PlayableSound> PICKUP_SOUND = define(RoseSetting.of("pickup-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when collecting experience"));
+        public static final RoseSetting<PlayableParticle> PICKUP_PARTICLE = define(RoseSetting.of("pickup-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.DUST, new PlayableParticle.DustOptionsData(Color.fromRGB(0, 255, 0), 1.0F), 5, new Vector(0.1, 0.1, 0.1), 0, false), "The particle to display when collecting experience"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -104,8 +110,8 @@ public class ExperiencePickupModule extends MinionModule {
             int xp = orb.getExperience();
             this.settings.set(STORED_XP, this.settings.get(STORED_XP) + xp);
             entity.remove();
-            entity.getWorld().playSound(this.minion.getCenterLocation(), Sound.ENTITY_ITEM_PICKUP, 10, 0);
-            entity.getWorld().spawnParticle(VersionUtils.DUST, entity.getLocation(), 5, 0.5, 0.5, 0.5, 0, new Particle.DustOptions(org.bukkit.Color.fromRGB(0, 255, 0), 1));
+            this.settings.get(PICKUP_SOUND).play(this.minion.getDisplayEntity());
+            this.settings.get(PICKUP_PARTICLE).play(this.minion.getDisplayEntity());
         });
     }
 
@@ -167,7 +173,6 @@ public class ExperiencePickupModule extends MinionModule {
 
         this.guiContainer.addScreen(mainScreen);
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
-
     }
 
     /**

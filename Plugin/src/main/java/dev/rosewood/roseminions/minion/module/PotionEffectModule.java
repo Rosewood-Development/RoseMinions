@@ -25,9 +25,9 @@ public class PotionEffectModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.forInteger("radius", 10, "The radius in blocks to search for entities"));
+        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 10, "The radius in blocks to search for entities"));
         public static final RoseSetting<List<PotionEffect>> EFFECTS = define(RoseSetting.of("effects", SettingSerializers.ofList(MinionSettingSerializers.POTION_EFFECT), () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects to apply to nearby entities"));
-        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.forLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
+        public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.ofLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

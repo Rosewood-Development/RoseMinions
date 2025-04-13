@@ -34,8 +34,8 @@ public class CommunicationModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Long> CONVERSATION_FREQUENCY = define(RoseSetting.forLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
-        public static final RoseSetting<Long> MESSAGE_FREQUENCY = define(RoseSetting.forLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
+        public static final RoseSetting<Long> CONVERSATION_FREQUENCY = define(RoseSetting.ofLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
+        public static final RoseSetting<Long> MESSAGE_FREQUENCY = define(RoseSetting.ofLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
         public static final RoseSetting<List<MinionConversation>> CONVERSATIONS = define(RoseSetting.of("conversations", SettingSerializers.ofList(MinionConversation.SERIALIZER), () -> List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
         ), "The conversations that the minion can have"));

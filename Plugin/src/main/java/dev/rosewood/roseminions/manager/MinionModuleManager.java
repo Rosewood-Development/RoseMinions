@@ -102,7 +102,7 @@ public class MinionModuleManager extends Manager implements Listener {
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
         for (RoseSetting<?> setting : registeredModule.settings().get()) {
-            if (!config.contains(setting.getKey())) {
+            if (!setting.readIsValid(config)) {
                 setting.writeWithDefault(config);
                 changed = true;
             }

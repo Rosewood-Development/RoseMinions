@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -41,6 +42,7 @@ public class MinionManager extends Manager {
 
     public void destroyMinion(Minion minion) {
         this.loadedMinions.remove(minion);
+        minion.getDisplayEntity().getPassengers().forEach(Entity::remove);
         minion.getDisplayEntity().remove();
     }
 

@@ -27,7 +27,7 @@ public class SettingContainerConfig {
             return;
 
         for (RoseSetting<?> setting : this.settings.values())
-            if (!setting.isHidden() && section.contains(setting.getKey()))
+            if (!setting.isHidden() && setting.readIsValid(section))
                 this.settingDefaultValueSuppliers.put(setting.getKey(), () -> setting.read(section));
     }
 

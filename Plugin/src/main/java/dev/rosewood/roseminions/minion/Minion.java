@@ -7,11 +7,11 @@ import dev.rosewood.guiframework.gui.ClickActionType;
 import dev.rosewood.guiframework.gui.GuiContainer;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
+import dev.rosewood.rosegarden.datatype.CustomPersistentDataType;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
-import dev.rosewood.roseminions.datatype.CustomPersistentDataType;
 import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
@@ -29,8 +29,6 @@ import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.model.PDCSerializable;
 import dev.rosewood.roseminions.model.Updatable;
 import dev.rosewood.roseminions.util.SkullUtils;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -72,7 +70,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
     private final GuiFramework guiFramework;
     private MinionConfig minionConfig;
     private String rank;
-    private Reference<ArmorStand> displayEntity;
+    private ArmorStand displayEntity;
     private UUID owner;
     private Location location;
     private GuiContainer guiContainer;
@@ -80,7 +78,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
 
     private Minion(ArmorStand displayEntity) {
         this.modules = new LinkedHashMap<>();
-        this.displayEntity = new WeakReference<>(displayEntity);
+        this.displayEntity = displayEntity;
         this.guiFramework = GuiFramework.instantiate(RoseMinions.getInstance());
         this.appearanceModule = new AppearanceModule(this);
     }
@@ -99,7 +97,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
      */
     public Minion(Location location, PersistentDataContainer container) {
         this(null);
-        this.displayEntity = new WeakReference<>(null);
+        this.displayEntity = null;
         this.location = location;
         this.readPDC(container);
         this.modules.values().forEach(MinionModule::finalizeLoad);
@@ -121,9 +119,8 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
 
     @Override
     public void update() {
-        ArmorStand displayEntity = this.displayEntity.get();
-        if (displayEntity == null || !displayEntity.isValid()) {
-            this.displayEntity = new WeakReference<>(this.createDisplayEntity());
+        if (this.displayEntity == null || !this.displayEntity.isValid()) {
+            this.displayEntity = this.createDisplayEntity();
             this.appearanceModule.updateEntity();
         }
 
@@ -349,7 +346,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
     }
 
     public ArmorStand getDisplayEntity() {
-        return this.displayEntity.get();
+        return this.displayEntity;
     }
 
     public MinionConfig getTypeData() {
