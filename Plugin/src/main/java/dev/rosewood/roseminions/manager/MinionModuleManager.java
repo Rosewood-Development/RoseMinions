@@ -11,6 +11,7 @@ import dev.rosewood.roseminions.minion.module.AppearanceModule;
 import dev.rosewood.roseminions.minion.module.AttackingModule;
 import dev.rosewood.roseminions.minion.module.BeeKeepingModule;
 import dev.rosewood.roseminions.minion.module.BlockBreakModule;
+import dev.rosewood.roseminions.minion.module.BlockFilterModule;
 import dev.rosewood.roseminions.minion.module.BlockPlaceModule;
 import dev.rosewood.roseminions.minion.module.CommunicationModule;
 import dev.rosewood.roseminions.minion.module.DefaultMinionModules;
@@ -118,6 +119,7 @@ public class MinionModuleManager extends Manager implements Listener {
         event.registerModule(DefaultMinionModules.APPEARANCE, AppearanceModule::new, AppearanceModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.POTION_EFFECT, PotionEffectModule::new, PotionEffectModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.BEE_KEEPING, BeeKeepingModule::new, BeeKeepingModule.Settings.INSTANCE);
+        event.registerModule(DefaultMinionModules.BLOCK_FILTER, BlockFilterModule::new, BlockFilterModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.BLOCK_BREAK, BlockBreakModule::new, BlockBreakModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.COMMUNICATION, CommunicationModule::new, CommunicationModule.Settings.INSTANCE);
         event.registerModule(DefaultMinionModules.EXPERIENCE_PICKUP, ExperiencePickupModule::new, ExperiencePickupModule.Settings.INSTANCE);

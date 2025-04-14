@@ -20,12 +20,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import static dev.rosewood.roseminions.minion.module.ItemFilterModule.Settings.*;
+import static dev.rosewood.roseminions.minion.module.BlockFilterModule.Settings.*;
 
-public class ItemFilterModule extends MinionModule {
+public class BlockFilterModule extends MinionModule {
 
     public static class Settings implements SettingHolder {
 
@@ -35,12 +36,11 @@ public class ItemFilterModule extends MinionModule {
         public static final RoseSetting<Integer> INVENTORY_SIZE = define(RoseSetting.ofInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
         public static final RoseSetting<ItemStack[]> FILTER_ITEMS = define(RoseSetting.ofHidden("filter-items", SettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
         public static final RoseSetting<FilterType> FILTER_TYPE = define(RoseSetting.ofEnum("filter-type", FilterType.class, FilterType.WHITELIST, "The type of filter"));
-        public static final RoseSetting<Boolean> MATCH_NBT = define(RoseSetting.ofBoolean("match-nbt", false, "Whether or not to match NBT data"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
-                    new ModuleGuiProperties("Item Filter Module", Material.COMPARATOR, MinionUtils.PRIMARY_COLOR + "Item Filter Module",
-                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter items."))));
+                    new ModuleGuiProperties("Block Filter Module", Material.TARGET, MinionUtils.PRIMARY_COLOR + "Block Filter Module",
+                            List.of("", MinionUtils.SECONDARY_COLOR + "Allows the minion to filter blocks."))));
         }
 
         private Settings() { }
@@ -57,8 +57,8 @@ public class ItemFilterModule extends MinionModule {
 
     }
 
-    public ItemFilterModule(Minion minion) {
-        super(minion, DefaultMinionModules.ITEM_FILTER, Settings.INSTANCE);
+    public BlockFilterModule(Minion minion) {
+        super(minion, DefaultMinionModules.BLOCK_FILTER, Settings.INSTANCE);
     }
 
     @Override
@@ -74,7 +74,8 @@ public class ItemFilterModule extends MinionModule {
                     ItemStack[] contents = new ItemStack[this.settings.get(INVENTORY_SIZE)];
                     System.arraycopy(items.toArray(ItemStack[]::new), 0, contents, 0, Math.min(items.size(), contents.length));
                     this.settings.set(FILTER_ITEMS, contents);
-                });
+                })
+                .setEditFilters(GuiFactory.createScreenEditFilters().setWhitelist(item -> item.getType().isBlock()));
 
         // Fill inventory border with glass for now
         ItemStack borderItem = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE);
@@ -111,16 +112,6 @@ public class ItemFilterModule extends MinionModule {
                     return ClickAction.REFRESH;
                 }));
 
-        // Add match NBT button
-        mainScreen.addButtonAt(fullSize.getNumSlots() - 3, GuiFactory.createButton()
-                .setIcon(Material.NETHER_STAR)
-                .setNameSupplier(() -> GuiFactory.createString(HexUtils.colorify(MinionUtils.PRIMARY_COLOR + "Match NBT (" + MinionUtils.SECONDARY_COLOR + this.settings.get(MATCH_NBT) + MinionUtils.PRIMARY_COLOR + ")")))
-                .setClickAction(event -> {
-                    boolean matchNbt = this.settings.get(MATCH_NBT);
-                    this.settings.set(MATCH_NBT, !matchNbt);
-                    return ClickAction.REFRESH;
-                }));
-
         this.addBackButton(mainScreen);
 
         this.guiContainer.addScreen(mainScreen);
@@ -133,17 +124,30 @@ public class ItemFilterModule extends MinionModule {
     }
 
     /**
-     * Check if the given item is allowed by this filter
-     *
-     * @param itemStack The item to check
-     * @return true if the item is allowed, false otherwise
+     * @param block The block to check
+     * @return true if the block is allowed by this filter, false otherwise
+     */
+    public boolean isAllowed(Block block) {
+        return this.isAllowed(block.getType());
+    }
+
+    /**
+     * @param itemStack The itemstack to check
+     * @return true if the block itemstack is allowed by this filter, false otherwise
      */
     public boolean isAllowed(ItemStack itemStack) {
+        return this.isAllowed(itemStack.getType());
+    }
+
+    /**
+     * Check if the given item is allowed by this filter
+     *
+     * @param blockType The block type to check
+     * @return true if the block is allowed, false otherwise
+     */
+    public boolean isAllowed(Material blockType) {
         ItemStack[] filterItems = this.settings.get(FILTER_ITEMS);
         FilterType filterType = this.settings.get(FILTER_TYPE);
-        boolean matchNbt = this.settings.get(MATCH_NBT);
-
-        Material itemType = itemStack.getType();
 
         // Check if the item is in the filter
         boolean inFilter = false;
@@ -151,7 +155,7 @@ public class ItemFilterModule extends MinionModule {
             if (filterItem == null || filterItem.getType() == Material.AIR)
                 continue;
 
-            if ((matchNbt && filterItem.isSimilar(itemStack)) || (!matchNbt && filterItem.getType() == itemType)) {
+            if (filterItem.getType() == blockType) {
                 inFilter = true;
                 break;
             }

@@ -150,7 +150,7 @@ public class MinionManager extends Manager {
         if (this.loadedMinions.stream().anyMatch(x -> x.getDisplayEntity().equals(armorStand)))
             return true;
 
-        return armorStand.getPersistentDataContainer().has(MinionUtils.MINION_DATA_KEY, PersistentDataType.BYTE_ARRAY);
+        return armorStand.getPersistentDataContainer().has(MinionUtils.MINION_DATA_KEY);
     }
 
 }

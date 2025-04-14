@@ -6,6 +6,7 @@ public final class DefaultMinionModules {
     public static final String ATTACKING = "attacking";
     public static final String BEE_KEEPING = "bee_keeping";
     public static final String BLOCK_BREAK = "block_break";
+    public static final String BLOCK_FILTER = "block_filter";
     public static final String BLOCK_PLACE = "block_place";
     public static final String COMMUNICATION = "communication";
     public static final String EXPERIENCE_PICKUP = "experience_pickup";

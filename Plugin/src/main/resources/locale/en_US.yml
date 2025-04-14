@@ -41,6 +41,9 @@ argument-handler-player: 'No Player with the username [%input%] was found online
 argument-handler-minion-config: 'No minion config named [%input%] exists'
 argument-handler-minion-rank: 'Minion rank [%input%] is not valid. Available ranks: [%ranks%]'
 
+# Minion Messages
+minion-no-permission: '&cYou do not have permission to interact with this minion.'
+
 # GUI-related text
 gui:
   additional-module-icon-lore:

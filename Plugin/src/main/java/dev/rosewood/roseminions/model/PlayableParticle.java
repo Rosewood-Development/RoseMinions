@@ -44,7 +44,8 @@ public record PlayableParticle(boolean enabled,
             return;
 
         Object data;
-        if (overrideData != null && overrideData.getClass().equals(this.particle.getDataType())) {
+        Class<?> dataType = this.particle.getDataType();
+        if (dataType != Void.class && dataType.isInstance(overrideData)) {
             data = overrideData;
         } else {
             data = this.data != null ? this.data.buildData(location) : null;

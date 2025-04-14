@@ -6,18 +6,27 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
+import dev.rosewood.roseminions.model.BlockPosition;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
+import dev.rosewood.roseminions.model.NotificationTicket;
+import dev.rosewood.roseminions.model.WorkerAreaProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import org.bukkit.Location;
+import org.bukkit.ChatColor;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Beehive;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import static dev.rosewood.roseminions.minion.module.BeeKeepingModule.Settings.*;
 
 public class BeeKeepingModule extends MinionModule {
@@ -27,9 +36,10 @@ public class BeeKeepingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 3, "The radius for the beekeeper to search for bee hives"));
-        public static final RoseSetting<Long> FARMING_FREQUENCY = define(RoseSetting.ofLong("farming-frequency", 5000L, "How often the beekeeper will check for bee hives (in milliseconds)"));
-        public static final RoseSetting<Long> FARM_UPDATE_FREQUENCY = define(RoseSetting.ofLong("farming-update-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
+        public static final RoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(RoseSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
+                () -> new WorkerAreaProperties(5, WorkerAreaController.ScanShape.CUBE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 30000L),
+                "Settings that control the worker area for this module"));
+        public static final RoseSetting<Long> HARVEST_FREQUENCY = define(RoseSetting.ofLong("harvest-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
         public static final RoseSetting<Boolean> USE_BOTTLES = define(RoseSetting.ofBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
 
         static {
@@ -52,41 +62,43 @@ public class BeeKeepingModule extends MinionModule {
 
     }
 
-    private long lastHiveCheckTime;
     private long lastHoneyCollectionTime;
-    private List<Block> hives;
+
+    private final List<BlockPosition> hives;
     private int hiveIndex;
 
     public BeeKeepingModule(Minion minion) {
         super(minion, DefaultMinionModules.BEE_KEEPING, Settings.INSTANCE);
 
         this.hives = new ArrayList<>();
+
+        this.activeControllers.add(new WorkerAreaController<>(
+                this,
+                this.settings.get(WORKER_AREA_PROPERTIES),
+                this::updateHives,
+                this::onBlockScan,
+                false
+        ));
+
+        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-hives", ChatColor.RED + "No nearby hives!", 1000, this.hives::isEmpty, StringPlaceholders::empty));
     }
 
     @Override
     public void tick() {
-        if (System.currentTimeMillis() - this.lastHiveCheckTime > this.settings.get(FARM_UPDATE_FREQUENCY)) {
-            this.lastHiveCheckTime = System.currentTimeMillis();
-            this.updateHoney();
-        }
-
-        if (System.currentTimeMillis() - this.lastHoneyCollectionTime <= this.settings.get(FARMING_FREQUENCY)) {
+        if (System.currentTimeMillis() - this.lastHoneyCollectionTime <= this.settings.get(HARVEST_FREQUENCY))
             return;
-        }
 
         this.lastHoneyCollectionTime = System.currentTimeMillis();
 
         if (this.hives.isEmpty())
             return;
 
-        this.hiveIndex++;
-        if (this.hiveIndex >= this.hives.size())
-            this.hiveIndex = 0;
+        this.hiveIndex = (this.hiveIndex + 1) % this.hives.size();
 
-        // wow, terrible code
-        Block block = this.minion.getWorld().getBlockAt(this.hives.get(this.hiveIndex).getLocation());
+        // Find a beehive to manage
+        Block block = this.hives.get(this.hiveIndex).toBlock(this.minion.getWorld());
         if (!(block.getBlockData() instanceof Beehive beehive)) {
-            this.hives.remove(block);
+            this.hives.remove(this.hiveIndex);
             return;
         }
 
@@ -140,33 +152,18 @@ public class BeeKeepingModule extends MinionModule {
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
     }
 
-    private void updateHoney() {
+    private void updateHives(Map<BlockPosition, Boolean> detectedBlocks) {
         this.hives.clear();
+        this.hives.addAll(detectedBlocks.keySet());
+    }
 
-        Location center = this.minion.getCenterLocation();
-        int radius = this.settings.get(Settings.RADIUS);
-
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -radius; y <= radius; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    Location location = center.clone().add(x, y, z);
-                    Block block = location.getBlock();
-                    if (block.getType() == Material.BEE_NEST || block.getType() == Material.BEEHIVE) {
-                        this.hives.add(block);
-                    }
-                }
-            }
+    private WorkerAreaController.BlockScanResult<Boolean> onBlockScan(int x, int y, int z, ChunkSnapshot chunkSnapshot) {
+        BlockData blockData = chunkSnapshot.getBlockData(x, y, z);
+        if (blockData instanceof Beehive) {
+            return WorkerAreaController.BlockScanResult.include(true);
+        } else {
+            return WorkerAreaController.BlockScanResult.exclude();
         }
-
-        this.sortHives();
     }
 
-    private void sortHives() {
-        this.hives.sort((o1, o2) -> {
-            if (o1.getX() == o2.getX())
-                return Integer.compare(o1.getZ(), o2.getZ());
-
-            return Integer.compare(o1.getX(), o2.getX());
-        });
-    }
 }

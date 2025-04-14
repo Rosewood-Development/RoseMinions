@@ -7,7 +7,7 @@ import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
 import org.bukkit.util.Vector;
 
 public record WorkerAreaProperties(int radius,
-                                   WorkerAreaController.RadiusType radiusType,
+                                   WorkerAreaController.ScanShape scanShape,
                                    Vector centerOffset,
                                    WorkerAreaController.ScanDirection scanDirection,
                                    boolean shuffleScan,
@@ -15,7 +15,7 @@ public record WorkerAreaProperties(int radius,
 
     public static final SettingSerializer<WorkerAreaProperties> SERIALIZER = SettingSerializers.ofRecord(WorkerAreaProperties.class, instance -> instance.group(
             SettingField.of("radius", SettingSerializers.INTEGER, WorkerAreaProperties::radius, "The max distance in blocks from the minion to work"),
-            SettingField.of("radius-type", SettingSerializers.ofEnum(WorkerAreaController.RadiusType.class), WorkerAreaProperties::radiusType, "The shape of the worker area", "Values: circle, square"),
+            SettingField.of("scan-shape", SettingSerializers.ofEnum(WorkerAreaController.ScanShape.class), WorkerAreaProperties::scanShape, "The shape to scan blocks in", "Values: cube, cylinder, sphere"),
             SettingField.of("center-offset", SettingSerializers.VECTOR, WorkerAreaProperties::centerOffset, "The offset from the center of the minion to the center of the worker area"),
             SettingField.of("scan-direction", SettingSerializers.ofEnum(WorkerAreaController.ScanDirection.class), WorkerAreaProperties::scanDirection, "The direction to scan for blocks in", "Values: top_down, bottom_up"),
             SettingField.of("shuffle-scan", SettingSerializers.BOOLEAN, WorkerAreaProperties::shuffleScan, "true to shuffle the blocks to be scanned, false to scan in lines"),

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -144,6 +145,52 @@ public class InventoryModule extends MinionModule {
 
         // Otherwise, return the remaining item
         return clone;
+    }
+
+    /**
+     * Checks if this inventory contains an item matching the predicate
+     *
+     * @param predicate The predicate to run
+     * @return true if the inventory contains the item
+     */
+    public boolean anyMatch(Predicate<ItemStack> predicate) {
+        ItemStack[] contents = this.settings.get(INVENTORY_CONTENTS);
+        for (ItemStack content : contents)
+            if (content != null && predicate.test(content))
+                return true;
+        return false;
+    }
+
+    /**
+     * Removes and returns the first item matching the predicate.
+     * Takes only one item, not an entire stack.
+     *
+     * @param predicate The predicate to run
+     * @return the single matching item removed from the inventory, or null if none matched
+     */
+    public ItemStack takeMatching(Predicate<ItemStack> predicate) {
+        // Don't allow modifications while the GUI is open
+        if (this.guiContainer != null && this.guiContainer.hasViewers())
+            return null;
+
+        ItemStack[] contents = this.settings.get(INVENTORY_CONTENTS);
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack content = contents[i];
+            if (content != null && predicate.test(content)) {
+                int amount = content.getAmount();
+                ItemStack clone = content.clone();
+                clone.setAmount(1);
+                amount -= 1;
+                if (amount == 0) {
+                    contents[i] = null;
+                } else {
+                    content.setAmount(amount);
+                }
+                return clone;
+            }
+        }
+
+        return null;
     }
 
     /**
