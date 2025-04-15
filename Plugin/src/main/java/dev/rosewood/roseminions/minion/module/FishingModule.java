@@ -167,9 +167,7 @@ public class FishingModule extends MinionModule {
             return;
         }
 
-        // Unable to find water, play some particles around the minion to indicate this
-        Location particleCenter = this.minion.getCenterLocation();
-        this.minion.getWorld().spawnParticle(VersionUtils.SMOKE, particleCenter, 15, 0.25, 0.25, 0.25, 0.1);
+        // Unable to find water
         this.resetWaitTime();
     }
 

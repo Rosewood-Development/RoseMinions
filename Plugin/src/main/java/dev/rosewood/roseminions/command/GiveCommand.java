@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.command.command;
+package dev.rosewood.roseminions.command;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.command.argument.ArgumentHandlers;

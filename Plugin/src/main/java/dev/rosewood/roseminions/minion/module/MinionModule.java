@@ -101,15 +101,18 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
         PersistentDataAdapterContext context = container.getAdapterContext();
         PersistentDataContainer settingsContainer = context.newPersistentDataContainer();
         this.settings.writePDC(settingsContainer);
-        container.set(KEY_SETTINGS, PersistentDataType.TAG_CONTAINER, settingsContainer);
+        if (!settingsContainer.getKeys().isEmpty())
+            container.set(KEY_SETTINGS, PersistentDataType.TAG_CONTAINER, settingsContainer);
 
         PersistentDataContainer modulesContainer = context.newPersistentDataContainer();
         for (MinionModule submodule : this.submodules.values()) {
             PersistentDataContainer moduleContainer = context.newPersistentDataContainer();
             submodule.writePDC(moduleContainer);
-            modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
+            if (!moduleContainer.getKeys().isEmpty())
+                modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
         }
-        container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);
+        if (!modulesContainer.getKeys().isEmpty())
+            container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);
     }
 
     @Override

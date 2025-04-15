@@ -112,7 +112,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         this.minionConfig = minionConfig;
         this.rank = rank;
         this.owner = owner;
-        this.location = location.clone();
+        this.location = location.toBlockLocation();
         this.loadRankData();
         this.modules.values().forEach(MinionModule::finalizeLoad);
     }
@@ -161,9 +161,11 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         for (MinionModule submodule : this.getModules()) {
             PersistentDataContainer moduleContainer = context.newPersistentDataContainer();
             submodule.writePDC(moduleContainer);
-            modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
+            if (!moduleContainer.getKeys().isEmpty())
+                modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
         }
-        container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);
+        if (!modulesContainer.isEmpty())
+            container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);
     }
 
     @Override
