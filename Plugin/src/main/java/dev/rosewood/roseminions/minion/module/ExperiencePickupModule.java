@@ -102,9 +102,8 @@ public class ExperiencePickupModule extends MinionModule {
             ExperienceOrb orb = (ExperienceOrb) entity;
 
             // adding this to the predicate doesn't work for some reason
-            if (orb.getPersistentDataContainer().has(this.xpKey, PersistentDataType.INTEGER)) {
+            if (orb.getPersistentDataContainer().has(this.xpKey, PersistentDataType.INTEGER))
                 return;
-            }
 
             // get the amount of xp
             int xp = orb.getExperience();

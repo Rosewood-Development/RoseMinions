@@ -28,7 +28,7 @@ class SettingValue<T> implements PDCSerializable {
         this.modified = true;
     }
 
-    public boolean isModified() {
+    public boolean shouldPersist() {
         return this.modified || this.setting.isHidden();
     }
 

@@ -7,8 +7,8 @@ import dev.rosewood.guiframework.gui.GuiContainer;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.config.SettingHolder;
-import dev.rosewood.rosegarden.datatype.CustomPersistentDataType;
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.ModuleController;
@@ -33,8 +33,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 public abstract class MinionModule implements GuiHolder, PDCSerializable, Modular, Updatable {
 
-    private static final NamespacedKey KEY_SETTINGS = CustomPersistentDataType.KeyHelper.get("settings");
-    private static final NamespacedKey KEY_MODULES = CustomPersistentDataType.KeyHelper.get("modules");
+    private static final NamespacedKey KEY_SETTINGS = KeyHelper.get("settings");
+    private static final NamespacedKey KEY_MODULES = KeyHelper.get("modules");
 
     public static final RoseSetting<ModuleGuiProperties> GUI_PROPERTIES = RoseSetting.of("gui", ModuleGuiProperties.SERIALIZER, () ->
             new ModuleGuiProperties("GUI Title", Material.BARRIER, "Module",
@@ -54,7 +54,7 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
     public MinionModule(Minion minion, String moduleName, SettingHolder settings) {
         this.minion = minion;
         this.moduleName = moduleName.toLowerCase();
-        this.settings = new SettingContainer(settings.get());
+        this.settings = new SettingContainer(settings);
         this.submodules = new LinkedHashMap<>();
         this.activeControllers = new ArrayList<>();
         this.parentModular = minion;
@@ -109,7 +109,7 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
             PersistentDataContainer moduleContainer = context.newPersistentDataContainer();
             submodule.writePDC(moduleContainer);
             if (!moduleContainer.getKeys().isEmpty())
-                modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
+                modulesContainer.set(KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
         }
         if (!modulesContainer.getKeys().isEmpty())
             container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);

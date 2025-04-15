@@ -10,6 +10,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.datatype.CustomPersistentDataType;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
+import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.LocaleManager;
@@ -53,11 +54,11 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
 
-    private static final NamespacedKey KEY_CONFIG_ID = CustomPersistentDataType.KeyHelper.get("config_id");
-    private static final NamespacedKey KEY_RANK = CustomPersistentDataType.KeyHelper.get("rank");
-    private static final NamespacedKey KEY_OWNER = CustomPersistentDataType.KeyHelper.get("owner");
-    private static final NamespacedKey KEY_LOCATION = CustomPersistentDataType.KeyHelper.get("location");
-    private static final NamespacedKey KEY_MODULES = CustomPersistentDataType.KeyHelper.get("modules");
+    private static final NamespacedKey KEY_CONFIG_ID = KeyHelper.get("config_id");
+    private static final NamespacedKey KEY_RANK = KeyHelper.get("rank");
+    private static final NamespacedKey KEY_OWNER = KeyHelper.get("owner");
+    private static final NamespacedKey KEY_LOCATION = KeyHelper.get("location");
+    private static final NamespacedKey KEY_MODULES = KeyHelper.get("modules");
 
     // Sort the first row right-to-left and all other rows left-to-right
     private static final int[] MODULE_SLOT_FILL_ORDER = {
@@ -162,7 +163,7 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
             PersistentDataContainer moduleContainer = context.newPersistentDataContainer();
             submodule.writePDC(moduleContainer);
             if (!moduleContainer.getKeys().isEmpty())
-                modulesContainer.set(CustomPersistentDataType.KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
+                modulesContainer.set(KeyHelper.get(submodule.getName()), PersistentDataType.TAG_CONTAINER, moduleContainer);
         }
         if (!modulesContainer.isEmpty())
             container.set(KEY_MODULES, PersistentDataType.TAG_CONTAINER, modulesContainer);

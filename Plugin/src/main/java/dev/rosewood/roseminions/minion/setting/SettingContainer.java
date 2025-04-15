@@ -1,32 +1,27 @@
 package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.model.PDCSerializable;
-import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.bukkit.NamespacedKey;
 import org.bukkit.persistence.PersistentDataContainer;
 
 public class SettingContainer implements PDCSerializable {
 
-    private final Map<String, RoseSetting<?>> settings;
+    private final SettingHolder settings;
     private final Map<String, SettingValue<?>> settingValues;
 
-    public SettingContainer(List<RoseSetting<?>> settings) {
-        this.settings = new LinkedHashMap<>();
-        for (RoseSetting<?> setting : settings)
-            this.settings.put(setting.getKey(), setting);
+    public SettingContainer(SettingHolder settings) {
+        this.settings = settings;
         this.settingValues = new HashMap<>();
         this.loadDefaults();
     }
 
     private void loadDefaults() {
-        for (RoseSetting<?> setting : this.settings.values())
+        for (RoseSetting<?> setting : this.settings.get())
             this.loadDefault(setting);
     }
 
@@ -63,7 +58,7 @@ public class SettingContainer implements PDCSerializable {
         // Only write settings that have changed from their default values
         Map<String, SettingValue<?>> changedSettings = this.settingValues.entrySet()
                 .stream()
-                .filter(entry -> entry.getValue().isModified())
+                .filter(entry -> entry.getValue().shouldPersist())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         for (Map.Entry<String, SettingValue<?>> entry : changedSettings.entrySet())
@@ -80,16 +75,15 @@ public class SettingContainer implements PDCSerializable {
         }
     }
 
-    public void loadConfig(SettingContainerConfig settings) {
-        Map<String, Supplier<?>> defaultSettingSuppliers = settings.getSettingDefaultValueSuppliers();
-        for (RoseSetting<?> setting : this.settings.values()) {
-            String key = setting.getKey();
-            Supplier<?> supplier = defaultSettingSuppliers.get(key);
-            if (supplier == null)
-                continue;
+    public void loadConfig(SettingContainerConfig settingsConfig) {
+        if (!this.settings.equals(settingsConfig.getSettings()))
+            throw new IllegalArgumentException("Cannot load SettingContainerConfig that does not have the same settings as this SettingContainer");
 
-            SettingValue<?> newSettingValue = new SettingValue<>(setting, MinionUtils.forceCast(supplier.get()));
-            this.settingValues.put(key, newSettingValue);
+        for (RoseSetting<?> setting : this.settings.get()) {
+            String key = setting.getKey();
+            SettingValue<?> settingValue = settingsConfig.createValue(setting);
+            if (settingValue != null)
+                this.settingValues.put(key, settingValue); // TODO: Merge instead of overwrite
         }
     }
 
