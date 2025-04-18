@@ -70,7 +70,10 @@ public class BlockPlaceModule extends MinionModule {
         super(minion, DefaultMinionModules.BLOCK_PLACE, Settings.INSTANCE);
 
         this.blocks = new ArrayList<>();
+    }
 
+    @Override
+    public void finalizeLoad() {
         this.activeControllers.add(new WorkerAreaController<>(
                 this,
                 this.settings.get(WORKER_AREA_PROPERTIES),

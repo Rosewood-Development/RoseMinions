@@ -18,9 +18,11 @@ import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 
 public class WorkerAreaController<T> extends ModuleController {
 
+    private static final BlockFace[] IGNORED_RELATIVE_FACES = {BlockFace.SELF, BlockFace.UP};
     private WorkerAreaProperties properties;
     private final Consumer<Map<BlockPosition, T>> onUpdate;
     private final ScanBlockPredicate<T> predicate;
@@ -38,7 +40,6 @@ public class WorkerAreaController<T> extends ModuleController {
         this.onUpdate = onUpdate;
         this.predicate = predicate;
         this.worldHeightOptimization = worldHeightOptimization;
-        this.nextUpdateTime = System.currentTimeMillis() + 500;
 
         this.workerAreaChunks = Map.of();
         this.workerAreaData = Map.of();
@@ -149,11 +150,11 @@ public class WorkerAreaController<T> extends ModuleController {
             }
         }
 
-        // Don't let the minion directly manage the block it's in or the one above it
-        BlockPosition selfPosition = new BlockPosition(minionLocation.getBlockX(), minionLocation.getBlockY(), minionLocation.getBlockZ());
-        BlockPosition abovePosition = new BlockPosition(minionLocation.getBlockX(), minionLocation.getBlockY() + 1, minionLocation.getBlockZ());;
-        includedData.remove(selfPosition);
-        includedData.remove(abovePosition);
+        // Don't let the minion directly manage the blocks it's in
+        for (BlockFace face : IGNORED_RELATIVE_FACES) {
+            BlockPosition position = new BlockPosition(minionLocation.getBlockX() + face.getModX(), minionLocation.getBlockY() + face.getModY(), minionLocation.getBlockZ() + face.getModZ());
+            includedData.remove(position);
+        }
 
         this.workerAreaChunks = Map.of();
         this.workerAreaData = includedData;

@@ -64,7 +64,7 @@ public class MinionConfig {
 
         MinionModuleManager minionModuleManager = RoseMinions.getInstance().getManager(MinionModuleManager.class);
         ConfigurationSection modulesSection = section.getConfigurationSection("modules");
-        this.getModules(modulesSection, minionModuleManager).values().forEach(data -> {
+        this.getModules(modulesSection, minionModuleManager, previousRank == null).values().forEach(data -> {
             ModuleConfig existingData = moduleData.get(data.id());
             if (existingData != null) {
                 existingData.merge(data);
@@ -76,7 +76,7 @@ public class MinionConfig {
         return new RankConfig(rank, itemSettings, moduleData);
     }
 
-    private Map<String, ModuleConfig> getModules(ConfigurationSection section, MinionModuleManager minionModuleManager) {
+    private Map<String, ModuleConfig> getModules(ConfigurationSection section, MinionModuleManager minionModuleManager, boolean firstRank) {
         if (section == null)
             return new HashMap<>();
 
@@ -94,9 +94,14 @@ public class MinionConfig {
                 continue;
             }
 
-            SettingContainerConfig settingsContainer = minionModuleManager.getSectionSettings(key, moduleSection);
-            Map<String, ModuleConfig> submodules = this.getModules(moduleSection.getConfigurationSection("sub-modules"), minionModuleManager);
-            moduleData.put(key, new ModuleConfig(key, settingsContainer, submodules));
+            SettingContainerConfig settingsConfig = minionModuleManager.getSectionSettings(key, moduleSection);
+            if (firstRank) {
+                SettingContainerConfig baseSettingsConfig = minionModuleManager.getModuleSettingConfig(key);
+                baseSettingsConfig.merge(settingsConfig);
+                settingsConfig = baseSettingsConfig;
+            }
+            Map<String, ModuleConfig> submodules = this.getModules(moduleSection.getConfigurationSection("sub-modules"), minionModuleManager, false);
+            moduleData.put(key, new ModuleConfig(key, settingsConfig, submodules));
         }
         return moduleData;
     }
@@ -110,7 +115,9 @@ public class MinionConfig {
     }
 
     public RankConfig getRank(String rank) {
-        return this.ranks.stream().filter(x -> x.rank().equalsIgnoreCase(rank)).findFirst().orElse(null);
+        return this.ranks.stream().filter(x -> x.rank().equalsIgnoreCase(rank))
+                .findFirst()
+                .orElse(null);
     }
 
     public List<RankConfig> getRanks() {

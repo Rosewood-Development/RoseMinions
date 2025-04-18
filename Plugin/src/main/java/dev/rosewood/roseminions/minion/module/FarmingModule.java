@@ -110,7 +110,10 @@ public class FarmingModule extends MinionModule {
         this.farmland = new ArrayList<>();
         this.farmlandToTill = new ArrayList<>();
         this.farmlandToHydrate = new ArrayList<>();
+    }
 
+    @Override
+    public void finalizeLoad() {
         this.activeControllers.add(new WorkerAreaController<>(
                 this,
                 this.settings.get(WORKER_AREA_PROPERTIES),
@@ -118,8 +121,7 @@ public class FarmingModule extends MinionModule {
                 this::onBlockScan,
                 false
         ));
-
-        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty));
+        this.minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty));
     }
 
     @Override

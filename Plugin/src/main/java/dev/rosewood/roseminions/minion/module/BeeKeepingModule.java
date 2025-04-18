@@ -71,7 +71,10 @@ public class BeeKeepingModule extends MinionModule {
         super(minion, DefaultMinionModules.BEE_KEEPING, Settings.INSTANCE);
 
         this.hives = new ArrayList<>();
+    }
 
+    @Override
+    public void finalizeLoad() {
         this.activeControllers.add(new WorkerAreaController<>(
                 this,
                 this.settings.get(WORKER_AREA_PROPERTIES),
@@ -80,7 +83,7 @@ public class BeeKeepingModule extends MinionModule {
                 false
         ));
 
-        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-hives", ChatColor.RED + "No nearby hives!", 1000, this.hives::isEmpty, StringPlaceholders::empty));
+        this.minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-hives", ChatColor.RED + "No nearby hives!", 1000, this.hives::isEmpty, StringPlaceholders::empty));
     }
 
     @Override
@@ -130,7 +133,6 @@ public class BeeKeepingModule extends MinionModule {
         }
 
         inventoryModule.get().addItem(result);
-
     }
 
     @Override

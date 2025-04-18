@@ -39,11 +39,13 @@ import org.bukkit.event.Listener;
 public class MinionModuleManager extends Manager implements Listener {
 
     private final Map<String, RegisteredMinionModule<?>> registeredModules;
+    private final Map<String, SettingContainerConfig> moduleSettings;
 
     public MinionModuleManager(RosePlugin rosePlugin) {
         super(rosePlugin);
 
         this.registeredModules = new HashMap<>();
+        this.moduleSettings = new HashMap<>();
 
         Bukkit.getPluginManager().registerEvents(this, this.rosePlugin);
     }
@@ -53,15 +55,14 @@ public class MinionModuleManager extends Manager implements Listener {
         MinionModuleRegistrationEvent event = new MinionModuleRegistrationEvent();
         Bukkit.getPluginManager().callEvent(event);
 
-        for (Map.Entry<String, RegisteredMinionModule<?>> entry : event.getRegisteredModules().entrySet()) {
+        for (Map.Entry<String, RegisteredMinionModule<?>> entry : event.getRegisteredModules().entrySet())
             this.createAndLoadModuleFile(entry.getKey(), entry.getValue());
-            this.registeredModules.put(entry.getKey(), entry.getValue());
-        }
     }
 
     @Override
     public void disable() {
         this.registeredModules.clear();
+        this.moduleSettings.clear();
     }
 
     public MinionModule createModule(String name, Minion minion) {
@@ -80,6 +81,10 @@ public class MinionModuleManager extends Manager implements Listener {
         }
 
         return null;
+    }
+
+    public SettingContainerConfig getModuleSettingConfig(String name) {
+        return this.moduleSettings.get(name).copy();
     }
 
     public boolean isValidModule(String name) {
@@ -107,11 +112,15 @@ public class MinionModuleManager extends Manager implements Listener {
                 setting.writeWithDefault(config);
                 changed = true;
             }
-            setting.readDefault(config);
         }
 
         if (changed)
             config.save(file);
+
+        this.registeredModules.put(name, registeredModule);
+
+        SettingContainerConfig moduleSettingConfig = new SettingContainerConfig(registeredModule.settings(), config);
+        this.moduleSettings.put(name, moduleSettingConfig);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

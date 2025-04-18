@@ -23,6 +23,10 @@ class SettingValue<T> implements PDCSerializable {
         return this.value;
     }
 
+    void changeValue(T value) {
+        this.value = value;
+    }
+
     public void setValue(T value) {
         this.value = value;
         this.modified = true;

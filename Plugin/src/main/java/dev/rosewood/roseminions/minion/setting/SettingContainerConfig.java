@@ -4,7 +4,6 @@ import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.config.SettingHolder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -14,7 +13,7 @@ import org.bukkit.configuration.ConfigurationSection;
 public class SettingContainerConfig {
 
     private final SettingHolder settings;
-    private final Map<String, Supplier<?>> settingDefaultValueSuppliers;
+    private final Map<String, ValueCombinator<?>> settingDefaultValueSuppliers;
 
     public SettingContainerConfig(SettingHolder settings, ConfigurationSection section) {
         this.settings = settings;
@@ -24,13 +23,15 @@ public class SettingContainerConfig {
             return;
 
         for (RoseSetting<?> setting : this.settings.get())
-            if (!setting.isHidden() && setting.readIsValid(section))
-                this.settingDefaultValueSuppliers.put(setting.getKey(), () -> setting.read(section));
+            if (setting.readIsValid(section))
+                this.settingDefaultValueSuppliers.put(setting.getKey(), new ValueCombinator<>(() -> setting.read(section)));
     }
 
     private SettingContainerConfig(SettingContainerConfig other) {
         this.settings = other.settings;
-        this.settingDefaultValueSuppliers = new HashMap<>(other.settingDefaultValueSuppliers);
+        this.settingDefaultValueSuppliers = other.settingDefaultValueSuppliers.entrySet().stream()
+                .map(x -> Map.entry(x.getKey(), new ValueCombinator<>(x.getValue())))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, HashMap::new));
     }
 
     SettingHolder getSettings() {
@@ -38,21 +39,31 @@ public class SettingContainerConfig {
     }
 
     @SuppressWarnings("unchecked")
-    <T> SettingValue<T> createValue(RoseSetting<T> setting) {
-        Supplier<T> supplier = (Supplier<T>) this.settingDefaultValueSuppliers.get(setting.getKey());
-        return supplier != null ? new SettingValue<>(setting, supplier.get()) : null;
-    }
-
-    @SuppressWarnings("unchecked")
     public <T> T get(RoseSetting<T> setting) {
-        Supplier<T> supplier = (Supplier<T>) this.settingDefaultValueSuppliers.get(setting.getKey());
-        return supplier != null ? supplier.get() : setting.getDefaultValue();
+        ValueCombinator<T> valueCombinator = (ValueCombinator<T>) this.settingDefaultValueSuppliers.get(setting.getKey());
+        if (valueCombinator != null) {
+            T value = valueCombinator.get();
+            if (value != null)
+                return value;
+        }
+        return setting.getDefaultValue();
     }
 
     public void merge(SettingContainerConfig other) {
         if (!other.settings.equals(this.settings))
             throw new IllegalArgumentException("Cannot merge SettingContainerConfigs that do not have the same settings");
-        this.settingDefaultValueSuppliers.putAll(other.settingDefaultValueSuppliers); // TODO: Merge instead of overwriting
+        for (Map.Entry<String, ValueCombinator<?>> entry : other.settingDefaultValueSuppliers.entrySet())
+            this.merge(entry.getKey(), entry.getValue());
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void merge(String key, ValueCombinator<T> otherValueCombinator) {
+        ValueCombinator<T> existing = (ValueCombinator<T>) this.settingDefaultValueSuppliers.get(key);
+        if (existing != null) {
+            existing.combine(otherValueCombinator);
+        } else {
+            this.settingDefaultValueSuppliers.put(key, otherValueCombinator);
+        }
     }
 
     public SettingContainerConfig copy() {

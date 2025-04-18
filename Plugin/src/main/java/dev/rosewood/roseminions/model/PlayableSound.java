@@ -9,11 +9,11 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Entity;
 
-public record PlayableSound(boolean enabled,
+public record PlayableSound(Boolean enabled,
                             Sound sound,
                             SoundCategory category,
-                            float volume,
-                            float pitch) {
+                            Float volume,
+                            Float pitch) implements Mergeable<PlayableSound> {
 
     public static final SettingSerializer<PlayableSound> SERIALIZER = SettingSerializers.ofRecord(PlayableSound.class, instance -> instance.group(
             SettingField.of("enabled", SettingSerializers.BOOLEAN, PlayableSound::enabled, "Whether or not the sound should play"),
@@ -31,6 +31,17 @@ public record PlayableSound(boolean enabled,
     public void play(Entity entity) {
         if (this.enabled)
             entity.getWorld().playSound(entity, this.sound, this.category, this.volume, this.pitch);
+    }
+
+    @Override
+    public PlayableSound merge(PlayableSound other) {
+        return new PlayableSound(
+                Mergeable.merge(this.enabled, other.enabled),
+                Mergeable.merge(this.sound, other.sound),
+                Mergeable.merge(this.category, other.category),
+                Mergeable.merge(this.volume, other.volume),
+                Mergeable.merge(this.pitch, other.pitch)
+        );
     }
 
 }

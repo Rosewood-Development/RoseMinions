@@ -95,7 +95,10 @@ public class FishingModule extends MinionModule {
 
         this.lastEventTime = System.currentTimeMillis();
         this.water = new ArrayList<>();
+    }
 
+    @Override
+    public void finalizeLoad() {
         this.activeControllers.add(new WorkerAreaController<>(
                 this,
                 this.settings.get(WORKER_AREA_PROPERTIES),
@@ -104,7 +107,7 @@ public class FishingModule extends MinionModule {
                 false
         ));
 
-        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-water", ChatColor.RED + "No nearby water!", 1000, this.water::isEmpty, StringPlaceholders::empty));
+        this.minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-water", ChatColor.RED + "No nearby water!", 1000, this.water::isEmpty, StringPlaceholders::empty));
     }
 
     @Override

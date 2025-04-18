@@ -53,7 +53,7 @@ public class ExperiencePickupModule extends MinionModule {
         public static final RoseSetting<Long> UPDATE_FREQUENCY = define(RoseSetting.ofLong("update-frequency", 3000L, "How often the minion will update (in milliseconds)"));
         public static final RoseSetting<Integer> RADIUS = define(RoseSetting.ofInteger("radius", 5, "The radius for the minion to search for items"));
         public static final RoseSetting<PlayableSound> PICKUP_SOUND = define(RoseSetting.of("pickup-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_ITEM_PICKUP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when collecting experience"));
-        public static final RoseSetting<PlayableParticle> PICKUP_PARTICLE = define(RoseSetting.of("pickup-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.DUST, new PlayableParticle.DustOptionsData(Color.fromRGB(0, 255, 0), 1.0F), 5, new Vector(0.1, 0.1, 0.1), 0, false), "The particle to display when collecting experience"));
+        public static final RoseSetting<PlayableParticle> PICKUP_PARTICLE = define(RoseSetting.of("pickup-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.DUST, new PlayableParticle.DustOptionsData(Color.fromRGB(0, 255, 0), 1.0F), 5, new Vector(0.1, 0.1, 0.1), 0.0F, false), "The particle to display when collecting experience"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

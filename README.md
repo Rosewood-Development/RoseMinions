@@ -1,7 +1,7 @@
 ![](https://imgur.com/KGd4Xt9.png)
 
 
-RoseMinions is a plugin that allows the creation of minions to automatically complete tasks.
+RoseMinions is a modular minions plugin that allows designing custom minions to automate tasks.
 
 ### Documentation
 Any and all information you need for the plugin should already be included [in our Wiki](https://github.com/Rosewood-Development/RoseMinions/wiki)!

@@ -21,17 +21,17 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-public record PlayableParticle(boolean enabled,
+public record PlayableParticle(Boolean enabled,
                                Particle particle,
                                ParticleData data,
-                               int amount,
+                               Integer amount,
                                Vector offset,
-                               float extra,
-                               boolean forceSpawn) {
+                               Float extra,
+                               Boolean forceSpawn) implements Mergeable<PlayableParticle> {
 
     public static final SettingSerializer<PlayableParticle> SERIALIZER = SettingSerializers.ofRecord(PlayableParticle.class, instance -> instance.group(
             SettingField.ofOptionalValue("enabled", SettingSerializers.BOOLEAN, PlayableParticle::enabled, true, "Whether or not the particle should play"),
-            SettingField.of("particle", MinionSettingSerializers.PARTICLE, PlayableParticle::particle, "The particle type to spawn"),
+            SettingField.ofOptionalValue("particle", MinionSettingSerializers.PARTICLE, PlayableParticle::particle, null, "The particle type to spawn"),
             SettingField.ofOptionalValue("data", ParticleData.SERIALIZER, PlayableParticle::data, null, "Extra data used to display the particle"),
             SettingField.ofOptionalValue("amount", SettingSerializers.INTEGER, PlayableParticle::amount, 1, "The number of particles to spawn"),
             SettingField.ofOptional("offset", SettingSerializers.VECTOR, PlayableParticle::offset, Vector::new, "The offset from the origin to spawn particles from"),
@@ -63,6 +63,19 @@ public record PlayableParticle(boolean enabled,
 
     public void play(Block block) {
         this.play(block.getLocation().add(0.5, 0.5, 0.5));
+    }
+
+    @Override
+    public PlayableParticle merge(PlayableParticle other) {
+        return new PlayableParticle(
+                Mergeable.merge(this.enabled, other.enabled),
+                Mergeable.merge(this.particle, other.particle),
+                Mergeable.merge(this.data, other.data),
+                Mergeable.merge(this.amount, other.amount),
+                Mergeable.merge(this.offset, other.offset),
+                Mergeable.merge(this.extra, other.extra),
+                Mergeable.merge(this.forceSpawn, other.forceSpawn)
+        );
     }
 
     public interface ParticleData {

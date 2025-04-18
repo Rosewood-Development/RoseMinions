@@ -61,11 +61,11 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
         this.guiFramework = GuiFramework.instantiate(RoseMinions.getInstance());
     }
 
-    protected abstract void buildGui();
-
     public void finalizeLoad() {
 
     }
+
+    protected abstract void buildGui();
 
     public void unload() {
         this.kickOutViewers(); // Close all viewers
@@ -75,6 +75,10 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
 
         // Unload controllers
         this.activeControllers.forEach(ModuleController::unload);
+
+        // Unload GUI
+        if (this.guiContainer != null)
+            GuiFramework.getInstance().getGuiManager().unregisterGui(this.guiContainer);
     }
 
     @Override

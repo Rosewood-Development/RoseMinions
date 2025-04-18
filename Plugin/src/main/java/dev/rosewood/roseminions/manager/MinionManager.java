@@ -5,7 +5,6 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.config.Settings;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,7 +86,7 @@ public class MinionManager extends Manager {
             return;
 
         Minion minion = optionalMinion.get();
-        minion.getModules().forEach(MinionModule::unload); // Unload modules
+        minion.unload();
 
         this.loadedMinions.remove(minion);
 

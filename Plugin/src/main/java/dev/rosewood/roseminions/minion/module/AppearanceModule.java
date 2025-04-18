@@ -48,7 +48,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -66,7 +65,7 @@ public class AppearanceModule extends MinionModule {
         public static final RoseSetting<String> DISPLAY_NAME = define(RoseSetting.ofString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
         public static final RoseSetting<Double> ROTATION_SPEED = define(RoseSetting.ofDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
         public static final RoseSetting<Double> AMBIENT_PARTICLE_CHANCE = define(RoseSetting.ofDouble("ambient-particle-chance", 0.1, "The chance of an ambient particle being spawned each tick"));
-        public static final RoseSetting<PlayableParticle> AMBIENT_PARTICLE = define(RoseSetting.of("ambient-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 1, new Vector(0.25, 0.25, 0.25), 0, false), "The ambient particle to display around the minion while it's working"));
+        public static final RoseSetting<PlayableParticle> AMBIENT_PARTICLE = define(RoseSetting.of("ambient-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 1, new Vector(0.25, 0.25, 0.25), 0.0F, false), "The ambient particle to display around the minion while it's working"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -109,11 +108,16 @@ public class AppearanceModule extends MinionModule {
     }
 
     @Override
+    public void finalizeLoad() {
+        this.updateEntity();
+    }
+
+    @Override
     public void tick() {
         ArmorStand armorStand = this.minion.getDisplayEntity();
         Location centerLocation = this.getCenterVisibleLocation();
         NMSHandler nmsHandler = NMSAdapter.getHandler();
-        nmsHandler.setPositionRotation(armorStand, centerLocation.clone().subtract(0, this.heightOffset, 0));
+        nmsHandler.setPositionRotation(armorStand, centerLocation);
 
         if (System.currentTimeMillis() >= this.nextTicketTime) {
             NotificationTicket notificationTicket = this.getNextNotificationTicket();
@@ -161,7 +165,7 @@ public class AppearanceModule extends MinionModule {
         }
 
         if (MinionUtils.checkChance(this.settings.get(AMBIENT_PARTICLE_CHANCE)))
-            this.settings.get(AMBIENT_PARTICLE).play(this.getCenterVisibleLocation());
+            this.settings.get(AMBIENT_PARTICLE).play(armorStand.getEyeLocation());
     }
 
     @Override
@@ -176,12 +180,6 @@ public class AppearanceModule extends MinionModule {
                 passenger.remove();
             }
         }
-    }
-
-    @Override
-    public void readPDC(PersistentDataContainer container) {
-        super.readPDC(container);
-        this.updateEntity();
     }
 
     @Override
@@ -273,10 +271,10 @@ public class AppearanceModule extends MinionModule {
 
         if (this.settings.get(SMALL)) {
             armorStand.setSmall(true);
-            this.heightOffset = 1.0;
+            this.heightOffset = 0.25;
         } else {
             armorStand.setSmall(false);
-            this.heightOffset = 1.5;
+            this.heightOffset = 1.0;
         }
 
         ItemStack skullItem = new ItemStack(Material.PLAYER_HEAD);
@@ -325,8 +323,8 @@ public class AppearanceModule extends MinionModule {
     private Location getCenterVisibleLocation() {
         // Make the armor stand hover and spin in place around the location
         double theta = thetaTicks * this.settings.get(ROTATION_SPEED);
-        Location centerLocation = this.minion.getCenterLocation().add(0, 0.5, 0);
-        centerLocation.setY(centerLocation.getY() - this.heightOffset + Math.sin(theta) * 0.2 + this.heightOffset);
+        Location centerLocation = this.minion.getCenterLocation();
+        centerLocation.setY(centerLocation.getY() + Math.sin(theta) * 0.2 - this.heightOffset);
         centerLocation.setYaw((float) theta * 100);
         return centerLocation;
     }

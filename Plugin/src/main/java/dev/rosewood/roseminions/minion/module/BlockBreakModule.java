@@ -67,7 +67,10 @@ public class BlockBreakModule extends MinionModule {
         super(minion, DefaultMinionModules.BLOCK_BREAK, Settings.INSTANCE);
 
         this.blocks = new ArrayList<>();
+    }
 
+    @Override
+    public void finalizeLoad() {
         this.activeControllers.add(new WorkerAreaController<>(
                 this,
                 this.settings.get(WORKER_AREA_PROPERTIES),
@@ -76,7 +79,7 @@ public class BlockBreakModule extends MinionModule {
                 false
         ));
 
-        minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-blocks", ChatColor.RED + "No nearby blocks!", 1000, this.blocks::isEmpty, StringPlaceholders::empty));
+        this.minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-blocks", ChatColor.RED + "No nearby blocks!", 1000, this.blocks::isEmpty, StringPlaceholders::empty));
     }
 
     @Override

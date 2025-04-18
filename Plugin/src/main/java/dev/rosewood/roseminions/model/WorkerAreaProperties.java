@@ -6,12 +6,12 @@ import dev.rosewood.rosegarden.config.SettingSerializers;
 import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
 import org.bukkit.util.Vector;
 
-public record WorkerAreaProperties(int radius,
+public record WorkerAreaProperties(Integer radius,
                                    WorkerAreaController.ScanShape scanShape,
                                    Vector centerOffset,
                                    WorkerAreaController.ScanDirection scanDirection,
-                                   boolean shuffleScan,
-                                   long updateFrequency) {
+                                   Boolean shuffleScan,
+                                   Long updateFrequency) implements Mergeable<WorkerAreaProperties> {
 
     public static final SettingSerializer<WorkerAreaProperties> SERIALIZER = SettingSerializers.ofRecord(WorkerAreaProperties.class, instance -> instance.group(
             SettingField.of("radius", SettingSerializers.INTEGER, WorkerAreaProperties::radius, "The max distance in blocks from the minion to work"),
@@ -21,5 +21,17 @@ public record WorkerAreaProperties(int radius,
             SettingField.of("shuffle-scan", SettingSerializers.BOOLEAN, WorkerAreaProperties::shuffleScan, "true to shuffle the blocks to be scanned, false to scan in lines"),
             SettingField.of("update-frequency", SettingSerializers.LONG, WorkerAreaProperties::updateFrequency, "How often the worker area is refreshed (in milliseconds)")
     ).apply(instance, WorkerAreaProperties::new));
+
+    @Override
+    public WorkerAreaProperties merge(WorkerAreaProperties other) {
+        return new WorkerAreaProperties(
+                Mergeable.merge(this.radius, other.radius),
+                Mergeable.merge(this.scanShape, other.scanShape),
+                Mergeable.merge(this.centerOffset, other.centerOffset),
+                Mergeable.merge(this.scanDirection, other.scanDirection),
+                Mergeable.merge(this.shuffleScan, other.shuffleScan),
+                Mergeable.merge(this.updateFrequency, other.updateFrequency)
+        );
+    }
 
 }

@@ -44,18 +44,8 @@ public class MinionPickupListener implements Listener {
             return;
         }
 
-        Minion minion = minionOptional.get();
-        Player player = event.getPlayer();
-        if (!minion.getOwner().equals(player.getUniqueId())) {
-
-            this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "minion-no-permission");
-            return;
-        }
-
-        if (!player.isSneaking()) {
-            minion.openGui(player);
-            event.setCancelled(true);
-        }
+        event.setCancelled(true);
+        this.handleInteraction(minionManager, minionOptional.get(), event.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -73,9 +63,10 @@ public class MinionPickupListener implements Listener {
         }
 
         event.setCancelled(true);
+        this.handleInteraction(minionManager, minionOptional.get(), event.getPlayer());
+    }
 
-        Minion minion = minionOptional.get();
-        Player player = event.getPlayer();
+    private void handleInteraction(MinionManager minionManager, Minion minion, Player player) {
         if (!minion.getOwner().equals(player.getUniqueId())) {
             this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "minion-no-permission");
             return;
@@ -86,10 +77,10 @@ public class MinionPickupListener implements Listener {
             return;
         }
 
+        minion.kickOutViewers();
+
         ItemStack itemStack = minion.getRankData().getDisplayItemStack();
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null)
-            throw new IllegalStateException("ItemStack does not have any ItemMeta");
 
         PersistentDataContainer pdc = itemMeta.getPersistentDataContainer();
         PersistentDataAdapterContext context = pdc.getAdapterContext();

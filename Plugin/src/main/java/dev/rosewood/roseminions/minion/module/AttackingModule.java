@@ -41,7 +41,7 @@ public class AttackingModule extends MinionModule {
         public static final RoseSetting<Integer> DAMAGE_AMOUNT = define(RoseSetting.ofInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
         public static final RoseSetting<Integer> NUMBER_OF_TARGETS = define(RoseSetting.ofInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
         public static final RoseSetting<PlayableSound> ATTACK_SOUND = define(RoseSetting.of("attack-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when attacking"));
-        public static final RoseSetting<PlayableParticle> ATTACK_PARTICLE = define(RoseSetting.of("attack-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.SWEEP_ATTACK, null, 1, new Vector(), 0, false), "The particle to display at the entity when attacking"));
+        public static final RoseSetting<PlayableParticle> ATTACK_PARTICLE = define(RoseSetting.of("attack-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.SWEEP_ATTACK, null, 1, new Vector(), 0.0F, false), "The particle to display at the entity when attacking"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->

@@ -17,17 +17,8 @@ public class SettingContainer implements PDCSerializable {
     public SettingContainer(SettingHolder settings) {
         this.settings = settings;
         this.settingValues = new HashMap<>();
-        this.loadDefaults();
-    }
-
-    private void loadDefaults() {
-        for (RoseSetting<?> setting : this.settings.get())
-            this.loadDefault(setting);
-    }
-
-    private <T> void loadDefault(RoseSetting<T> setting) {
-        SettingValue<T> settingValue = new SettingValue<>(setting, setting.getDefaultValue());
-        this.settingValues.put(setting.getKey(), settingValue);
+        for (RoseSetting<?> setting : settings.get())
+            this.settingValues.put(setting.getKey(), new SettingValue<>(setting, null));
     }
 
     public <T> T get(RoseSetting<T> setting) {
@@ -75,16 +66,22 @@ public class SettingContainer implements PDCSerializable {
         }
     }
 
-    public void loadConfig(SettingContainerConfig settingsConfig) {
-        if (!this.settings.equals(settingsConfig.getSettings()))
+    public void loadConfig(SettingContainerConfig settingConfig) {
+        if (!this.settings.equals(settingConfig.getSettings()))
             throw new IllegalArgumentException("Cannot load SettingContainerConfig that does not have the same settings as this SettingContainer");
 
-        for (RoseSetting<?> setting : this.settings.get()) {
-            String key = setting.getKey();
-            SettingValue<?> settingValue = settingsConfig.createValue(setting);
-            if (settingValue != null)
-                this.settingValues.put(key, settingValue); // TODO: Merge instead of overwrite
-        }
+        for (RoseSetting<?> setting : this.settings.get())
+            this.loadSetting(setting, settingConfig);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void loadSetting(RoseSetting<T> setting, SettingContainerConfig settingConfig) {
+        SettingValue<T> settingValue = (SettingValue<T>) this.settingValues.get(setting.getKey());
+        if (settingValue == null)
+            throw new IllegalArgumentException("SettingValue was expected to exist, but did not");
+        T value = settingConfig.get(setting);
+        if (value != null)
+            settingValue.changeValue(value);
     }
 
 }

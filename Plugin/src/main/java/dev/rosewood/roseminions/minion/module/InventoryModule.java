@@ -60,6 +60,11 @@ public class InventoryModule extends MinionModule {
     }
 
     @Override
+    public void finalizeLoad() {
+        MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
+    }
+
+    @Override
     protected void buildGui() {
         this.guiContainer = GuiFactory.createContainer();
 
@@ -103,11 +108,6 @@ public class InventoryModule extends MinionModule {
 
         this.guiContainer.addScreen(mainScreen);
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
-    }
-
-    @Override
-    public void finalizeLoad() {
-        MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
     }
 
     /**
