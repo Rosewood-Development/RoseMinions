@@ -36,7 +36,7 @@ public class BeeKeepingModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(RoseSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
+        public static final RoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(RoseSetting.of("worker-area-properties", WorkerAreaProperties.SERIALIZER,
                 () -> new WorkerAreaProperties(5, WorkerAreaController.ScanShape.CUBE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 30000L),
                 "Settings that control the worker area for this module"));
         public static final RoseSetting<Long> HARVEST_FREQUENCY = define(RoseSetting.ofLong("harvest-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));

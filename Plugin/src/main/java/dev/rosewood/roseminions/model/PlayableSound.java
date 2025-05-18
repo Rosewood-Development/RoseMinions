@@ -16,11 +16,11 @@ public record PlayableSound(Boolean enabled,
                             Float pitch) implements Mergeable<PlayableSound> {
 
     public static final SettingSerializer<PlayableSound> SERIALIZER = SettingSerializers.ofRecord(PlayableSound.class, instance -> instance.group(
-            SettingField.of("enabled", SettingSerializers.BOOLEAN, PlayableSound::enabled, "Whether or not the sound should play"),
-            SettingField.of("sound", MinionSettingSerializers.SOUND, PlayableSound::sound, "The sound key to play"),
-            SettingField.of("category", MinionSettingSerializers.SOUND_CATEGORY, PlayableSound::category, "The audio category of the sound to play in"),
-            SettingField.of("volume", SettingSerializers.FLOAT, PlayableSound::volume, "The volume to play at, 1.0 for normal volume"),
-            SettingField.of("pitch", SettingSerializers.FLOAT, PlayableSound::pitch, "The pitch to play at, 1.0 for normal pitch")
+            SettingField.ofOptionalValue("enabled", SettingSerializers.BOOLEAN, PlayableSound::enabled, null, "Whether or not the sound should play"),
+            SettingField.ofOptionalValue("sound", MinionSettingSerializers.SOUND, PlayableSound::sound, null, "The sound key to play"),
+            SettingField.ofOptionalValue("category", MinionSettingSerializers.SOUND_CATEGORY, PlayableSound::category, null, "The audio category of the sound to play in"),
+            SettingField.ofOptionalValue("volume", SettingSerializers.FLOAT, PlayableSound::volume, null, "The volume to play at, 1.0 for normal volume"),
+            SettingField.ofOptionalValue("pitch", SettingSerializers.FLOAT, PlayableSound::pitch, null, "The pitch to play at, 1.0 for normal pitch")
     ).apply(instance, PlayableSound::new));
 
     public void play(Location location) {

@@ -33,8 +33,8 @@ public record PlayableParticle(Boolean enabled,
             SettingField.ofOptionalValue("enabled", SettingSerializers.BOOLEAN, PlayableParticle::enabled, true, "Whether or not the particle should play"),
             SettingField.ofOptionalValue("particle", MinionSettingSerializers.PARTICLE, PlayableParticle::particle, null, "The particle type to spawn"),
             SettingField.ofOptionalValue("data", ParticleData.SERIALIZER, PlayableParticle::data, null, "Extra data used to display the particle"),
-            SettingField.ofOptionalValue("amount", SettingSerializers.INTEGER, PlayableParticle::amount, 1, "The number of particles to spawn"),
-            SettingField.ofOptional("offset", SettingSerializers.VECTOR, PlayableParticle::offset, Vector::new, "The offset from the origin to spawn particles from"),
+            SettingField.ofOptionalValue("amount", SettingSerializers.INTEGER, PlayableParticle::amount, null, "The number of particles to spawn"),
+            SettingField.ofOptionalValue("offset", SettingSerializers.VECTOR, PlayableParticle::offset, null, "The offset from the origin to spawn particles from"),
             SettingField.ofOptionalValue("extra", SettingSerializers.FLOAT, PlayableParticle::extra, 1.0F, "The extra property for the particle spawn data, sometimes affects speed"),
             SettingField.ofOptionalValue("force-spawn", SettingSerializers.BOOLEAN, PlayableParticle::forceSpawn, false, "If true, particles will still be spawned beyond their max render distance")
     ).apply(instance, PlayableParticle::new));

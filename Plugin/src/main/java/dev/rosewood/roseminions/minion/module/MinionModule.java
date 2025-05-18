@@ -61,6 +61,9 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
         this.guiFramework = GuiFramework.instantiate(RoseMinions.getInstance());
     }
 
+    /**
+     * Called when the minion is completely finished loading and is ready for action
+     */
     public void finalizeLoad() {
 
     }
