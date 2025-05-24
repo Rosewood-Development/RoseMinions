@@ -9,18 +9,18 @@ import dev.rosewood.roseminions.hook.StackerHelper;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.model.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
-import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import static dev.rosewood.roseminions.minion.module.ItemPickupModule.Settings.*;
 
-public class ItemPickupModule extends MinionModule {
+public class ItemPickupModule extends EntityAttractorModule<Item> {
 
     public static class Settings implements SettingHolder {
 
@@ -50,24 +50,52 @@ public class ItemPickupModule extends MinionModule {
 
     }
 
-    private long lastPickupTime;
-
     public ItemPickupModule(Minion minion) {
-        super(minion, DefaultMinionModules.ITEM_PICKUP, Settings.INSTANCE);
+        super(minion, DefaultMinionModules.ITEM_PICKUP, Settings.INSTANCE, PICKUP_FREQUENCY, RADIUS);
     }
 
     @Override
-    public void tick() {
-        if (System.currentTimeMillis() - this.lastPickupTime <= this.settings.get(PICKUP_FREQUENCY))
-            return;
+    protected boolean collect(Item item) {
+        Optional<InventoryModule> inventoryModule = this.getModule(InventoryModule.class);
 
-        this.lastPickupTime = System.currentTimeMillis();
+        // Items can never be collected if there is no inventory
+        if (inventoryModule.isEmpty())
+            return false;
 
-        int radius = this.settings.get(RADIUS);
-        this.pickup(this.minion.getWorld().getNearbyEntities(this.minion.getCenterLocation(), radius, radius, radius, entity -> entity.getType() == VersionUtils.ITEM)
-                .stream()
-                .map(x -> (Item) x)
-                .collect(Collectors.toList()));
+        // Add items to the inventory
+        ItemStack itemStack = item.getItemStack();
+        int originalAmount = StackerHelper.getItemStackAmount(item);
+        int maxStackSize = Math.max(1, itemStack.getMaxStackSize());
+
+        int amount = originalAmount;
+        while (amount > 0) {
+            ItemStack toAdd = itemStack.clone();
+            int amountToAdd = Math.min(amount, maxStackSize);
+            toAdd.setAmount(amountToAdd);
+            amount -= amountToAdd;
+            ItemStack overflow = inventoryModule.get().addItem(toAdd);
+            if (overflow != null) {
+                amount += overflow.getAmount();
+                break;
+            }
+        }
+
+        if (amount == 0) {
+            return true; // Item is fully removed
+        } else if (amount != originalAmount) {
+            StackerHelper.setItemStackAmount(item, amount);
+        }
+
+        return false;
+    }
+
+    @Override
+    protected boolean testEntity(Entity entity) {
+        if (entity.getType() != EntityType.ITEM)
+            return false;
+
+        Optional<ItemFilterModule> filterModule = this.getModule(ItemFilterModule.class);
+        return filterModule.isEmpty() || filterModule.get().isAllowed(((Item) entity).getItemStack());
     }
 
     @Override
@@ -81,50 +109,6 @@ public class ItemPickupModule extends MinionModule {
 
         this.guiContainer.addScreen(mainScreen);
         this.guiFramework.getGuiManager().registerGui(this.guiContainer);
-    }
-
-    private void pickup(List<Item> items) {
-        Optional<InventoryModule> inventoryModule = this.getModule(InventoryModule.class);
-        Optional<ItemFilterModule> filterModule = this.getModule(ItemFilterModule.class);
-
-        if (inventoryModule.isEmpty()) {
-            // Teleport items directly under the minion
-            for (Item item : items)
-                if (filterModule.isEmpty() || filterModule.get().isAllowed(item.getItemStack()))
-                    item.teleport(this.minion.getCenterLocation());
-            return;
-        }
-
-        // Add items to the inventory
-        for (Item item : items) {
-            ItemStack itemStack = item.getItemStack();
-            int originalAmount = StackerHelper.getItemStackAmount(item);
-            int maxStackSize = Math.max(1, itemStack.getMaxStackSize());
-
-            // Don't pick up items that are filtered
-            if (filterModule.isPresent() && !filterModule.get().isAllowed(itemStack))
-                continue;
-
-            int amount = originalAmount;
-            while (amount > 0) {
-                ItemStack toAdd = itemStack.clone();
-                int amountToAdd = Math.min(amount, maxStackSize);
-                toAdd.setAmount(amountToAdd);
-                amount -= amountToAdd;
-                ItemStack overflow = inventoryModule.get().addItem(toAdd);
-                if (overflow != null) {
-                    amount += overflow.getAmount();
-                    item.teleport(this.minion.getCenterLocation());
-                    break;
-                }
-            }
-
-            if (amount == 0) {
-                item.remove();
-            } else if (amount != originalAmount) {
-                StackerHelper.setItemStackAmount(item, amount);
-            }
-        }
     }
 
 }

@@ -21,11 +21,7 @@ import dev.rosewood.roseminions.util.SkullUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -44,7 +40,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 import static dev.rosewood.roseminions.minion.module.ExperiencePickupModule.Settings.*;
 
-public class ExperiencePickupModule extends MinionModule {
+public class ExperiencePickupModule extends EntityAttractorModule<ExperienceOrb> {
 
     public static class Settings implements SettingHolder {
 
@@ -78,64 +74,29 @@ public class ExperiencePickupModule extends MinionModule {
 
     }
 
-    private long lastUpdate;
     private final NamespacedKey xpKey;
-    private final Set<ExperienceOrb> attractingOrbs;
 
     public ExperiencePickupModule(Minion minion) {
-        super(minion, DefaultMinionModules.EXPERIENCE_PICKUP, Settings.INSTANCE);
+        super(minion, DefaultMinionModules.EXPERIENCE_PICKUP, Settings.INSTANCE, UPDATE_FREQUENCY, RADIUS);
 
         this.xpKey = new NamespacedKey(RoseMinions.getInstance(), "experience-orb");
-        this.attractingOrbs = new HashSet<>();
     }
 
     @Override
-    public void tick() {
-        int radius = this.settings.get(RADIUS);
-        Vector minionPosition = this.minion.getDisplayEntity().getLocation().toVector();
-        minionPosition.setY(minionPosition.getY() + this.minion.getDisplayEntity().getEyeHeight());
-        int maxExp = this.settings.get(MAX_EXP);
-        Iterator<ExperienceOrb> orbIterator = this.attractingOrbs.iterator();
-        while (orbIterator.hasNext()) {
-            ExperienceOrb orb = orbIterator.next();
-            if (!orb.isValid() || orb.isDead()) {
-                orbIterator.remove();
-                continue;
-            }
+    protected boolean collect(ExperienceOrb orb) {
+        if (this.settings.get(STORED_XP) >= this.settings.get(MAX_EXP))
+            return false;
 
-            Vector attractionVelocity = minionPosition.clone().subtract(orb.getLocation().toVector());
-            double distance = attractionVelocity.length();
-            if (distance > radius) {
-                orbIterator.remove();
-                continue;
-            }
+        int xp = orb.getExperience();
+        this.settings.set(STORED_XP, this.settings.get(STORED_XP) + xp);
+        this.settings.get(PICKUP_SOUND).play(this.minion.getDisplayEntity());
+        this.settings.get(PICKUP_PARTICLE).play(this.minion.getDisplayEntity());
+        return true;
+    }
 
-            if (distance <= 0.2 && this.settings.get(STORED_XP) < maxExp) {
-                // Collect the orb
-                int xp = orb.getExperience();
-                orb.remove();
-                orbIterator.remove();
-
-                this.settings.set(STORED_XP, this.settings.get(STORED_XP) + xp);
-                this.settings.get(PICKUP_SOUND).play(this.minion.getDisplayEntity());
-                this.settings.get(PICKUP_PARTICLE).play(this.minion.getDisplayEntity());
-                continue;
-            }
-
-            double pullStrength = 1.0 - distance / radius;
-            orb.setVelocity(orb.getVelocity().add(attractionVelocity.normalize().multiply(pullStrength * pullStrength * 0.1)));
-        }
-
-        if (System.currentTimeMillis() - this.lastUpdate < this.settings.get(UPDATE_FREQUENCY))
-            return;
-
-        this.lastUpdate = System.currentTimeMillis();
-
-        Predicate<Entity> predicate = entity -> entity.getType() == EntityType.EXPERIENCE_ORB;
-        this.minion.getWorld().getNearbyEntities(this.minion.getLocation(), radius, radius, radius, predicate).stream()
-                .filter(x -> !x.getPersistentDataContainer().has(this.xpKey))
-                .map(x -> (ExperienceOrb) x)
-                .forEach(this.attractingOrbs::add);
+    @Override
+    protected boolean testEntity(Entity entity) {
+        return entity.getType() == EntityType.EXPERIENCE_ORB && !entity.getPersistentDataContainer().has(this.xpKey);
     }
 
     @Override
