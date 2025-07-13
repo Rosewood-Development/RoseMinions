@@ -9,10 +9,12 @@ import dev.rosewood.roseminions.nms.v1_21_R4.hologram.HologramImpl;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
@@ -20,11 +22,13 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_21_R4.CraftWorld;
 import org.bukkit.craftbukkit.v1_21_R4.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_21_R4.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_21_R4.util.CraftChatMessage;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FishHook;
 import org.bukkit.inventory.ItemStack;
 
 public class NMSHandlerImpl implements NMSHandler {
@@ -72,6 +76,11 @@ public class NMSHandlerImpl implements NMSHandler {
     }
 
     @Override
+    public FishHook getLastFishHook() {
+        return (FishHook) fishingHook.getBukkitEntity();
+    }
+
+    @Override
     public void setPositionRotation(Entity entity, Location location) {
         ((CraftEntity) entity).getHandle().moveOrInterpolateTo(new Vec3(location.getX(), location.getY(), location.getZ()), location.getYaw(), location.getPitch());
     }
@@ -84,6 +93,14 @@ public class NMSHandlerImpl implements NMSHandler {
     @Override
     public void setCustomNameUncapped(org.bukkit.entity.Entity entity, String customName) {
         ((CraftEntity) entity).getHandle().setCustomName(CraftChatMessage.fromStringOrNull(customName));
+    }
+
+    @Override
+    public int getBlockExp(Block block, ItemStack tool) {
+        ServerLevel nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
+        BlockPos blockPos = new BlockPos(block.getX(), block.getY(), block.getZ());
+        BlockState state = nmsWorld.getBlockState(blockPos);
+        return state.getBlock().getExpDrop(state, nmsWorld, blockPos, CraftItemStack.asNMSCopy(tool), true);
     }
 
 }

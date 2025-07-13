@@ -25,6 +25,7 @@ import org.bukkit.craftbukkit.v1_21_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_21_R3.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_21_R3.util.CraftChatMessage;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FishHook;
 import org.bukkit.inventory.ItemStack;
 
 public class NMSHandlerImpl implements NMSHandler {
@@ -69,6 +70,11 @@ public class NMSHandlerImpl implements NMSHandler {
                 .filter(x -> !x.isEmpty())
                 .map(CraftItemStack::asBukkitCopy)
                 .toList();
+    }
+
+    @Override
+    public FishHook getLastFishHook() {
+        return (FishHook) fishingHook.getBukkitEntity();
     }
 
     @Override

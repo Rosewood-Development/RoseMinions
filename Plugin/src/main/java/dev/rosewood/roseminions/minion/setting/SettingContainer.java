@@ -1,8 +1,7 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.SettingHolder;
-import dev.rosewood.roseminions.model.PDCSerializable;
+import dev.rosewood.rosegarden.config.PDCRoseSetting;
+import dev.rosewood.roseminions.object.PDCSerializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,31 +10,31 @@ import org.bukkit.persistence.PersistentDataContainer;
 
 public class SettingContainer implements PDCSerializable {
 
-    private final SettingHolder settings;
+    private final PDCSettingHolder settings;
     private final Map<String, SettingValue<?>> settingValues;
 
-    public SettingContainer(SettingHolder settings) {
+    public SettingContainer(PDCSettingHolder settings) {
         this.settings = settings;
         this.settingValues = new HashMap<>();
-        for (RoseSetting<?> setting : settings.get())
+        for (PDCRoseSetting<?> setting : settings.get())
             this.settingValues.put(setting.getKey(), new SettingValue<>(setting, null));
     }
 
-    public <T> T get(RoseSetting<T> setting) {
+    public <T> T get(PDCRoseSetting<T> setting) {
         SettingValue<T> settingValue = this.getItem(setting);
         if (settingValue == null)
             throw new IllegalArgumentException("SettingsContainer does not have " + setting.getKey() + " defined");
         return settingValue.getValue();
     }
 
-    public <T> void set(RoseSetting<T> setting, T value) {
+    public <T> void set(PDCRoseSetting<T> setting, T value) {
         SettingValue<T> settingValue = this.getItem(setting);
         if (settingValue == null)
             throw new IllegalArgumentException("SettingsContainer for does not have " + setting.getKey() + " defined");
         settingValue.setValue(value);
     }
 
-    private <T> SettingValue<T> getItem(RoseSetting<T> setting) {
+    private <T> SettingValue<T> getItem(PDCRoseSetting<T> setting) {
         return this.getItem(setting.getKey());
     }
 
@@ -70,12 +69,12 @@ public class SettingContainer implements PDCSerializable {
         if (!this.settings.equals(settingConfig.getSettings()))
             throw new IllegalArgumentException("Cannot load SettingContainerConfig that does not have the same settings as this SettingContainer");
 
-        for (RoseSetting<?> setting : this.settings.get())
+        for (PDCRoseSetting<?> setting : this.settings.get())
             this.loadSetting(setting, settingConfig);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void loadSetting(RoseSetting<T> setting, SettingContainerConfig settingConfig) {
+    private <T> void loadSetting(PDCRoseSetting<T> setting, SettingContainerConfig settingConfig) {
         SettingValue<T> settingValue = (SettingValue<T>) this.settingValues.get(setting.getKey());
         if (settingValue == null)
             throw new IllegalArgumentException("SettingValue was expected to exist, but did not");

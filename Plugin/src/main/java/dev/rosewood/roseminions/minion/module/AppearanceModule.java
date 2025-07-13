@@ -7,17 +7,17 @@ import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiIcon;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.model.ModuleGuiProperties;
-import dev.rosewood.roseminions.model.NotificationTicket;
-import dev.rosewood.roseminions.model.PlayableParticle;
+import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.NMSHandler;
+import dev.rosewood.roseminions.object.ModuleGuiProperties;
+import dev.rosewood.roseminions.object.NotificationTicket;
+import dev.rosewood.roseminions.object.PlayableParticle;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.SkullUtils;
 import java.util.ArrayList;
@@ -55,17 +55,17 @@ import static dev.rosewood.roseminions.minion.module.AppearanceModule.Settings.*
 
 public class AppearanceModule extends MinionModule {
 
-    public static class Settings implements SettingHolder {
+    public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Boolean> SMALL = define(RoseSetting.ofBoolean("small", true, "If the skull should be small"));
-        public static final RoseSetting<String> TEXTURE = define(RoseSetting.ofString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
-        public static final RoseSetting<String> DISPLAY_NAME = define(RoseSetting.ofString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
-        public static final RoseSetting<Double> ROTATION_SPEED = define(RoseSetting.ofDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
-        public static final RoseSetting<Double> AMBIENT_PARTICLE_CHANCE = define(RoseSetting.ofDouble("ambient-particle-chance", 0.1, "The chance of an ambient particle being spawned each tick"));
-        public static final RoseSetting<PlayableParticle> AMBIENT_PARTICLE = define(RoseSetting.of("ambient-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 1, new Vector(0.25, 0.25, 0.25), 0.0F, false), "The ambient particle to display around the minion while it's working"));
+        public static final PDCRoseSetting<Boolean> SMALL = define(PDCRoseSetting.ofBoolean("small", true, "If the skull should be small"));
+        public static final PDCRoseSetting<String> TEXTURE = define(PDCRoseSetting.ofString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
+        public static final PDCRoseSetting<String> DISPLAY_NAME = define(PDCRoseSetting.ofString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
+        public static final PDCRoseSetting<Double> ROTATION_SPEED = define(PDCRoseSetting.ofDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
+        public static final PDCRoseSetting<Double> AMBIENT_PARTICLE_CHANCE = define(PDCRoseSetting.ofDouble("ambient-particle-chance", 0.1, "The chance of an ambient particle being spawned each tick"));
+        public static final PDCRoseSetting<PlayableParticle> AMBIENT_PARTICLE = define(PDCRoseSetting.of("ambient-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 1, new Vector(0.25, 0.25, 0.25), 0.0F, false), "The ambient particle to display around the minion while it's working"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -76,11 +76,11 @@ public class AppearanceModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<RoseSetting<?>> get() {
+        public List<PDCRoseSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

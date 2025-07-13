@@ -1,9 +1,9 @@
 package dev.rosewood.roseminions.minion.module.controller;
 
 import dev.rosewood.roseminions.minion.module.MinionModule;
-import dev.rosewood.roseminions.model.BlockPosition;
-import dev.rosewood.roseminions.model.ChunkLocation;
-import dev.rosewood.roseminions.model.WorkerAreaProperties;
+import dev.rosewood.roseminions.object.BlockPosition;
+import dev.rosewood.roseminions.object.ChunkLocation;
+import dev.rosewood.roseminions.object.WorkerAreaProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;

@@ -10,6 +10,7 @@ import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
 import dev.rosewood.roseminions.listener.WorldListener;
 import dev.rosewood.roseminions.manager.CommandManager;
+import dev.rosewood.roseminions.manager.HookProviderManager;
 import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
@@ -86,7 +87,8 @@ public class RoseMinions extends RosePlugin {
         return Arrays.asList(
                 MinionModuleManager.class,
                 MinionTypeManager.class,
-                MinionManager.class
+                MinionManager.class,
+                HookProviderManager.class
         );
     }
 

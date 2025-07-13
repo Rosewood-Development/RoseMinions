@@ -1,11 +1,19 @@
 package dev.rosewood.roseminions.util;
 
-import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.rosegarden.utils.NMSUtil;
+import dev.rosewood.roseminions.RoseMinions;
+import dev.rosewood.roseminions.hook.loot.Loot;
+import dev.rosewood.roseminions.manager.HookProviderManager;
+import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
+import dev.rosewood.roseminions.nms.NMSAdapter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.Boss;
 import org.bukkit.entity.Entity;
@@ -77,7 +85,7 @@ public final class MinionUtils {
      * @param sizeSetting The setting for the inventory size
      * @param inventorySetting The setting for the inventory
      */
-    public static void snapInventorySize(SettingContainer settings, RoseSetting<Integer> sizeSetting, RoseSetting<ItemStack[]> inventorySetting) {
+    public static void snapInventorySize(SettingContainer settings, PDCRoseSetting<Integer> sizeSetting, PDCRoseSetting<ItemStack[]> inventorySetting) {
         int originalSize = settings.get(sizeSetting);
         int inventorySize = originalSize;
         if (inventorySize % 9 != 0) {
@@ -104,6 +112,13 @@ public final class MinionUtils {
             System.arraycopy(contents, 0, newContents, 0, Math.min(contents.length, size));
             settings.set(inventorySetting, newContents);
         }
+    }
+
+    public static Loot breakBlock(Minion minion, Block block, ItemStack tool) {
+        List<ItemStack> items = new ArrayList<>(block.getDrops(tool));
+        int experience = NMSAdapter.getHandler().getBlockExp(block, tool);
+        Loot loot = new Loot(items, experience);
+        return RoseMinions.getInstance().getManager(HookProviderManager.class).getLootProvider().destroy(loot, minion, block);
     }
 
 }

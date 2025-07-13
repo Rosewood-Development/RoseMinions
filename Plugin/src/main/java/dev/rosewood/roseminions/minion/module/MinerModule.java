@@ -10,7 +10,7 @@
 //import dev.rosewood.rosegarden.config.SettingSerializers;
 //import dev.rosewood.rosegarden.utils.HexUtils;
 //import dev.rosewood.roseminions.minion.Minion;
-//import dev.rosewood.roseminions.model.ModuleGuiProperties;
+//import dev.rosewood.roseminions.object.ModuleGuiProperties;
 //import dev.rosewood.roseminions.util.MinionUtils;
 //import dev.rosewood.roseminions.util.SkullUtils;
 //import java.util.ArrayList;

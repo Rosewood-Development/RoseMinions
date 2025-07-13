@@ -25,6 +25,7 @@ import dev.rosewood.roseminions.minion.module.MinionModule;
 import dev.rosewood.roseminions.minion.module.PotionEffectModule;
 import dev.rosewood.roseminions.minion.module.ShearingModule;
 import dev.rosewood.roseminions.minion.module.UpgradeModule;
+import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.minion.setting.SettingContainerConfig;
 import java.io.File;
 import java.util.HashMap;
@@ -146,6 +147,6 @@ public class MinionModuleManager extends Manager implements Listener {
 
     public record RegisteredMinionModule<T extends MinionModule>(String name,
                                                                  Function<Minion, T> factory,
-                                                                 SettingHolder settings) { }
+                                                                 PDCSettingHolder settings) { }
 
 }

@@ -6,13 +6,13 @@ import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiButtonFlag;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.SettingHolder;
-import dev.rosewood.rosegarden.config.SettingSerializers;
+import dev.rosewood.rosegarden.config.PDCRoseSetting;
+import dev.rosewood.rosegarden.config.PDCSettingSerializers;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.model.ModuleGuiProperties;
+import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,13 +27,13 @@ import static dev.rosewood.roseminions.minion.module.InventoryModule.Settings.*;
 
 public class InventoryModule extends MinionModule {
 
-    public static class Settings implements SettingHolder {
+    public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<Integer> INVENTORY_SIZE = define(RoseSetting.ofInteger("inventory-size", 27, "How many individual items can be stored"));
-        public static final RoseSetting<ItemStack[]> INVENTORY_CONTENTS = define(RoseSetting.ofHidden("inventory-contents", SettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
+        public static final PDCRoseSetting<Integer> INVENTORY_SIZE = define(PDCRoseSetting.ofInteger("inventory-size", 27, "How many individual items can be stored"));
+        public static final PDCRoseSetting<ItemStack[]> INVENTORY_CONTENTS = define(PDCRoseSetting.ofHidden("inventory-contents", PDCSettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -44,11 +44,11 @@ public class InventoryModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<RoseSetting<?>> get() {
+        public List<PDCRoseSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

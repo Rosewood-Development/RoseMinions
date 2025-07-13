@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.model;
+package dev.rosewood.roseminions.object;
 
 /**
  * Represents something that can be updated

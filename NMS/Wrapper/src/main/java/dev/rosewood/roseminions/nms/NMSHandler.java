@@ -3,7 +3,9 @@ package dev.rosewood.roseminions.nms;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import java.util.List;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.FishHook;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -19,6 +21,8 @@ public interface NMSHandler {
     ItemStack deserializeItemStack(byte[] bytes);
 
     List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod);
+
+    FishHook getLastFishHook();
 
     void setPositionRotation(Entity entity, Location location);
 
@@ -38,5 +42,9 @@ public interface NMSHandler {
      * @param customName The custom name to set
      */
     void setCustomNameUncapped(Entity entity, String customName);
+
+    default int getBlockExp(Block block, ItemStack tool) {
+        return 0;
+    }
 
 }

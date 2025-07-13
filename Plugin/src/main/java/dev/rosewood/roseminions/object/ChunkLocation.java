@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.model;
+package dev.rosewood.roseminions.object;
 
 public record ChunkLocation(String world,
                             int x,

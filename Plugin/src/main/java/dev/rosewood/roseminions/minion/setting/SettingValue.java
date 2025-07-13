@@ -1,21 +1,21 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.roseminions.model.PDCSerializable;
+import dev.rosewood.rosegarden.config.PDCRoseSetting;
+import dev.rosewood.roseminions.object.PDCSerializable;
 import org.bukkit.persistence.PersistentDataContainer;
 
 class SettingValue<T> implements PDCSerializable {
 
-    private final RoseSetting<T> setting;
+    private final PDCRoseSetting<T> setting;
     private T value;
     private boolean modified;
 
-    public SettingValue(RoseSetting<T> setting, T value) {
+    public SettingValue(PDCRoseSetting<T> setting, T value) {
         this.setting = setting;
         this.value = value;
     }
 
-    public RoseSetting<T> getSetting() {
+    public PDCRoseSetting<T> getSetting() {
         return this.setting;
     }
 

@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.model;
+package dev.rosewood.roseminions.object;
 
 import dev.rosewood.roseminions.minion.module.MinionModule;
 import java.util.Optional;

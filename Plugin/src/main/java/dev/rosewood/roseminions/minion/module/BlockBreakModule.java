@@ -3,15 +3,15 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
-import dev.rosewood.roseminions.model.BlockPosition;
-import dev.rosewood.roseminions.model.ModuleGuiProperties;
-import dev.rosewood.roseminions.model.NotificationTicket;
-import dev.rosewood.roseminions.model.WorkerAreaProperties;
+import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.object.BlockPosition;
+import dev.rosewood.roseminions.object.ModuleGuiProperties;
+import dev.rosewood.roseminions.object.NotificationTicket;
+import dev.rosewood.roseminions.object.WorkerAreaProperties;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,16 +28,16 @@ import static dev.rosewood.roseminions.minion.module.BlockBreakModule.Settings.*
 
 public class BlockBreakModule extends MinionModule {
 
-    public static class Settings implements SettingHolder {
+    public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final RoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(RoseSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
+        public static final PDCRoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(PDCRoseSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
                 () -> new WorkerAreaProperties(3, WorkerAreaController.ScanShape.CUBE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 5000L),
                 "Settings that control the worker area for this module"));
-        public static final RoseSetting<Long> BREAK_FREQUENCY = define(RoseSetting.ofLong("break-frequency", 1000L, "How often blocks will be broken (in milliseconds)"));
-        public static final RoseSetting<Integer> BREAK_AMOUNT = define(RoseSetting.ofInteger("break-amount", 1, "How many blocks to break at a time"));
+        public static final PDCRoseSetting<Long> BREAK_FREQUENCY = define(PDCRoseSetting.ofLong("break-frequency", 1000L, "How often blocks will be broken (in milliseconds)"));
+        public static final PDCRoseSetting<Integer> BREAK_AMOUNT = define(PDCRoseSetting.ofInteger("break-amount", 1, "How many blocks to break at a time"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -48,11 +48,11 @@ public class BlockBreakModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<RoseSetting<?>> get() {
+        public List<PDCRoseSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> RoseSetting<T> define(RoseSetting<T> setting) {
+        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

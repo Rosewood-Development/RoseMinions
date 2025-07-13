@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.minion.module;
 
-import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.SettingHolder;
+import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.roseminions.minion.Minion;
+import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -11,14 +11,14 @@ import org.bukkit.util.Vector;
 
 public abstract class EntityAttractorModule<T extends Entity> extends MinionModule {
 
-    private final RoseSetting<Long> updateFrequencySetting;
-    private final RoseSetting<Integer> radiusSetting;
+    private final PDCRoseSetting<Long> updateFrequencySetting;
+    private final PDCRoseSetting<Integer> radiusSetting;
 
     private final Set<T> attractingEntities;
     private long lastUpdate;
 
-    public EntityAttractorModule(Minion minion, String moduleName, SettingHolder settings,
-                                 RoseSetting<Long> updateFrequencySetting, RoseSetting<Integer> radiusSetting) {
+    public EntityAttractorModule(Minion minion, String moduleName, PDCSettingHolder settings,
+                                 PDCRoseSetting<Long> updateFrequencySetting, PDCRoseSetting<Integer> radiusSetting) {
         super(minion, moduleName, settings);
         this.updateFrequencySetting = updateFrequencySetting;
         this.radiusSetting = radiusSetting;

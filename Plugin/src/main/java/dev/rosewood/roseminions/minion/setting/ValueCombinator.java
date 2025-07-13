@@ -1,6 +1,6 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.roseminions.model.Mergeable;
+import dev.rosewood.roseminions.object.Mergeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;

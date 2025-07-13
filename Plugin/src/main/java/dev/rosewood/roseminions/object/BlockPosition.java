@@ -1,4 +1,4 @@
-package dev.rosewood.roseminions.model;
+package dev.rosewood.roseminions.object;
 
 import org.bukkit.World;
 import org.bukkit.block.Block;
