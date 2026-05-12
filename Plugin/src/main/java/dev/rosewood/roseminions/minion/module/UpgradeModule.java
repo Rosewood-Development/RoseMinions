@@ -4,10 +4,10 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.framework.util.GuiUtil;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +22,7 @@ public class UpgradeModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -33,11 +33,11 @@ public class UpgradeModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

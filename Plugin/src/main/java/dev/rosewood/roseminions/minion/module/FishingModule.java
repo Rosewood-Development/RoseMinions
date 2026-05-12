@@ -3,12 +3,9 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
-import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.hook.loot.Loot;
 import dev.rosewood.roseminions.manager.HookProviderManager;
 import dev.rosewood.roseminions.minion.Minion;
@@ -22,6 +19,8 @@ import dev.rosewood.roseminions.object.NotificationTicket;
 import dev.rosewood.roseminions.object.PlayableParticle;
 import dev.rosewood.roseminions.object.PlayableSound;
 import dev.rosewood.roseminions.object.WorkerAreaProperties;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
@@ -54,21 +53,21 @@ public class FishingModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(PDCRoseSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
+        public static final MinionSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(MinionSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
                 () -> new WorkerAreaProperties(5, WorkerAreaController.ScanShape.CUBE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 30000L),
                 "Settings that control the worker area for this module"));
-        public static final PDCRoseSetting<Long> FISH_MIN_DELAY = define(PDCRoseSetting.ofLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
-        public static final PDCRoseSetting<Long> FISH_MAX_DELAY = define(PDCRoseSetting.ofLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
-        public static final PDCRoseSetting<Long> FISH_LURE_DELAY_OFFSET = define(PDCRoseSetting.ofLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
-        public static final PDCRoseSetting<Long> REEL_IN_MIN_DELAY = define(PDCRoseSetting.ofLong("reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)"));
-        public static final PDCRoseSetting<Long> REEL_IN_MAX_DELAY = define(PDCRoseSetting.ofLong("reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)"));
-        public static final PDCRoseSetting<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS = define(PDCRoseSetting.of("tool-enchantments", PDCSettingSerializers.ofMap(MinionSettingSerializers.ENCHANTMENT, PDCSettingSerializers.INTEGER), () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod"));
-        public static final PDCRoseSetting<PlayableSound> REEL_IN_SOUND = define(PDCRoseSetting.of("reel-in-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish"));
-        public static final PDCRoseSetting<PlayableSound> BOBBER_SOUND = define(PDCRoseSetting.of("fish-caught-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
-        public static final PDCRoseSetting<PlayableParticle> REEL_IN_PARTICLES = define(PDCRoseSetting.of("reel-in-particles", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.SPLASH, null, 3, new Vector(0.3, 0.1, 0.3), 0.1f, false), "Particles to play when reeling in a fish"));
-        public static final PDCRoseSetting<PlayableParticle> REEL_IN_BUBBLE_PARTICLES = define(PDCRoseSetting.of("reel-in-bubble-particles", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.BUBBLE, null, 2, new Vector(0.2, 0.1, 0.2), 0.1f, false), "Secondary particles to play when reeling in a fish"));
+        public static final MinionSetting<Long> FISH_MIN_DELAY = define(MinionSetting.ofLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
+        public static final MinionSetting<Long> FISH_MAX_DELAY = define(MinionSetting.ofLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
+        public static final MinionSetting<Long> FISH_LURE_DELAY_OFFSET = define(MinionSetting.ofLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
+        public static final MinionSetting<Long> REEL_IN_MIN_DELAY = define(MinionSetting.ofLong("reel-in-min-delay", 1000L, "The minimum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final MinionSetting<Long> REEL_IN_MAX_DELAY = define(MinionSetting.ofLong("reel-in-max-delay", 4000L, "The maximum amount of time it takes to reel in a fish (in milliseconds)"));
+        public static final MinionSetting<Map<Enchantment, Integer>> TOOL_ENCHANTMENTS = define(MinionSetting.of("tool-enchantments", DataSerializers.ofMap(DataSerializers.ENCHANTMENT, DataSerializers.INTEGER), () -> Map.of(VersionUtils.LUCK_OF_THE_SEA, 0, Enchantment.LURE, 0), "The enchantments to apply to the fishing rod"));
+        public static final MinionSetting<PlayableSound> REEL_IN_SOUND = define(MinionSetting.of("reel-in-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when the minion reels in a fish"));
+        public static final MinionSetting<PlayableSound> BOBBER_SOUND = define(MinionSetting.of("fish-caught-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_FISHING_BOBBER_SPLASH, SoundCategory.PLAYERS, 0.25f, 1.0f), "The sound to play when a fish is caught on the bobber"));
+        public static final MinionSetting<PlayableParticle> REEL_IN_PARTICLES = define(MinionSetting.of("reel-in-particles", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.SPLASH, null, 3, new Vector(0.3, 0.1, 0.3), 0.1f, false), "Particles to play when reeling in a fish"));
+        public static final MinionSetting<PlayableParticle> REEL_IN_BUBBLE_PARTICLES = define(MinionSetting.of("reel-in-bubble-particles", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.BUBBLE, null, 2, new Vector(0.2, 0.1, 0.2), 0.1f, false), "Secondary particles to play when reeling in a fish"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -79,11 +78,11 @@ public class FishingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

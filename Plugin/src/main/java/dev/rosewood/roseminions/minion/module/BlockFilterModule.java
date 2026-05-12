@@ -6,14 +6,14 @@ import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiButtonFlag;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
+import dev.rosewood.rosegarden.config.RoseSetting;
 import dev.rosewood.rosegarden.utils.HexUtils;
-import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.object.FilterType;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,11 +31,11 @@ public class BlockFilterModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<Integer> INVENTORY_SIZE = define(PDCRoseSetting.ofInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
-        public static final PDCRoseSetting<ItemStack[]> FILTER_ITEMS = define(PDCRoseSetting.ofHidden("filter-items", PDCSettingSerializers.ofArray(MinionSettingSerializers.ITEMSTACK), () -> new ItemStack[27]));
-        public static final PDCRoseSetting<FilterType> FILTER_TYPE = define(PDCRoseSetting.ofEnum("filter-type", FilterType.class, FilterType.WHITELIST, "The type of filter"));
+        public static final MinionSetting<Integer> INVENTORY_SIZE = define(MinionSetting.ofInteger("inventory-size", 27, "How many individual items can be stored for filtering"));
+        public static final MinionSetting<ItemStack[]> FILTER_ITEMS = define(MinionSetting.ofHidden("filter-items", DataSerializers.ofArray(DataSerializers.ITEMSTACK), () -> new ItemStack[27]));
+        public static final MinionSetting<FilterType> FILTER_TYPE = define(MinionSetting.ofEnum("filter-type", FilterType.class, FilterType.WHITELIST, "The type of filter"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -46,11 +46,11 @@ public class BlockFilterModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

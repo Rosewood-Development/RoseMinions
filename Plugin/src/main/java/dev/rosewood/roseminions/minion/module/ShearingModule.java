@@ -3,11 +3,11 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.PlayableSound;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.rosestacker.lib.rosegarden.compatibility.CompatibilityAdapter;
 import dev.rosewood.rosestacker.lib.rosegarden.compatibility.handler.ShearedHandler;
@@ -33,12 +33,12 @@ public class ShearingModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<Integer> RADIUS = define(PDCRoseSetting.ofInteger("radius", 3, "The radius in which to shear sheep"));
-        public static final PDCRoseSetting<Long> UPDATE_FREQUENCY = define(PDCRoseSetting.ofLong("update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)"));
-        public static final PDCRoseSetting<Integer> NUMBER_OF_TARGETS = define(PDCRoseSetting.ofInteger("number-of-targets", 5, "The number of sheep that can be sheared at once"));
-        public static final PDCRoseSetting<PlayableSound> SHEAR_SOUND = define(PDCRoseSetting.of("shear-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_SHEEP_SHEAR, SoundCategory.NEUTRAL, 0.5F, 1.0F), "The sound to play when a sheep is sheared"));
+        public static final MinionSetting<Integer> RADIUS = define(MinionSetting.ofInteger("radius", 3, "The radius in which to shear sheep"));
+        public static final MinionSetting<Long> UPDATE_FREQUENCY = define(MinionSetting.ofLong("update-frequency", 5000L, "How often sheep will be sheared (in milliseconds)"));
+        public static final MinionSetting<Integer> NUMBER_OF_TARGETS = define(MinionSetting.ofInteger("number-of-targets", 5, "The number of sheep that can be sheared at once"));
+        public static final MinionSetting<PlayableSound> SHEAR_SOUND = define(MinionSetting.of("shear-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_SHEEP_SHEAR, SoundCategory.NEUTRAL, 0.5F, 1.0F), "The sound to play when a sheep is sheared"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -49,11 +49,11 @@ public class ShearingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

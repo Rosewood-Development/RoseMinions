@@ -4,7 +4,7 @@ import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
-import dev.rosewood.roseminions.config.Settings;
+import dev.rosewood.roseminions.config.SettingKey;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
 import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
@@ -67,7 +67,7 @@ public class RoseMinions extends RosePlugin {
 
     @Override
     protected SettingHolder getRoseConfigSettingHolder() {
-        return Settings.INSTANCE;
+        return SettingKey.INSTANCE;
     }
 
     @Override

@@ -2,8 +2,6 @@ package dev.rosewood.roseminions.manager;
 
 import dev.rosewood.rosegarden.RosePlugin;
 import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
-import dev.rosewood.rosegarden.config.RoseSetting;
-import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.roseminions.event.MinionModuleRegistrationEvent;
 import dev.rosewood.roseminions.minion.Minion;
@@ -27,6 +25,7 @@ import dev.rosewood.roseminions.minion.module.ShearingModule;
 import dev.rosewood.roseminions.minion.module.UpgradeModule;
 import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.minion.setting.SettingContainerConfig;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,7 +107,7 @@ public class MinionModuleManager extends Manager implements Listener {
         boolean changed = !file.exists();
         CommentedFileConfiguration config = CommentedFileConfiguration.loadConfiguration(file);
 
-        for (RoseSetting<?> setting : registeredModule.settings().get()) {
+        for (MinionSetting<?> setting : registeredModule.settings().get()) {
             if (!setting.readIsValid(config)) {
                 setting.writeWithDefault(config);
                 changed = true;

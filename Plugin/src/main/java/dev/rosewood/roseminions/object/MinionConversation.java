@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.object;
 
-import dev.rosewood.rosegarden.config.PDCSettingField;
-import dev.rosewood.rosegarden.config.PDCSettingSerializer;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
+import dev.rosewood.roseminions.setting.DataSerializer;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.SettingField;
 import java.util.List;
 
 /**
@@ -16,11 +16,11 @@ public record MinionConversation(int participants,
                                  int radius,
                                  List<String> messages) {
 
-    public static final PDCSettingSerializer<MinionConversation> SERIALIZER = PDCSettingSerializers.ofRecord(MinionConversation.class, instance -> instance.group(
-            PDCSettingField.of("participants", PDCSettingSerializers.INTEGER, MinionConversation::participants, "The number of minions to in the conversation"),
-            PDCSettingField.of("chance", PDCSettingSerializers.DOUBLE, MinionConversation::chance, "The chance of this conversation happening"),
-            PDCSettingField.of("radius", PDCSettingSerializers.INTEGER, MinionConversation::radius, "The radius in blocks to search for nearby minions"),
-            PDCSettingField.of("messages", PDCSettingSerializers.STRING_LIST, MinionConversation::messages, "The messages for this conversation")
+    public static final DataSerializer<MinionConversation> SERIALIZER = DataSerializers.ofRecord(MinionConversation.class, instance -> instance.group(
+            SettingField.of("participants", DataSerializers.INTEGER, MinionConversation::participants, "The number of minions to in the conversation"),
+            SettingField.of("chance", DataSerializers.DOUBLE, MinionConversation::chance, "The chance of this conversation happening"),
+            SettingField.of("radius", DataSerializers.INTEGER, MinionConversation::radius, "The radius in blocks to search for nearby minions"),
+            SettingField.of("messages", DataSerializers.STRING_LIST, MinionConversation::messages, "The messages for this conversation")
     ).apply(instance, MinionConversation::new));
 
     /**

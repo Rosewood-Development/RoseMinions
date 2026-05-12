@@ -3,12 +3,11 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
-import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,11 +22,11 @@ public class PotionEffectModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<Integer> RADIUS = define(PDCRoseSetting.ofInteger("radius", 10, "The radius in blocks to search for entities"));
-        public static final PDCRoseSetting<List<PotionEffect>> EFFECTS = define(PDCRoseSetting.of("effects", PDCSettingSerializers.ofList(MinionSettingSerializers.POTION_EFFECT), () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects to apply to nearby entities"));
-        public static final PDCRoseSetting<Long> UPDATE_FREQUENCY = define(PDCRoseSetting.ofLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
+        public static final MinionSetting<Integer> RADIUS = define(MinionSetting.ofInteger("radius", 10, "The radius in blocks to search for entities"));
+        public static final MinionSetting<List<PotionEffect>> EFFECTS = define(MinionSetting.of("effects", DataSerializers.ofList(DataSerializers.POTION_EFFECT), () -> List.of(new PotionEffect(PotionEffectType.SPEED, 100, 0)), "The effects to apply to nearby entities"));
+        public static final MinionSetting<Long> UPDATE_FREQUENCY = define(MinionSetting.ofLong("update-frequency", 2500L, "How often the effects will be applied (in milliseconds)"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -38,11 +37,11 @@ public class PotionEffectModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

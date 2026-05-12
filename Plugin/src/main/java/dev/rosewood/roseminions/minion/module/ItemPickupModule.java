@@ -3,11 +3,11 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.roseminions.hook.StackerHelper;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,10 +25,10 @@ public class ItemPickupModule extends EntityAttractorModule<Item> {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<Integer> RADIUS = define(PDCRoseSetting.ofInteger("radius", 5, "The radius in which to pick up items"));
-        public static final PDCRoseSetting<Long> PICKUP_FREQUENCY = define(PDCRoseSetting.ofLong("pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)"));
+        public static final MinionSetting<Integer> RADIUS = define(MinionSetting.ofInteger("radius", 5, "The radius in which to pick up items"));
+        public static final MinionSetting<Long> PICKUP_FREQUENCY = define(MinionSetting.ofLong("pickup-frequency", 1000L, "How often items will be picked up (in milliseconds)"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -39,11 +39,11 @@ public class ItemPickupModule extends EntityAttractorModule<Item> {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

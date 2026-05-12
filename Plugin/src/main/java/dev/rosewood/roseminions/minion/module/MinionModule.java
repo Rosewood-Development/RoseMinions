@@ -5,7 +5,6 @@ import dev.rosewood.guiframework.GuiFramework;
 import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiContainer;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.roseminions.RoseMinions;
@@ -18,6 +17,7 @@ import dev.rosewood.roseminions.object.Modular;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.PDCSerializable;
 import dev.rosewood.roseminions.object.Updatable;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,7 +36,7 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
     private static final NamespacedKey KEY_SETTINGS = KeyHelper.get("settings");
     private static final NamespacedKey KEY_MODULES = KeyHelper.get("modules");
 
-    public static final PDCRoseSetting<ModuleGuiProperties> GUI_PROPERTIES = PDCRoseSetting.of("gui", ModuleGuiProperties.SERIALIZER, () ->
+    public static final MinionSetting<ModuleGuiProperties> GUI_PROPERTIES = MinionSetting.of("gui", ModuleGuiProperties.SERIALIZER, () ->
             new ModuleGuiProperties("GUI Title", Material.BARRIER, "Module",
                     List.of("", MinionUtils.SECONDARY_COLOR + "A minion module.", MinionUtils.SECONDARY_COLOR + "Left-click to open.", MinionUtils.SECONDARY_COLOR + "Right-click to edit settings.")),
             "Module GUI properties");

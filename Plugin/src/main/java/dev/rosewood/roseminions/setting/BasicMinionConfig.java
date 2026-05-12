@@ -1,0 +1,145 @@
+package dev.rosewood.roseminions.setting;
+
+import dev.rosewood.rosegarden.config.CommentedFileConfiguration;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+class BasicMinionConfig implements MinionConfig {
+
+    private final File file;
+    private final List<MinionSetting<?>> settings;
+    private final Map<MinionSetting<?>, Object> settingsValueCache;
+    private final String[] header;
+    private final boolean writeDefaultValueComments;
+    private CommentedFileConfiguration fileConfiguration;
+
+    private BasicMinionConfig(File file, List<MinionSetting<?>> settings, String[] header, boolean writeDefaultValueComments) {
+        this.file = file;
+        this.settings = settings;
+        this.settingsValueCache = new HashMap<>((int) Math.round(this.settings.size() / 0.75 + 1));
+        this.header = header;
+        this.writeDefaultValueComments = writeDefaultValueComments;
+        this.reload();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T get(MinionSetting<T> setting) {
+        if (this.settingsValueCache.containsKey(setting))
+            return (T) this.settingsValueCache.get(setting);
+
+        try {
+            T value = setting.getSerializer().read(this.getBaseConfig(), setting);
+            this.settingsValueCache.put(setting, value);
+            return value;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return setting.getDefaultValue();
+        }
+    }
+
+    @Override
+    public <T> void set(MinionSetting<T> setting, T value) {
+        setting.getSerializer().write(this.getBaseConfig(), setting, value);
+        this.settingsValueCache.put(setting, value);
+    }
+
+    @Override
+    public File getFile() {
+        return this.file;
+    }
+
+    @Override
+    public CommentedFileConfiguration getBaseConfig() {
+        if (this.fileConfiguration == null)
+            this.fileConfiguration = CommentedFileConfiguration.loadConfiguration(this.file);
+        return this.fileConfiguration;
+    }
+
+    @Override
+    public void reload() {
+        this.fileConfiguration = null;
+        this.settingsValueCache.clear();
+
+        if (this.settings.isEmpty() && this.header.length == 0)
+            return;
+
+        boolean appendHeader = !this.file.exists();
+        boolean changed = appendHeader;
+
+        CommentedFileConfiguration config = this.getBaseConfig();
+        if (appendHeader)
+            config.addComments(this.header);
+
+        for (MinionSetting<?> setting : this.settings) {
+            if (setting.readIsValid(config))
+                continue;
+
+            if (this.writeDefaultValueComments) {
+                setting.writeWithDefault(config);
+            } else {
+                setting.write(config);
+            }
+
+            changed = true;
+        }
+
+        if (changed)
+            this.save();
+    }
+
+    @Override
+    public List<MinionSetting<?>> getSettings() {
+        return Collections.unmodifiableList(this.settings);
+    }
+
+    public static class Builder implements MinionConfig.Builder {
+
+        private final File file;
+        private String[] header;
+        private List<MinionSetting<?>> settings;
+        private boolean writeDefaultValueComments;
+
+        public Builder(File file) {
+            this.file = file;
+            this.header = new String[0];
+            this.settings = Collections.emptyList();
+            this.writeDefaultValueComments = false;
+        }
+
+        @Override
+        public MinionConfig.Builder header(String... header) {
+            this.header = header;
+            return this;
+        }
+
+        @Override
+        public MinionConfig.Builder settings(List<MinionSetting<?>> settings) {
+            this.settings = new ArrayList<>(settings);
+            return this;
+        }
+
+        @Override
+        public MinionConfig.Builder settings(MinionSettingHolder settingHolder) {
+            this.settings = new ArrayList<>(settingHolder.get());
+            return this;
+        }
+
+        @Override
+        public MinionConfig.Builder writeDefaultValueComments() {
+            this.writeDefaultValueComments = true;
+            return this;
+        }
+
+        @Override
+        public MinionConfig build() {
+            return new BasicMinionConfig(this.file, this.settings, this.header, this.writeDefaultValueComments);
+        }
+
+    }
+
+}

@@ -5,8 +5,6 @@ import com.google.common.collect.EnumHashBiMap;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
@@ -17,6 +15,8 @@ import dev.rosewood.roseminions.object.NotificationTicket;
 import dev.rosewood.roseminions.object.PlayableParticle;
 import dev.rosewood.roseminions.object.PlayableSound;
 import dev.rosewood.roseminions.object.WorkerAreaProperties;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
@@ -55,28 +55,28 @@ public class FarmingModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(PDCRoseSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
+        public static final MinionSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(MinionSetting.of("worker-area-properties", WorkerAreaProperties.SERIALIZER,
                 () -> new WorkerAreaProperties(3, WorkerAreaController.ScanShape.CUBE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 10000L),
                 "Settings that control the worker area for this module"));
-        public static final PDCRoseSetting<Long> FARM_FREQUENCY = define(PDCRoseSetting.ofLong("farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)"));
-        public static final PDCRoseSetting<Integer> FARM_BLOCK_AMOUNT = define(PDCRoseSetting.ofInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
-        public static final PDCRoseSetting<Boolean> TILL_SOIL = define(PDCRoseSetting.ofBoolean("till-soil", true, "Whether the minion will till plantable soil"));
-        public static final PDCRoseSetting<Boolean> HYDRATE_SOIL = define(PDCRoseSetting.ofBoolean("hydrate-soil", true, "Whether the minion will hydrate farmland"));
-        public static final PDCRoseSetting<Boolean> HARVEST_CROPS = define(PDCRoseSetting.ofBoolean("harvest-crops", true, "Whether the minion will harvest crops"));
-        public static final PDCRoseSetting<Boolean> PLANT_SEEDS = define(PDCRoseSetting.ofBoolean("plant-seeds", true, "Whether the minion will plant seeds"));
-        public static final PDCRoseSetting<Boolean> FERTILIZE_CROPS = define(PDCRoseSetting.ofBoolean("fertilize-crops", true, "Whether the minion will fertilize crops (auto-growth)"));
-        public static final PDCRoseSetting<Boolean> ALLOW_MULTIPLE_VERTICAL_FARMLAND = define(PDCRoseSetting.ofBoolean("allow-multiple-vertical-farmland", false, "If true, multiple farmland can be detected per column scanned"));
-        public static final PDCRoseSetting<Boolean> PRIORITIZE_FARMLAND_WITH_SEEDS = define(PDCRoseSetting.ofBoolean("prioritize-farmland-with-seeds", true, "If true, farmland with seeds will be prioritized for fertilizing and harvesting"));
-        public static final PDCRoseSetting<List<Material>> TILLABLE_BLOCKS = define(PDCRoseSetting.of("tillable-blocks", PDCSettingSerializers.MATERIAL_LIST, () -> List.of(Material.DIRT, Material.GRASS_BLOCK, Material.DIRT_PATH), "Blocks that the minion can till into soil"));
-        public static final PDCRoseSetting<List<Material>> DESTRUCTIBLE_BLOCKS = define(PDCRoseSetting.of("destructible-blocks", PDCSettingSerializers.MATERIAL_LIST, () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS, Material.FERN, Material.LARGE_FERN, Material.SNOW), "Blocks that the minion can destroy to till below"));
-        public static final PDCRoseSetting<PlayableSound> TILL_SOUND = define(PDCRoseSetting.of("till-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when tilling soil"));
-        public static final PDCRoseSetting<PlayableSound> PLANT_SOUND = define(PDCRoseSetting.of("plant-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when planting crops"));
-        public static final PDCRoseSetting<PlayableParticle> TILL_PARTICLE = define(PDCRoseSetting.of("till-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.BLOCK, new PlayableParticle.BlockDataData(Material.BARRIER), 10, new Vector(0.25, 0.25, 0.25), 0.1F, false), "The particle to display when tilling soil"));
-        public static final PDCRoseSetting<PlayableParticle> HYDRATE_PARTICLE = define(PDCRoseSetting.of("hydrate-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.SPLASH, null, 10, new Vector(0.25, 0.25, 0.25), 0.1F, false), "The particle to display when hydrating soil"));
-        public static final PDCRoseSetting<PlayableParticle> PLANT_PARTICLE = define(PDCRoseSetting.of("plant-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 3, new Vector(0.05, 0.05, 0.05), 0.01F, false), "The particle to display when planting seeds"));
-        public static final PDCRoseSetting<PlayableParticle> FERTILIZE_PARTICLE = define(PDCRoseSetting.of("fertilize-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.HAPPY_VILLAGER, null, 10, new Vector(0.25, 0.25, 0.25), 0.1F, false), "The particle to display when fertilizing crops"));
+        public static final MinionSetting<Long> FARM_FREQUENCY = define(MinionSetting.ofLong("farm-frequency", 500L, "How often the minion will plant/harvest crops (in milliseconds)"));
+        public static final MinionSetting<Integer> FARM_BLOCK_AMOUNT = define(MinionSetting.ofInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
+        public static final MinionSetting<Boolean> TILL_SOIL = define(MinionSetting.ofBoolean("till-soil", true, "Whether the minion will till plantable soil"));
+        public static final MinionSetting<Boolean> HYDRATE_SOIL = define(MinionSetting.ofBoolean("hydrate-soil", true, "Whether the minion will hydrate farmland"));
+        public static final MinionSetting<Boolean> HARVEST_CROPS = define(MinionSetting.ofBoolean("harvest-crops", true, "Whether the minion will harvest crops"));
+        public static final MinionSetting<Boolean> PLANT_SEEDS = define(MinionSetting.ofBoolean("plant-seeds", true, "Whether the minion will plant seeds"));
+        public static final MinionSetting<Boolean> FERTILIZE_CROPS = define(MinionSetting.ofBoolean("fertilize-crops", true, "Whether the minion will fertilize crops (auto-growth)"));
+        public static final MinionSetting<Boolean> ALLOW_MULTIPLE_VERTICAL_FARMLAND = define(MinionSetting.ofBoolean("allow-multiple-vertical-farmland", false, "If true, multiple farmland can be detected per column scanned"));
+        public static final MinionSetting<Boolean> PRIORITIZE_FARMLAND_WITH_SEEDS = define(MinionSetting.ofBoolean("prioritize-farmland-with-seeds", true, "If true, farmland with seeds will be prioritized for fertilizing and harvesting"));
+        public static final MinionSetting<List<Material>> TILLABLE_BLOCKS = define(MinionSetting.of("tillable-blocks", DataSerializers.MATERIAL_LIST, () -> List.of(Material.DIRT, Material.GRASS_BLOCK, Material.DIRT_PATH), "Blocks that the minion can till into soil"));
+        public static final MinionSetting<List<Material>> DESTRUCTIBLE_BLOCKS = define(MinionSetting.of("destructible-blocks", DataSerializers.MATERIAL_LIST, () -> List.of(Material.SHORT_GRASS, Material.TALL_GRASS, Material.FERN, Material.LARGE_FERN, Material.SNOW), "Blocks that the minion can destroy to till below"));
+        public static final MinionSetting<PlayableSound> TILL_SOUND = define(MinionSetting.of("till-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_HOE_TILL, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when tilling soil"));
+        public static final MinionSetting<PlayableSound> PLANT_SOUND = define(MinionSetting.of("plant-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ITEM_CROP_PLANT, SoundCategory.BLOCKS, 0.5F, 1.0F), "The sound to play when planting crops"));
+        public static final MinionSetting<PlayableParticle> TILL_PARTICLE = define(MinionSetting.of("till-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.BLOCK, new PlayableParticle.BlockDataData(Material.BARRIER), 10, new Vector(0.25, 0.25, 0.25), 0.1F, false), "The particle to display when tilling soil"));
+        public static final MinionSetting<PlayableParticle> HYDRATE_PARTICLE = define(MinionSetting.of("hydrate-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.SPLASH, null, 10, new Vector(0.25, 0.25, 0.25), 0.1F, false), "The particle to display when hydrating soil"));
+        public static final MinionSetting<PlayableParticle> PLANT_PARTICLE = define(MinionSetting.of("plant-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 3, new Vector(0.05, 0.05, 0.05), 0.01F, false), "The particle to display when planting seeds"));
+        public static final MinionSetting<PlayableParticle> FERTILIZE_PARTICLE = define(MinionSetting.of("fertilize-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, VersionUtils.HAPPY_VILLAGER, null, 10, new Vector(0.25, 0.25, 0.25), 0.1F, false), "The particle to display when fertilizing crops"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -87,11 +87,11 @@ public class FarmingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

@@ -7,12 +7,12 @@ import dev.rosewood.guiframework.gui.ClickActionType;
 import dev.rosewood.guiframework.gui.GuiContainer;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.datatype.CustomPersistentDataType;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
+import dev.rosewood.roseminions.datatype.MinionPersistentDataType;
 import dev.rosewood.roseminions.manager.LocaleManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
@@ -154,8 +154,8 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         // Write minion data
         container.set(KEY_CONFIG_ID, PersistentDataType.STRING, this.minionConfig.getId());
         container.set(KEY_RANK, PersistentDataType.STRING, this.rank);
-        container.set(KEY_OWNER, CustomPersistentDataType.UUID, this.owner);
-        container.set(KEY_LOCATION, CustomPersistentDataType.LOCATION, this.location);
+        container.set(KEY_OWNER, MinionPersistentDataType.UUID, this.owner);
+        container.set(KEY_LOCATION, MinionPersistentDataType.LOCATION, this.location);
 
         // Write module data
         PersistentDataAdapterContext context = container.getAdapterContext();
@@ -183,10 +183,10 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         this.rank = container.get(KEY_RANK, PersistentDataType.STRING);
         this.loadRankData();
 
-        this.owner = container.get(KEY_OWNER, CustomPersistentDataType.UUID);
+        this.owner = container.get(KEY_OWNER, MinionPersistentDataType.UUID);
 
         if (this.location == null)
-            this.location = container.get(KEY_LOCATION, CustomPersistentDataType.LOCATION);
+            this.location = container.get(KEY_LOCATION, MinionPersistentDataType.LOCATION);
 
         PersistentDataContainer modulesContainer = container.get(KEY_MODULES, PersistentDataType.TAG_CONTAINER);
         if (modulesContainer != null) {

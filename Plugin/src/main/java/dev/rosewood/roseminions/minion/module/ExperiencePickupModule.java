@@ -5,8 +5,6 @@ import dev.rosewood.guiframework.framework.util.GuiUtil;
 import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
 import dev.rosewood.rosegarden.utils.EntitySpawnUtil;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
@@ -16,6 +14,8 @@ import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.PlayableParticle;
 import dev.rosewood.roseminions.object.PlayableSound;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.SkullUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
@@ -45,14 +45,14 @@ public class ExperiencePickupModule extends EntityAttractorModule<ExperienceOrb>
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<Integer> STORED_XP = define(PDCRoseSetting.ofHidden("stored-xp", PDCSettingSerializers.INTEGER, () -> 0));
-        public static final PDCRoseSetting<Integer> MAX_EXP = define(PDCRoseSetting.ofInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
-        public static final PDCRoseSetting<Long> UPDATE_FREQUENCY = define(PDCRoseSetting.ofLong("update-frequency", 1000L, "How often the minion will update (in milliseconds)"));
-        public static final PDCRoseSetting<Integer> RADIUS = define(PDCRoseSetting.ofInteger("radius", 8, "The radius for the minion to search for items"));
-        public static final PDCRoseSetting<PlayableSound> PICKUP_SOUND = define(PDCRoseSetting.of("pickup-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when collecting experience"));
-        public static final PDCRoseSetting<PlayableParticle> PICKUP_PARTICLE = define(PDCRoseSetting.of("pickup-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(false, VersionUtils.DUST, new PlayableParticle.DustOptionsData(Color.fromRGB(0, 255, 0), 1.0F), 5, new Vector(0.1, 0.1, 0.1), 0.0F, false), "The particle to display when collecting experience"));
+        public static final MinionSetting<Integer> STORED_XP = define(MinionSetting.ofHidden("stored-xp", DataSerializers.INTEGER, () -> 0));
+        public static final MinionSetting<Integer> MAX_EXP = define(MinionSetting.ofInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
+        public static final MinionSetting<Long> UPDATE_FREQUENCY = define(MinionSetting.ofLong("update-frequency", 1000L, "How often the minion will update (in milliseconds)"));
+        public static final MinionSetting<Integer> RADIUS = define(MinionSetting.ofInteger("radius", 8, "The radius for the minion to search for items"));
+        public static final MinionSetting<PlayableSound> PICKUP_SOUND = define(MinionSetting.of("pickup-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when collecting experience"));
+        public static final MinionSetting<PlayableParticle> PICKUP_PARTICLE = define(MinionSetting.of("pickup-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(false, VersionUtils.DUST, new PlayableParticle.DustOptionsData(Color.fromRGB(0, 255, 0), 1.0F), 5, new Vector(0.1, 0.1, 0.1), 0.0F, false), "The particle to display when collecting experience"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -63,11 +63,11 @@ public class ExperiencePickupModule extends EntityAttractorModule<ExperienceOrb>
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

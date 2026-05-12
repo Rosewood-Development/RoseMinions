@@ -4,8 +4,6 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.ClickAction;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.manager.MinionManager;
@@ -15,6 +13,8 @@ import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.hologram.Hologram;
 import dev.rosewood.roseminions.object.MinionConversation;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,11 +32,11 @@ public class CommunicationModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<Long> CONVERSATION_FREQUENCY = define(PDCRoseSetting.ofLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
-        public static final PDCRoseSetting<Long> MESSAGE_FREQUENCY = define(PDCRoseSetting.ofLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
-        public static final PDCRoseSetting<List<MinionConversation>> CONVERSATIONS = define(PDCRoseSetting.of("conversations", PDCSettingSerializers.ofList(MinionConversation.SERIALIZER), () -> List.of(
+        public static final MinionSetting<Long> CONVERSATION_FREQUENCY = define(MinionSetting.ofLong("conversation-frequency", 300000L, "How often a conversation will start (in milliseconds)"));
+        public static final MinionSetting<Long> MESSAGE_FREQUENCY = define(MinionSetting.ofLong("message-frequency", 3000L, "How often a message will be sent (in milliseconds)"));
+        public static final MinionSetting<List<MinionConversation>> CONVERSATIONS = define(MinionSetting.of("conversations", DataSerializers.ofList(MinionConversation.SERIALIZER), () -> List.of(
                 new MinionConversation(1, 100, 10, List.of("oof", "ouch", "my bones"))
         ), "The conversations that the minion can have"));
 
@@ -49,11 +49,11 @@ public class CommunicationModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

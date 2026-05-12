@@ -1,6 +1,5 @@
 package dev.rosewood.roseminions.util;
 
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.RoseMinions;
@@ -9,6 +8,7 @@ import dev.rosewood.roseminions.manager.HookProviderManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import dev.rosewood.roseminions.nms.NMSAdapter;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -85,7 +85,7 @@ public final class MinionUtils {
      * @param sizeSetting The setting for the inventory size
      * @param inventorySetting The setting for the inventory
      */
-    public static void snapInventorySize(SettingContainer settings, PDCRoseSetting<Integer> sizeSetting, PDCRoseSetting<ItemStack[]> inventorySetting) {
+    public static void snapInventorySize(SettingContainer settings, MinionSetting<Integer> sizeSetting, MinionSetting<ItemStack[]> inventorySetting) {
         int originalSize = settings.get(sizeSetting);
         int inventorySize = originalSize;
         if (inventorySize % 9 != 0) {

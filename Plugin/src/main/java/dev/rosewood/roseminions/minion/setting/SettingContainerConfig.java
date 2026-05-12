@@ -1,6 +1,6 @@
 package dev.rosewood.roseminions.minion.setting;
 
-import dev.rosewood.rosegarden.config.RoseSetting;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ public class SettingContainerConfig {
         if (section == null)
             return;
 
-        for (RoseSetting<?> setting : this.settings.get())
+        for (MinionSetting<?> setting : this.settings.get())
             if (setting.readIsValid(section))
                 this.settingDefaultValueSuppliers.put(setting.getKey(), new ValueCombinator<>(() -> setting.read(section)));
     }
@@ -38,7 +38,7 @@ public class SettingContainerConfig {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(RoseSetting<T> setting) {
+    public <T> T get(MinionSetting<T> setting) {
         ValueCombinator<T> valueCombinator = (ValueCombinator<T>) this.settingDefaultValueSuppliers.get(setting.getKey());
         if (valueCombinator != null) {
             T value = valueCombinator.get();

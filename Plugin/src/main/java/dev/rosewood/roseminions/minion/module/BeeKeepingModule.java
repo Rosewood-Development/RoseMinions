@@ -3,7 +3,6 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
@@ -13,6 +12,7 @@ import dev.rosewood.roseminions.object.BlockPosition;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.NotificationTicket;
 import dev.rosewood.roseminions.object.WorkerAreaProperties;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,13 +34,13 @@ public class BeeKeepingModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(PDCRoseSetting.of("worker-area-properties", WorkerAreaProperties.SERIALIZER,
+        public static final MinionSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(MinionSetting.of("worker-area-properties", WorkerAreaProperties.SERIALIZER,
                 () -> new WorkerAreaProperties(5, WorkerAreaController.ScanShape.CUBE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 30000L),
                 "Settings that control the worker area for this module"));
-        public static final PDCRoseSetting<Long> HARVEST_FREQUENCY = define(PDCRoseSetting.ofLong("harvest-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
-        public static final PDCRoseSetting<Boolean> USE_BOTTLES = define(PDCRoseSetting.ofBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
+        public static final MinionSetting<Long> HARVEST_FREQUENCY = define(MinionSetting.ofLong("harvest-frequency", 10000L, "How often the beekeeper will collect honey from bee hives (in milliseconds)"));
+        public static final MinionSetting<Boolean> USE_BOTTLES = define(MinionSetting.ofBoolean("use-bottles", true, "Whether or not the beekeeper will use bottles to collect honey"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -51,11 +51,11 @@ public class BeeKeepingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

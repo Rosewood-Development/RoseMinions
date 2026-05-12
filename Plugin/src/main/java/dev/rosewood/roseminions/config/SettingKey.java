@@ -9,15 +9,15 @@ import java.util.Collections;
 import java.util.List;
 import static dev.rosewood.rosegarden.config.SettingSerializers.*;
 
-public final class Settings implements SettingHolder {
+public final class SettingKey implements SettingHolder {
 
-    public static final SettingHolder INSTANCE = new Settings();
+    public static final SettingHolder INSTANCE = new SettingKey();
     private static final List<RoseSetting<?>> SETTINGS = new ArrayList<>();
 
     public static final RoseSetting<List<String>> DISABLED_WORLDS = create("disabled-worlds", STRING_LIST, List.of("disabled_world_name"), "A list of worlds that the plugin is disabled in");
     public static final RoseSetting<Long> MINION_UPDATE_FREQUENCY = create("minion-update-frequency", LONG, 1L, "The number of ticks to wait between minion updates");
 
-    private Settings() {}
+    private SettingKey() {}
 
     @Override
     public List<RoseSetting<?>> get() {

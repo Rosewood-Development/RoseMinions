@@ -3,12 +3,12 @@ package dev.rosewood.roseminions.minion.module;
 import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
-import dev.rosewood.rosegarden.config.PDCRoseSetting;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.PlayableParticle;
 import dev.rosewood.roseminions.object.PlayableSound;
+import dev.rosewood.roseminions.setting.MinionSetting;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,16 +32,16 @@ public class AttackingModule extends MinionModule {
     public static class Settings implements PDCSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
-        private static final List<PDCRoseSetting<?>> SETTINGS = new ArrayList<>();
+        private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final PDCRoseSetting<Integer> RADIUS = define(PDCRoseSetting.ofInteger("radius", 3, "How far away the minion will search for targets"));
-        public static final PDCRoseSetting<Long> ATTACK_FREQUENCY = define(PDCRoseSetting.ofLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
-        public static final PDCRoseSetting<Boolean> ONLY_ATTACK_HOSTILES = define(PDCRoseSetting.ofBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
-        public static final PDCRoseSetting<Boolean> ATTACK_NON_OWNING_PLAYERS = define(PDCRoseSetting.ofBoolean("attack-non-owning-players", false, "Whether the minion will attack players that are not its owner"));
-        public static final PDCRoseSetting<Integer> DAMAGE_AMOUNT = define(PDCRoseSetting.ofInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
-        public static final PDCRoseSetting<Integer> NUMBER_OF_TARGETS = define(PDCRoseSetting.ofInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
-        public static final PDCRoseSetting<PlayableSound> ATTACK_SOUND = define(PDCRoseSetting.of("attack-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when attacking"));
-        public static final PDCRoseSetting<PlayableParticle> ATTACK_PARTICLE = define(PDCRoseSetting.of("attack-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.SWEEP_ATTACK, null, 1, new Vector(), 0.0F, false), "The particle to display at the entity when attacking"));
+        public static final MinionSetting<Integer> RADIUS = define(MinionSetting.ofInteger("radius", 3, "How far away the minion will search for targets"));
+        public static final MinionSetting<Long> ATTACK_FREQUENCY = define(MinionSetting.ofLong("attack-frequency", 1000L, "How often the minion will attack (in milliseconds)"));
+        public static final MinionSetting<Boolean> ONLY_ATTACK_HOSTILES = define(MinionSetting.ofBoolean("only-attack-hostiles", true, "Whether the minion will only attack hostile mobs"));
+        public static final MinionSetting<Boolean> ATTACK_NON_OWNING_PLAYERS = define(MinionSetting.ofBoolean("attack-non-owning-players", false, "Whether the minion will attack players that are not its owner"));
+        public static final MinionSetting<Integer> DAMAGE_AMOUNT = define(MinionSetting.ofInteger("damage-amount", 10, "How much damage the minion will deal to targets"));
+        public static final MinionSetting<Integer> NUMBER_OF_TARGETS = define(MinionSetting.ofInteger("number-of-targets", 1, "How many targets the minion will attack at once"));
+        public static final MinionSetting<PlayableSound> ATTACK_SOUND = define(MinionSetting.of("attack-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when attacking"));
+        public static final MinionSetting<PlayableParticle> ATTACK_PARTICLE = define(MinionSetting.of("attack-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.SWEEP_ATTACK, null, 1, new Vector(), 0.0F, false), "The particle to display at the entity when attacking"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -52,11 +52,11 @@ public class AttackingModule extends MinionModule {
         private Settings() { }
 
         @Override
-        public List<PDCRoseSetting<?>> get() {
+        public List<MinionSetting<?>> get() {
             return Collections.unmodifiableList(SETTINGS);
         }
 
-        private static <T> PDCRoseSetting<T> define(PDCRoseSetting<T> setting) {
+        private static <T> MinionSetting<T> define(MinionSetting<T> setting) {
             SETTINGS.add(setting);
             return setting;
         }

@@ -1,11 +1,10 @@
 package dev.rosewood.roseminions.object;
 
-import dev.rosewood.rosegarden.config.PDCSettingField;
-import dev.rosewood.rosegarden.config.PDCSettingSerializer;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
 import dev.rosewood.rosegarden.utils.NMSUtil;
-import dev.rosewood.roseminions.config.MinionSettingSerializers;
 import dev.rosewood.roseminions.minion.module.AppearanceModule;
+import dev.rosewood.roseminions.setting.DataSerializer;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.SettingField;
 import dev.rosewood.roseminions.util.VersionUtils;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -29,14 +28,14 @@ public record PlayableParticle(Boolean enabled,
                                Float extra,
                                Boolean forceSpawn) implements Mergeable<PlayableParticle> {
 
-    public static final PDCSettingSerializer<PlayableParticle> SERIALIZER = PDCSettingSerializers.ofRecord(PlayableParticle.class, instance -> instance.group(
-            PDCSettingField.ofOptionalValue("enabled", PDCSettingSerializers.BOOLEAN, PlayableParticle::enabled, true, "Whether or not the particle should play"),
-            PDCSettingField.ofOptionalValue("particle", MinionSettingSerializers.PARTICLE, PlayableParticle::particle, null, "The particle type to spawn"),
-            PDCSettingField.ofOptionalValue("data", ParticleData.SERIALIZER, PlayableParticle::data, null, "Extra data used to display the particle"),
-            PDCSettingField.ofOptionalValue("amount", PDCSettingSerializers.INTEGER, PlayableParticle::amount, null, "The number of particles to spawn"),
-            PDCSettingField.ofOptionalValue("offset", PDCSettingSerializers.VECTOR, PlayableParticle::offset, null, "The offset from the origin to spawn particles from"),
-            PDCSettingField.ofOptionalValue("extra", PDCSettingSerializers.FLOAT, PlayableParticle::extra, 1.0F, "The extra property for the particle spawn data, sometimes affects speed"),
-            PDCSettingField.ofOptionalValue("force-spawn", PDCSettingSerializers.BOOLEAN, PlayableParticle::forceSpawn, false, "If true, particles will still be spawned beyond their max render distance")
+    public static final DataSerializer<PlayableParticle> SERIALIZER = DataSerializers.ofRecord(PlayableParticle.class, instance -> instance.group(
+            SettingField.ofOptionalValue("enabled", DataSerializers.BOOLEAN, PlayableParticle::enabled, true, "Whether or not the particle should play"),
+            SettingField.ofOptionalValue("particle", DataSerializers.PARTICLE, PlayableParticle::particle, null, "The particle type to spawn"),
+            SettingField.ofOptionalValue("data", ParticleData.SERIALIZER, PlayableParticle::data, null, "Extra data used to display the particle"),
+            SettingField.ofOptionalValue("amount", DataSerializers.INTEGER, PlayableParticle::amount, null, "The number of particles to spawn"),
+            SettingField.ofOptionalValue("offset", DataSerializers.VECTOR, PlayableParticle::offset, null, "The offset from the origin to spawn particles from"),
+            SettingField.ofOptionalValue("extra", DataSerializers.FLOAT, PlayableParticle::extra, 1.0F, "The extra property for the particle spawn data, sometimes affects speed"),
+            SettingField.ofOptionalValue("force-spawn", DataSerializers.BOOLEAN, PlayableParticle::forceSpawn, false, "If true, particles will still be spawned beyond their max render distance")
     ).apply(instance, PlayableParticle::new));
 
     public void play(Location location, Object overrideData) {
@@ -79,7 +78,7 @@ public record PlayableParticle(Boolean enabled,
     }
 
     public interface ParticleData {
-        Map<Particle, PDCSettingSerializer<? extends ParticleData>> MAP = new HashMap<>() {{
+        Map<Particle, DataSerializer<? extends ParticleData>> MAP = new HashMap<>() {{
             // 1.21.5+
             if (NMSUtil.getVersionNumber() > 21 || (NMSUtil.getVersionNumber() == 21 && NMSUtil.getMinorVersionNumber() >= 5)) {
                 this.put(Particle.TINTED_LEAVES, ColorData.SERIALIZER);
@@ -106,7 +105,7 @@ public record PlayableParticle(Boolean enabled,
             this.put(Particle.DUST_COLOR_TRANSITION, DustTransitionData.SERIALIZER);
             this.put(Particle.VIBRATION, VibrationData.SERIALIZER);
         }};
-        PDCSettingSerializer<ParticleData> SERIALIZER = PDCSettingSerializers.ofFieldMapped(ParticleData.class, "particle", MinionSettingSerializers.PARTICLE, MAP);
+        DataSerializer<ParticleData> SERIALIZER = DataSerializers.ofFieldMapped(ParticleData.class, "particle", DataSerializers.PARTICLE, MAP);
 
         Object buildData(Location location);
     }
@@ -114,9 +113,9 @@ public record PlayableParticle(Boolean enabled,
     public record DustOptionsData(Color color,
                                   float size) implements ParticleData {
 
-        public static final PDCSettingSerializer<DustOptionsData> SERIALIZER = PDCSettingSerializers.ofRecord(DustOptionsData.class, instance -> instance.group(
-                PDCSettingField.of("color", MinionSettingSerializers.COLOR_RGB, DustOptionsData::color, "The color of the particle"),
-                PDCSettingField.of("size", PDCSettingSerializers.FLOAT, DustOptionsData::size, "The size component between 0.01-4.0")
+        public static final DataSerializer<DustOptionsData> SERIALIZER = DataSerializers.ofRecord(DustOptionsData.class, instance -> instance.group(
+                SettingField.of("color", DataSerializers.COLOR_RGB, DustOptionsData::color, "The color of the particle"),
+                SettingField.of("size", DataSerializers.FLOAT, DustOptionsData::size, "The size component between 0.01-4.0")
         ).apply(instance, DustOptionsData::new));
 
         @Override
@@ -132,10 +131,10 @@ public record PlayableParticle(Boolean enabled,
                                      Color endColor,
                                      float size) implements ParticleData {
 
-        public static final PDCSettingSerializer<DustTransitionData> SERIALIZER = PDCSettingSerializers.ofRecord(DustTransitionData.class, instance -> instance.group(
-                PDCSettingField.of("start-color", MinionSettingSerializers.COLOR_RGB, DustTransitionData::startColor, "The starting color of the particle"),
-                PDCSettingField.of("end-color", MinionSettingSerializers.COLOR_RGB, DustTransitionData::endColor, "The ending color of the particle"),
-                PDCSettingField.of("size", PDCSettingSerializers.FLOAT, DustTransitionData::size, "The size component between 0.01-4.0")
+        public static final DataSerializer<DustTransitionData> SERIALIZER = DataSerializers.ofRecord(DustTransitionData.class, instance -> instance.group(
+                SettingField.of("start-color", DataSerializers.COLOR_RGB, DustTransitionData::startColor, "The starting color of the particle"),
+                SettingField.of("end-color", DataSerializers.COLOR_RGB, DustTransitionData::endColor, "The ending color of the particle"),
+                SettingField.of("size", DataSerializers.FLOAT, DustTransitionData::size, "The size component between 0.01-4.0")
         ).apply(instance, DustTransitionData::new));
 
         @Override
@@ -150,8 +149,8 @@ public record PlayableParticle(Boolean enabled,
 
     public record ColorData(Color color) implements ParticleData {
 
-        public static final PDCSettingSerializer<ColorData> SERIALIZER = PDCSettingSerializers.ofRecord(ColorData.class, instance -> instance.group(
-                PDCSettingField.of("color", MinionSettingSerializers.COLOR_ARGB, ColorData::color, "The color of the particle, supports transparency")
+        public static final DataSerializer<ColorData> SERIALIZER = DataSerializers.ofRecord(ColorData.class, instance -> instance.group(
+                SettingField.of("color", DataSerializers.COLOR_ARGB, ColorData::color, "The color of the particle, supports transparency")
         ).apply(instance, ColorData::new));
 
         @Override
@@ -163,8 +162,8 @@ public record PlayableParticle(Boolean enabled,
 
     public record ItemStackData(Material material) implements ParticleData {
 
-        public static final PDCSettingSerializer<ItemStackData> SERIALIZER = PDCSettingSerializers.ofRecord(ItemStackData.class, instance -> instance.group(
-                PDCSettingField.of("material", PDCSettingSerializers.MATERIAL, ItemStackData::material, "The material of the item to display")
+        public static final DataSerializer<ItemStackData> SERIALIZER = DataSerializers.ofRecord(ItemStackData.class, instance -> instance.group(
+                SettingField.of("material", DataSerializers.MATERIAL, ItemStackData::material, "The material of the item to display")
         ).apply(instance, ItemStackData::new));
 
         @Override
@@ -176,8 +175,8 @@ public record PlayableParticle(Boolean enabled,
 
     public record BlockDataData(Material material) implements ParticleData {
 
-        public static final PDCSettingSerializer<BlockDataData> SERIALIZER = PDCSettingSerializers.ofRecord(BlockDataData.class, instance -> instance.group(
-                PDCSettingField.of("material", PDCSettingSerializers.MATERIAL, BlockDataData::material, "The material of the block data to display")
+        public static final DataSerializer<BlockDataData> SERIALIZER = DataSerializers.ofRecord(BlockDataData.class, instance -> instance.group(
+                SettingField.of("material", DataSerializers.MATERIAL, BlockDataData::material, "The material of the block data to display")
         ).apply(instance, BlockDataData::new));
 
         @Override
@@ -189,8 +188,8 @@ public record PlayableParticle(Boolean enabled,
 
     public record VibrationData(int duration) implements ParticleData {
 
-        public static final PDCSettingSerializer<VibrationData> SERIALIZER = PDCSettingSerializers.ofRecord(VibrationData.class, instance -> instance.group(
-                PDCSettingField.of("duration", PDCSettingSerializers.INTEGER, VibrationData::duration, "The duration in ticks to display for")
+        public static final DataSerializer<VibrationData> SERIALIZER = DataSerializers.ofRecord(VibrationData.class, instance -> instance.group(
+                SettingField.of("duration", DataSerializers.INTEGER, VibrationData::duration, "The duration in ticks to display for")
         ).apply(instance, VibrationData::new));
 
         @Override
@@ -202,8 +201,8 @@ public record PlayableParticle(Boolean enabled,
 
     public record FloatData(float angle) implements ParticleData {
 
-        public static final PDCSettingSerializer<FloatData> SERIALIZER = PDCSettingSerializers.ofRecord(FloatData.class, instance -> instance.group(
-                PDCSettingField.of("duration", PDCSettingSerializers.FLOAT, FloatData::angle, "The angle in radians to display at")
+        public static final DataSerializer<FloatData> SERIALIZER = DataSerializers.ofRecord(FloatData.class, instance -> instance.group(
+                SettingField.of("duration", DataSerializers.FLOAT, FloatData::angle, "The angle in radians to display at")
         ).apply(instance, FloatData::new));
 
         @Override
@@ -215,8 +214,8 @@ public record PlayableParticle(Boolean enabled,
 
     public record IntegerData(int delay) implements ParticleData {
 
-        public static final PDCSettingSerializer<IntegerData> SERIALIZER = PDCSettingSerializers.ofRecord(IntegerData.class, instance -> instance.group(
-                PDCSettingField.of("delay", PDCSettingSerializers.INTEGER, IntegerData::delay, "The delay in ticks before this particle is rendered after being spawned")
+        public static final DataSerializer<IntegerData> SERIALIZER = DataSerializers.ofRecord(IntegerData.class, instance -> instance.group(
+                SettingField.of("delay", DataSerializers.INTEGER, IntegerData::delay, "The delay in ticks before this particle is rendered after being spawned")
         ).apply(instance, IntegerData::new));
 
         @Override
@@ -228,8 +227,8 @@ public record PlayableParticle(Boolean enabled,
 
     public record TrailData(Color color) implements ParticleData {
 
-        public static final PDCSettingSerializer<TrailData> SERIALIZER = PDCSettingSerializers.ofRecord(TrailData.class, instance -> instance.group(
-                PDCSettingField.of("color", MinionSettingSerializers.COLOR_ARGB, TrailData::color, "The color of the particle, supports transparency")
+        public static final DataSerializer<TrailData> SERIALIZER = DataSerializers.ofRecord(TrailData.class, instance -> instance.group(
+                SettingField.of("color", DataSerializers.COLOR_ARGB, TrailData::color, "The color of the particle, supports transparency")
         ).apply(instance, TrailData::new));
 
         @Override

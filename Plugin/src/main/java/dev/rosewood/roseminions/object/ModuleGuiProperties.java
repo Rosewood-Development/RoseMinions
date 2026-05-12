@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.object;
 
-import dev.rosewood.rosegarden.config.PDCSettingField;
-import dev.rosewood.rosegarden.config.PDCSettingSerializer;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
+import dev.rosewood.roseminions.setting.DataSerializer;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.SettingField;
 import java.util.List;
 import org.bukkit.Material;
 
@@ -11,11 +11,11 @@ public record ModuleGuiProperties(String title,
                                   String iconName,
                                   List<String> iconLore) implements Mergeable<ModuleGuiProperties> {
 
-    public static final PDCSettingSerializer<ModuleGuiProperties> SERIALIZER = PDCSettingSerializers.ofRecord(ModuleGuiProperties.class, instance -> instance.group(
-            PDCSettingField.ofOptionalValue("title", PDCSettingSerializers.STRING, ModuleGuiProperties::title, null, "The title of the GUI"),
-            PDCSettingField.ofOptionalValue("icon", PDCSettingSerializers.MATERIAL, ModuleGuiProperties::icon, null, "The icon to use for this module in the minion GUI"),
-            PDCSettingField.ofOptionalValue("icon-name", PDCSettingSerializers.STRING, ModuleGuiProperties::iconName, null, "The name to use for this module in the minion GUI"),
-            PDCSettingField.ofOptionalValue("icon-lore", PDCSettingSerializers.STRING_LIST, ModuleGuiProperties::iconLore, null, "The lore to use for this module in the minion GUI")
+    public static final DataSerializer<ModuleGuiProperties> SERIALIZER = DataSerializers.ofRecord(ModuleGuiProperties.class, instance -> instance.group(
+            SettingField.ofOptionalValue("title", DataSerializers.STRING, ModuleGuiProperties::title, null, "The title of the GUI"),
+            SettingField.ofOptionalValue("icon", DataSerializers.MATERIAL, ModuleGuiProperties::icon, null, "The icon to use for this module in the minion GUI"),
+            SettingField.ofOptionalValue("icon-name", DataSerializers.STRING, ModuleGuiProperties::iconName, null, "The name to use for this module in the minion GUI"),
+            SettingField.ofOptionalValue("icon-lore", DataSerializers.STRING_LIST, ModuleGuiProperties::iconLore, null, "The lore to use for this module in the minion GUI")
     ).apply(instance, ModuleGuiProperties::new));
 
     @Override

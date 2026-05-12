@@ -1,9 +1,8 @@
 package dev.rosewood.roseminions.object;
 
-import dev.rosewood.rosegarden.config.PDCSettingField;
-import dev.rosewood.rosegarden.config.PDCSettingSerializer;
-import dev.rosewood.rosegarden.config.PDCSettingSerializers;
-import dev.rosewood.roseminions.config.MinionSettingSerializers;
+import dev.rosewood.roseminions.setting.DataSerializer;
+import dev.rosewood.roseminions.setting.DataSerializers;
+import dev.rosewood.roseminions.setting.SettingField;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -15,12 +14,12 @@ public record PlayableSound(Boolean enabled,
                             Float volume,
                             Float pitch) implements Mergeable<PlayableSound> {
 
-    public static final PDCSettingSerializer<PlayableSound> SERIALIZER = PDCSettingSerializers.ofRecord(PlayableSound.class, instance -> instance.group(
-            PDCSettingField.ofOptionalValue("enabled", PDCSettingSerializers.BOOLEAN, PlayableSound::enabled, null, "Whether or not the sound should play"),
-            PDCSettingField.ofOptionalValue("sound", MinionSettingSerializers.SOUND, PlayableSound::sound, null, "The sound key to play"),
-            PDCSettingField.ofOptionalValue("category", MinionSettingSerializers.SOUND_CATEGORY, PlayableSound::category, null, "The audio category of the sound to play in"),
-            PDCSettingField.ofOptionalValue("volume", PDCSettingSerializers.FLOAT, PlayableSound::volume, null, "The volume to play at, 1.0 for normal volume"),
-            PDCSettingField.ofOptionalValue("pitch", PDCSettingSerializers.FLOAT, PlayableSound::pitch, null, "The pitch to play at, 1.0 for normal pitch")
+    public static final DataSerializer<PlayableSound> SERIALIZER = DataSerializers.ofRecord(PlayableSound.class, instance -> instance.group(
+            SettingField.ofOptionalValue("enabled", DataSerializers.BOOLEAN, PlayableSound::enabled, null, "Whether or not the sound should play"),
+            SettingField.ofOptionalValue("sound", DataSerializers.SOUND, PlayableSound::sound, null, "The sound key to play"),
+            SettingField.ofOptionalValue("category", DataSerializers.SOUND_CATEGORY, PlayableSound::category, null, "The audio category of the sound to play in"),
+            SettingField.ofOptionalValue("volume", DataSerializers.FLOAT, PlayableSound::volume, null, "The volume to play at, 1.0 for normal volume"),
+            SettingField.ofOptionalValue("pitch", DataSerializers.FLOAT, PlayableSound::pitch, null, "The pitch to play at, 1.0 for normal pitch")
     ).apply(instance, PlayableSound::new));
 
     public void play(Location location) {

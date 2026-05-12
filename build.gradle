@@ -1,5 +1,5 @@
 plugins {
-    id 'com.gradleup.shadow' version '8.3.5' apply false
+    id 'com.gradleup.shadow' version '9.2.2' apply false
     id 'maven-publish'
     id 'java'
 }
@@ -8,10 +8,15 @@ allprojects {
     apply plugin: 'java-library'
     apply plugin: 'com.gradleup.shadow'
     group = 'dev.rosewood'
-    version = '1.0.0-SNAPSHOT'
+    version = providers.exec {
+        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+    }.standardOutput.asText.map { it.trim() }.orElse("unknown").get()
 
     java {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+        toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+        disableAutoTargetJvm()
     }
 
     dependencies {
@@ -53,6 +58,9 @@ dependencies {
     implementation project(path: ':NMS:v1_21_R3', configuration: 'remapped')
     implementation project(path: ':NMS:v1_21_R4', configuration: 'remapped')
     implementation project(path: ':NMS:v1_21_R5', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_21_R6', configuration: 'remapped')
+    implementation project(path: ':NMS:v1_21_R7', configuration: 'remapped')
+    implementation project(path: ':NMS:v26_1_R1')
 }
 
 shadowJar {
