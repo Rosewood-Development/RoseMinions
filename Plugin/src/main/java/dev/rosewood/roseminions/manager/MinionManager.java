@@ -104,14 +104,24 @@ public class MinionManager extends Manager {
                 .findFirst();
     }
 
+    private void updateMinions() {
+        this.loadedMinions.forEach(Minion::update);
+    }
+
+    private void updateMinionsAsync() {
+        this.loadedMinions.forEach(Minion::updateAsync);
+    }
+
+    private void loadPendingMinions() {
+        this.pendingLoadMinions.stream().filter(ArmorStand::isValid).forEach(this::loadMinion);
+        this.pendingLoadMinions.clear();
+    }
+
     @Override
     public void reload() {
-        this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::update), 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
-        this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, () -> this.loadedMinions.forEach(Minion::updateAsync), 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
-        this.loadPendingMinionsTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, () -> {
-            this.pendingLoadMinions.stream().filter(ArmorStand::isValid).forEach(this::loadMinion);
-            this.pendingLoadMinions.clear();
-        }, 5L, 5L);
+        this.minionTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, this::updateMinions, 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
+        this.asyncMinionTask = Bukkit.getScheduler().runTaskTimerAsynchronously(this.rosePlugin, this::updateMinionsAsync, 0L, SettingKey.MINION_UPDATE_FREQUENCY.get());
+        this.loadPendingMinionsTask = Bukkit.getScheduler().runTaskTimer(this.rosePlugin, this::loadPendingMinions, 5L, 5L);
 
         // Load minions from chunks that are already loaded
         for (World world : Bukkit.getWorlds())

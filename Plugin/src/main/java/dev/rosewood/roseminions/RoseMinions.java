@@ -6,6 +6,7 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.config.SettingKey;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
+import dev.rosewood.roseminions.listener.MinionPickListener;
 import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
 import dev.rosewood.roseminions.listener.WorldListener;
@@ -58,6 +59,10 @@ public class RoseMinions extends RosePlugin {
 
         pluginManager.registerEvents(new MinionPlaceListener(this), this);
         pluginManager.registerEvents(new MinionPickupListener(this), this);
+
+        if (NMSUtil.isPaper()) {
+            pluginManager.registerEvents(new MinionPickListener(this), this);
+        }
     }
 
     @Override

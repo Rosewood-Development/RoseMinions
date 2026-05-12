@@ -81,7 +81,7 @@ public class AttackingModule extends MinionModule {
             if (!(entity instanceof LivingEntity livingEntity) || entity.getType() == EntityType.ARMOR_STAND || entity.isDead())
                 return false;
 
-            if (entity instanceof Player player && (!attackPlayers || player.getUniqueId().equals(this.minion.getOwner())))
+            if (entity instanceof Player player && (!attackPlayers || this.minion.isAllowedUser(player.getUniqueId())))
                 return false;
 
             return !this.settings.get(ONLY_ATTACK_HOSTILES) || MinionUtils.isHostile(livingEntity);

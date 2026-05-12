@@ -96,10 +96,11 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
     /**
      * Used for placing a minion from an item
      */
-    public Minion(Location location, PersistentDataContainer container) {
+    public Minion(Location location, PersistentDataContainer container, UUID owner) {
         this(null);
         this.displayEntity = null;
         this.location = location;
+        this.owner = owner;
         this.readPDC(container);
         this.getModules().forEach(MinionModule::finalizeLoad);
     }
@@ -385,6 +386,10 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
 
     public UUID getOwner() {
         return this.owner;
+    }
+
+    public boolean isAllowedUser(UUID user) {
+        return user.equals(this.owner); // TODO: Add support for shared minions
     }
 
     public Location getLocation() {

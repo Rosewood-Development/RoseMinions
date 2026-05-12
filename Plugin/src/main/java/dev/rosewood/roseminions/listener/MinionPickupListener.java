@@ -40,7 +40,7 @@ public class MinionPickupListener implements Listener {
         Optional<Minion> minionOptional = minionManager.getMinionFromEntity(armorStand);
         if (minionOptional.isEmpty()) {
             if (minionManager.isMinion(armorStand))
-                event.setCancelled(true);
+                event.setCancelled(true); // TODO: This is a bad minion that isn't loaded but has data
             return;
         }
 
@@ -58,7 +58,7 @@ public class MinionPickupListener implements Listener {
         Optional<Minion> minionOptional = minionManager.getMinionFromEntity(armorStand);
         if (minionOptional.isEmpty()) {
             if (minionManager.isMinion(armorStand))
-                event.setCancelled(true);
+                event.setCancelled(true); // TODO: This is a bad minion that isn't loaded but has data
             return;
         }
 
@@ -67,7 +67,7 @@ public class MinionPickupListener implements Listener {
     }
 
     private void handleInteraction(MinionManager minionManager, Minion minion, Player player) {
-        if (!minion.getOwner().equals(player.getUniqueId())) {
+        if (!minion.isAllowedUser(player.getUniqueId())) {
             this.rosePlugin.getManager(LocaleManager.class).sendMessage(player, "minion-no-permission");
             return;
         }
