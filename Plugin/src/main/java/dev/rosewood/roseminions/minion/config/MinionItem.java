@@ -1,12 +1,12 @@
 package dev.rosewood.roseminions.minion.config;
 
-import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.setting.MinionSetting;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public final class MinionItem implements PDCSettingHolder {
+public final class MinionItem implements MinionSettingHolder {
 
     public static final MinionItem INSTANCE = new MinionItem();
     private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();

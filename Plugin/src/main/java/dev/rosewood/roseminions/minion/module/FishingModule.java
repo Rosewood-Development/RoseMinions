@@ -10,7 +10,7 @@ import dev.rosewood.roseminions.hook.loot.Loot;
 import dev.rosewood.roseminions.manager.HookProviderManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
-import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.nms.NMSAdapter;
 import dev.rosewood.roseminions.nms.NMSHandler;
 import dev.rosewood.roseminions.object.BlockPosition;
@@ -50,7 +50,7 @@ import static dev.rosewood.roseminions.minion.module.FishingModule.Settings.*;
 
 public class FishingModule extends MinionModule {
 
-    public static class Settings implements PDCSettingHolder {
+    public static class Settings implements MinionSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
         private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();

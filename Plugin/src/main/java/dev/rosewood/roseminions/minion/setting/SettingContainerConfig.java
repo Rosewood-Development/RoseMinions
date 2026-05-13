@@ -1,6 +1,7 @@
 package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.roseminions.setting.MinionSetting;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -11,10 +12,10 @@ import org.bukkit.configuration.ConfigurationSection;
  */
 public class SettingContainerConfig {
 
-    private final PDCSettingHolder settings;
+    private final MinionSettingHolder settings;
     private final Map<String, ValueCombinator<?>> settingDefaultValueSuppliers;
 
-    public SettingContainerConfig(PDCSettingHolder settings, ConfigurationSection section) {
+    public SettingContainerConfig(MinionSettingHolder settings, ConfigurationSection section) {
         this.settings = settings;
         this.settingDefaultValueSuppliers = new HashMap<>();
 
@@ -33,7 +34,7 @@ public class SettingContainerConfig {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (x, y) -> y, HashMap::new));
     }
 
-    PDCSettingHolder getSettings() {
+    MinionSettingHolder getSettings() {
         return this.settings;
     }
 

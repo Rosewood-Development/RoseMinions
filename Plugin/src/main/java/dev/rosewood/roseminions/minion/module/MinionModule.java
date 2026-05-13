@@ -10,7 +10,7 @@ import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.ModuleController;
-import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import dev.rosewood.roseminions.object.GuiHolder;
 import dev.rosewood.roseminions.object.Modular;
@@ -51,7 +51,7 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
     protected final GuiFramework guiFramework;
     protected GuiContainer guiContainer;
 
-    public MinionModule(Minion minion, String moduleName, PDCSettingHolder settings) {
+    public MinionModule(Minion minion, String moduleName, MinionSettingHolder settings) {
         this.minion = minion;
         this.moduleName = moduleName.toLowerCase();
         this.settings = new SettingContainer(settings);

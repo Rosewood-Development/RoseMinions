@@ -5,7 +5,7 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Supplier;
 
-public interface MinionConfig {
+public interface MinionConfigFile {
 
     List<MinionSetting<?>> getSettings();
 
@@ -44,7 +44,7 @@ public interface MinionConfig {
     }
 
     static Builder builder(File file) {
-        return new BasicMinionConfig.Builder(file);
+        return new BasicMinionConfigFile.Builder(file);
     }
 
     interface Builder {
@@ -57,7 +57,7 @@ public interface MinionConfig {
 
         Builder writeDefaultValueComments();
 
-        MinionConfig build();
+        MinionConfigFile build();
 
     }
 

@@ -4,7 +4,7 @@ import dev.rosewood.guiframework.GuiFactory;
 import dev.rosewood.guiframework.gui.GuiSize;
 import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.PlayableSound;
 import dev.rosewood.roseminions.setting.MinionSetting;
@@ -30,7 +30,7 @@ import static dev.rosewood.roseminions.minion.module.ShearingModule.Settings.*;
 
 public class ShearingModule extends MinionModule {
 
-    public static class Settings implements PDCSettingHolder {
+    public static class Settings implements MinionSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
         private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();

@@ -1,7 +1,7 @@
 package dev.rosewood.roseminions.minion.module;
 
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.setting.MinionSetting;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,7 +17,7 @@ public abstract class EntityAttractorModule<T extends Entity> extends MinionModu
     private final Set<T> attractingEntities;
     private long lastUpdate;
 
-    public EntityAttractorModule(Minion minion, String moduleName, PDCSettingHolder settings,
+    public EntityAttractorModule(Minion minion, String moduleName, MinionSettingHolder settings,
                                  MinionSetting<Long> updateFrequencySetting, MinionSetting<Integer> radiusSetting) {
         super(minion, moduleName, settings);
         this.updateFrequencySetting = updateFrequencySetting;

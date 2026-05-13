@@ -67,7 +67,7 @@ public interface MinionSetting<T> {
     /**
      * @return the value of this setting from the given RoseConfig
      */
-    default T get(MinionConfig config) {
+    default T get(MinionConfigFile config) {
         return config.get(this);
     }
 

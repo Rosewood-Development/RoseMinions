@@ -10,7 +10,7 @@ import dev.rosewood.rosegarden.utils.HexUtils;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.PlayableParticle;
 import dev.rosewood.roseminions.object.PlayableSound;
@@ -42,7 +42,7 @@ import static dev.rosewood.roseminions.minion.module.ExperiencePickupModule.Sett
 
 public class ExperiencePickupModule extends EntityAttractorModule<ExperienceOrb> {
 
-    public static class Settings implements PDCSettingHolder {
+    public static class Settings implements MinionSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
         private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();

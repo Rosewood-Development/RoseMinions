@@ -8,7 +8,7 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
-import dev.rosewood.roseminions.minion.setting.PDCSettingHolder;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.object.BlockPosition;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.NotificationTicket;
@@ -52,7 +52,7 @@ public class FarmingModule extends MinionModule {
         FARMLAND_CROP_SEED_MATERIALS.put(Material.BEETROOTS, Material.BEETROOT_SEEDS);
     }
 
-    public static class Settings implements PDCSettingHolder {
+    public static class Settings implements MinionSettingHolder {
 
         public static final Settings INSTANCE = new Settings();
         private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();

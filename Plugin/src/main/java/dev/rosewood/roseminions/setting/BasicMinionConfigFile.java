@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class BasicMinionConfig implements MinionConfig {
+class BasicMinionConfigFile implements MinionConfigFile {
 
     private final File file;
     private final List<MinionSetting<?>> settings;
@@ -17,7 +17,7 @@ class BasicMinionConfig implements MinionConfig {
     private final boolean writeDefaultValueComments;
     private CommentedFileConfiguration fileConfiguration;
 
-    private BasicMinionConfig(File file, List<MinionSetting<?>> settings, String[] header, boolean writeDefaultValueComments) {
+    private BasicMinionConfigFile(File file, List<MinionSetting<?>> settings, String[] header, boolean writeDefaultValueComments) {
         this.file = file;
         this.settings = settings;
         this.settingsValueCache = new HashMap<>((int) Math.round(this.settings.size() / 0.75 + 1));
@@ -97,7 +97,7 @@ class BasicMinionConfig implements MinionConfig {
         return Collections.unmodifiableList(this.settings);
     }
 
-    public static class Builder implements MinionConfig.Builder {
+    public static class Builder implements MinionConfigFile.Builder {
 
         private final File file;
         private String[] header;
@@ -112,32 +112,32 @@ class BasicMinionConfig implements MinionConfig {
         }
 
         @Override
-        public MinionConfig.Builder header(String... header) {
+        public MinionConfigFile.Builder header(String... header) {
             this.header = header;
             return this;
         }
 
         @Override
-        public MinionConfig.Builder settings(List<MinionSetting<?>> settings) {
+        public MinionConfigFile.Builder settings(List<MinionSetting<?>> settings) {
             this.settings = new ArrayList<>(settings);
             return this;
         }
 
         @Override
-        public MinionConfig.Builder settings(MinionSettingHolder settingHolder) {
+        public MinionConfigFile.Builder settings(MinionSettingHolder settingHolder) {
             this.settings = new ArrayList<>(settingHolder.get());
             return this;
         }
 
         @Override
-        public MinionConfig.Builder writeDefaultValueComments() {
+        public MinionConfigFile.Builder writeDefaultValueComments() {
             this.writeDefaultValueComments = true;
             return this;
         }
 
         @Override
-        public MinionConfig build() {
-            return new BasicMinionConfig(this.file, this.settings, this.header, this.writeDefaultValueComments);
+        public MinionConfigFile build() {
+            return new BasicMinionConfigFile(this.file, this.settings, this.header, this.writeDefaultValueComments);
         }
 
     }

@@ -2,6 +2,7 @@ package dev.rosewood.roseminions.minion.setting;
 
 import dev.rosewood.roseminions.object.PDCSerializable;
 import dev.rosewood.roseminions.setting.MinionSetting;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,10 +11,10 @@ import org.bukkit.persistence.PersistentDataContainer;
 
 public class SettingContainer implements PDCSerializable {
 
-    private final PDCSettingHolder settings;
+    private final MinionSettingHolder settings;
     private final Map<String, SettingValue<?>> settingValues;
 
-    public SettingContainer(PDCSettingHolder settings) {
+    public SettingContainer(MinionSettingHolder settings) {
         this.settings = settings;
         this.settingValues = new HashMap<>();
         for (MinionSetting<?> setting : settings.get())
