@@ -1,6 +1,5 @@
 package dev.rosewood.roseminions.event;
 
-import dev.rosewood.rosegarden.config.SettingHolder;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.MinionModule;

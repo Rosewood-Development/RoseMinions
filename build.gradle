@@ -8,9 +8,9 @@ allprojects {
     apply plugin: 'java-library'
     apply plugin: 'com.gradleup.shadow'
     group = 'dev.rosewood'
-    version = providers.exec {
+    version = "Alpha-" + providers.exec {
         commandLine 'git', 'rev-parse', '--short', 'HEAD'
-    }.standardOutput.asText.map { it.trim() }.orElse("unknown").get()
+    }.standardOutput.asText.map { it.trim() }.orElse("unknown").get() + "-SNAPSHOT"
 
     java {
         sourceCompatibility = JavaVersion.VERSION_21

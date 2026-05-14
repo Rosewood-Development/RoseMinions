@@ -30,24 +30,24 @@ public abstract class EntityAttractorModule<T extends Entity> extends MinionModu
         int radius = this.settings.get(this.radiusSetting);
         Vector minionPosition = this.minion.getDisplayEntity().getLocation().toVector();
         minionPosition.setY(minionPosition.getY() + this.minion.getDisplayEntity().getEyeHeight());
-        Iterator<T> orbIterator = this.attractingEntities.iterator();
-        while (orbIterator.hasNext()) {
-            T orb = orbIterator.next();
+        Iterator<T> entityIterator = this.attractingEntities.iterator();
+        while (entityIterator.hasNext()) {
+            T orb = entityIterator.next();
             if (!orb.isValid() || orb.isDead()) {
-                orbIterator.remove();
+                entityIterator.remove();
                 continue;
             }
 
             Vector attractionVelocity = minionPosition.clone().subtract(orb.getLocation().toVector());
             double distance = attractionVelocity.length();
             if (distance > radius) {
-                orbIterator.remove();
+                entityIterator.remove();
                 continue;
             }
 
             if (distance <= 0.2 && this.collect(orb)) {
                 orb.remove();
-                orbIterator.remove();
+                entityIterator.remove();
                 continue;
             }
 

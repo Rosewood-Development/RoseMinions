@@ -5,12 +5,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.BlockDisplay;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Transformation;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 
-public class FishingBobberModel implements BlockModel {
+public class FishingBobberModel implements EntityModel {
 
     private static final BlockData WHITE_CONCRETE = Material.WHITE_CONCRETE.createBlockData();
     private static final BlockData RED_CONCRETE = Material.RED_CONCRETE.createBlockData();
@@ -27,6 +28,7 @@ public class FishingBobberModel implements BlockModel {
     }
 
     public void remove() {
+        this.blockDisplay.getPassengers().forEach(Entity::remove);
         this.blockDisplay.remove();
     }
 
@@ -37,9 +39,10 @@ public class FishingBobberModel implements BlockModel {
     private BlockDisplay summonBlockDisplays(Location location) {
         // Summon the main block display
         BlockDisplay mainDisplay = (BlockDisplay) location.getWorld().spawnEntity(
-                location.clone().add(-0.5, -0.5, -0.5),
+                location,
                 EntityType.BLOCK_DISPLAY
         );
+        mainDisplay.setPersistent(false);
 
         // Create passengers
         BlockDisplay[] passengers = new BlockDisplay[6];
@@ -93,8 +96,10 @@ public class FishingBobberModel implements BlockModel {
         ));
 
         // Add all passengers to the main display
-        for (BlockDisplay passenger : passengers)
+        for (BlockDisplay passenger : passengers) {
             mainDisplay.addPassenger(passenger);
+            passenger.setPersistent(false);
+        }
 
         return mainDisplay;
     }

@@ -2,7 +2,7 @@ package dev.rosewood.roseminions.model;
 
 import org.bukkit.Location;
 
-public interface BlockModel {
+public interface EntityModel {
 
     void move(Location location);
 

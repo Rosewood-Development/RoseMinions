@@ -41,6 +41,7 @@ public class MinionManager extends Manager {
 
     public void destroyMinion(Minion minion) {
         this.loadedMinions.remove(minion);
+        minion.unload();
         minion.getDisplayEntity().getPassengers().forEach(Entity::remove);
         minion.getDisplayEntity().remove();
     }

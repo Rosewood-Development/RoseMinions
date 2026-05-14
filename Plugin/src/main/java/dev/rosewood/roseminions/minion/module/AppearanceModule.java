@@ -60,10 +60,10 @@ public class AppearanceModule extends MinionModule {
         public static final Settings INSTANCE = new Settings();
         private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
-        public static final MinionSetting<Boolean> SMALL = define(MinionSetting.ofBoolean("small", true, "If the skull should be small"));
-        public static final MinionSetting<String> TEXTURE = define(MinionSetting.ofString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the skull"));
-        public static final MinionSetting<String> DISPLAY_NAME = define(MinionSetting.ofString("display-name", "<r#5:0.5>Default Minion", "The display name of the skull"));
-        public static final MinionSetting<Double> ROTATION_SPEED = define(MinionSetting.ofDouble("rotation-speed", 0.05, "The speed at which the skull should rotate"));
+        public static final MinionSetting<Boolean> SMALL = define(MinionSetting.ofBoolean("small", true, "If the minion should be small"));
+        public static final MinionSetting<String> TEXTURE = define(MinionSetting.ofString("texture", "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGUyY2UzMzcyYTNhYzk3ZmRkYTU2MzhiZWYyNGIzYmM0OWY0ZmFjZjc1MWZlOWNhZDY0NWYxNWE3ZmI4Mzk3YyJ9fX0=", "The texture of the minion, supports HeadDatabase like hdb:123"));
+        public static final MinionSetting<String> DISPLAY_NAME = define(MinionSetting.ofString("display-name", "<r#5:0.5>Default Minion", "The display name of the minion"));
+        public static final MinionSetting<Double> ROTATION_SPEED = define(MinionSetting.ofDouble("rotation-speed", 0.05, "The speed at which the minion should rotate"));
         public static final MinionSetting<Double> AMBIENT_PARTICLE_CHANCE = define(MinionSetting.ofDouble("ambient-particle-chance", 0.1, "The chance of an ambient particle being spawned each tick"));
         public static final MinionSetting<PlayableParticle> AMBIENT_PARTICLE = define(MinionSetting.of("ambient-particle", PlayableParticle.SERIALIZER, () -> new PlayableParticle(true, Particle.END_ROD, null, 1, new Vector(0.25, 0.25, 0.25), 0.0F, false), "The ambient particle to display around the minion while it's working"));
 
@@ -158,7 +158,7 @@ public class AppearanceModule extends MinionModule {
         this.nametagUpdateTicks = (this.nametagUpdateTicks + 1) % 2;
         if (this.nametagUpdateTicks == 0) {
             String newName = HexUtils.colorify(this.settings.get(DISPLAY_NAME));
-            if (!newName.equals(armorStand.getCustomName())) {
+            if (!newName.equals(armorStand.getCustomName())) { // TODO: getCustomName() is really expensive to run often
                 NMSAdapter.getHandler().setCustomNameUncapped(armorStand, newName);
                 armorStand.setCustomNameVisible(true);
             }

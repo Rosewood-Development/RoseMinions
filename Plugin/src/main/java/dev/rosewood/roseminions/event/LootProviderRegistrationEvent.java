@@ -1,6 +1,5 @@
 package dev.rosewood.roseminions.event;
 
-
 import dev.rosewood.roseminions.hook.loot.LootProvider;
 import java.util.Collections;
 import java.util.HashMap;
