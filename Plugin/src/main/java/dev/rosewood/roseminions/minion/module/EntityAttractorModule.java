@@ -1,8 +1,8 @@
 package dev.rosewood.roseminions.minion.module;
 
 import dev.rosewood.roseminions.minion.Minion;
-import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.setting.MinionSetting;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -32,33 +32,39 @@ public abstract class EntityAttractorModule<T extends Entity> extends MinionModu
         minionPosition.setY(minionPosition.getY() + this.minion.getDisplayEntity().getEyeHeight());
         Iterator<T> entityIterator = this.attractingEntities.iterator();
         while (entityIterator.hasNext()) {
-            T orb = entityIterator.next();
-            if (!orb.isValid() || orb.isDead()) {
+            T entity = entityIterator.next();
+            if (!entity.isValid() || entity.isDead()) {
                 entityIterator.remove();
                 continue;
             }
 
-            Vector attractionVelocity = minionPosition.clone().subtract(orb.getLocation().toVector());
+            Vector attractionVelocity = minionPosition.clone().subtract(entity.getLocation().toVector());
             double distance = attractionVelocity.length();
             if (distance > radius) {
                 entityIterator.remove();
                 continue;
             }
 
-            if (distance <= 0.2 && this.collect(orb)) {
-                orb.remove();
+            if (distance <= 0.2) {
+                if (this.collect(entity)) {
+                    entity.remove();
+                } else {
+                    entity.setVelocity(new Vector());
+                }
                 entityIterator.remove();
                 continue;
             }
 
             double pullStrength = 1.0 - distance / radius;
-            orb.setVelocity(orb.getVelocity().add(attractionVelocity.normalize().multiply(pullStrength * pullStrength * 0.1)));
+            entity.setVelocity(entity.getVelocity().add(attractionVelocity.normalize().multiply(pullStrength * pullStrength * 0.1)));
         }
 
         if (System.currentTimeMillis() - this.lastUpdate < this.settings.get(this.updateFrequencySetting))
             return;
 
         this.lastUpdate = System.currentTimeMillis();
+
+        this.attractingEntities.clear();
 
         this.minion.getWorld().getNearbyEntities(this.minion.getLocation(), radius, radius, radius, this::testEntity).stream()
                 .map(x -> (T) x)

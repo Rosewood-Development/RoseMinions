@@ -48,7 +48,7 @@ public class ExperiencePickupModule extends EntityAttractorModule<ExperienceOrb>
         private static final List<MinionSetting<?>> SETTINGS = new ArrayList<>();
 
         public static final MinionSetting<Integer> STORED_XP = define(MinionSetting.ofHidden("stored-xp", DataSerializers.INTEGER, () -> 0));
-        public static final MinionSetting<Integer> MAX_EXP = define(MinionSetting.ofInteger("max-exp", 30970, "The maximum amount of XP the minion can store", ""));
+        public static final MinionSetting<Integer> MAX_EXP = define(MinionSetting.ofInteger("max-exp", 30970, "The maximum amount of XP the minion can store"));
         public static final MinionSetting<Long> UPDATE_FREQUENCY = define(MinionSetting.ofLong("update-frequency", 1000L, "How often the minion will update (in milliseconds)"));
         public static final MinionSetting<Integer> RADIUS = define(MinionSetting.ofInteger("radius", 8, "The radius for the minion to search for items"));
         public static final MinionSetting<PlayableSound> PICKUP_SOUND = define(MinionSetting.of("pickup-sound", PlayableSound.SERIALIZER, () -> new PlayableSound(true, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 0.5F, 1.0F), "The sound to play when collecting experience"));
