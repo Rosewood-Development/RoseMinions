@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.event.Event;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -94,6 +95,10 @@ public class MinionManager extends Manager {
         PersistentDataContainer dataContainer = context.newPersistentDataContainer();
         minion.writePDC(dataContainer);
         pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER, dataContainer);
+    }
+
+    public <T extends Event> void handleEvent(T event) {
+        this.loadedMinions.forEach(minion -> minion.handleEvent(event));
     }
 
     public Optional<Minion> getMinionFromEntity(ArmorStand entity) {

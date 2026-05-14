@@ -6,10 +6,10 @@ import dev.rosewood.rosegarden.manager.Manager;
 import dev.rosewood.rosegarden.utils.NMSUtil;
 import dev.rosewood.roseminions.config.SettingKey;
 import dev.rosewood.roseminions.listener.EntitiesLoadListener;
+import dev.rosewood.roseminions.listener.MinionModuleEventListener;
 import dev.rosewood.roseminions.listener.MinionPickListener;
 import dev.rosewood.roseminions.listener.MinionPickupListener;
 import dev.rosewood.roseminions.listener.MinionPlaceListener;
-import dev.rosewood.roseminions.listener.WorldListener;
 import dev.rosewood.roseminions.manager.CommandManager;
 import dev.rosewood.roseminions.manager.HookProviderManager;
 import dev.rosewood.roseminions.manager.LocaleManager;
@@ -51,12 +51,8 @@ public class RoseMinions extends RosePlugin {
         }
 
         PluginManager pluginManager = Bukkit.getPluginManager();
-        if (NMSUtil.getVersionNumber() > 16) {
-            pluginManager.registerEvents(new EntitiesLoadListener(this), this);
-        } else {
-            pluginManager.registerEvents(new WorldListener(this), this);
-        }
-
+        pluginManager.registerEvents(new EntitiesLoadListener(this), this);
+        pluginManager.registerEvents(new MinionModuleEventListener(this), this);
         pluginManager.registerEvents(new MinionPlaceListener(this), this);
         pluginManager.registerEvents(new MinionPickupListener(this), this);
 

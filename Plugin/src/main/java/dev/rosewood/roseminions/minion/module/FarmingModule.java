@@ -8,7 +8,6 @@ import dev.rosewood.guiframework.gui.screen.GuiScreen;
 import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.WorkerAreaController;
-import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.object.BlockPosition;
 import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.NotificationTicket;
@@ -17,6 +16,7 @@ import dev.rosewood.roseminions.object.PlayableSound;
 import dev.rosewood.roseminions.object.WorkerAreaProperties;
 import dev.rosewood.roseminions.setting.DataSerializers;
 import dev.rosewood.roseminions.setting.MinionSetting;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.util.MinionUtils;
 import dev.rosewood.roseminions.util.VersionUtils;
 import java.util.ArrayList;
@@ -36,6 +36,10 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Farmland;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.MoistureChangeEvent;
+import org.bukkit.event.entity.EntityInteractEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import static dev.rosewood.roseminions.minion.module.FarmingModule.Settings.*;
@@ -64,6 +68,7 @@ public class FarmingModule extends MinionModule {
         public static final MinionSetting<Integer> FARM_BLOCK_AMOUNT = define(MinionSetting.ofInteger("farm-block-amount", 1, "The amount of blocks to plant/harvest at once"));
         public static final MinionSetting<Boolean> TILL_SOIL = define(MinionSetting.ofBoolean("till-soil", true, "Whether the minion will till plantable soil"));
         public static final MinionSetting<Boolean> HYDRATE_SOIL = define(MinionSetting.ofBoolean("hydrate-soil", true, "Whether the minion will hydrate farmland"));
+        public static final MinionSetting<Boolean> PROTECT_SOIL = define(MinionSetting.ofBoolean("protect-soil", true, "Whether the minion will protect farmland from being trampled or dehydrated"));
         public static final MinionSetting<Boolean> HARVEST_CROPS = define(MinionSetting.ofBoolean("harvest-crops", true, "Whether the minion will harvest crops"));
         public static final MinionSetting<Boolean> PLANT_SEEDS = define(MinionSetting.ofBoolean("plant-seeds", true, "Whether the minion will plant seeds"));
         public static final MinionSetting<Boolean> FERTILIZE_CROPS = define(MinionSetting.ofBoolean("fertilize-crops", true, "Whether the minion will fertilize crops (auto-growth)"));
@@ -121,7 +126,34 @@ public class FarmingModule extends MinionModule {
                 this::onBlockScan,
                 false
         ));
+
         this.minion.getAppearanceModule().registerNotificationTicket(new NotificationTicket(this, "no-soil", ChatColor.RED + "No nearby farmland!", 1000, this.farmland::isEmpty, StringPlaceholders::empty));
+
+        this.eventListeners.registerListener(MoistureChangeEvent.class, event -> {
+            if (!this.settings.get(PROTECT_SOIL))
+                return;
+
+            BlockPosition blockPosition = BlockPosition.from(event.getBlock().getLocation());
+            if (this.farmland.contains(blockPosition))
+                event.setCancelled(true);
+        });
+        this.eventListeners.registerListener(EntityInteractEvent.class, event -> {
+            if (!this.settings.get(PROTECT_SOIL))
+                return;
+
+            BlockPosition blockPosition = BlockPosition.from(event.getBlock().getLocation());
+            if (this.farmland.contains(blockPosition))
+                event.setCancelled(true);
+        });
+        this.eventListeners.registerListener(PlayerInteractEvent.class, event -> {
+            Block block = event.getClickedBlock();
+            if (event.getAction() != Action.PHYSICAL || block == null || !this.settings.get(PROTECT_SOIL))
+                return;
+
+            BlockPosition blockPosition = BlockPosition.from(block.getLocation());
+            if (this.farmland.contains(blockPosition))
+                event.setCancelled(true);
+        });
     }
 
     @Override

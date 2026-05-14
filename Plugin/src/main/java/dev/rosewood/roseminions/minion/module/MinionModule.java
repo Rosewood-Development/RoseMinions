@@ -10,7 +10,6 @@ import dev.rosewood.rosegarden.utils.KeyHelper;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.minion.Minion;
 import dev.rosewood.roseminions.minion.module.controller.ModuleController;
-import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.minion.setting.SettingContainer;
 import dev.rosewood.roseminions.object.GuiHolder;
 import dev.rosewood.roseminions.object.Modular;
@@ -18,15 +17,20 @@ import dev.rosewood.roseminions.object.ModuleGuiProperties;
 import dev.rosewood.roseminions.object.PDCSerializable;
 import dev.rosewood.roseminions.object.Updatable;
 import dev.rosewood.roseminions.setting.MinionSetting;
+import dev.rosewood.roseminions.setting.MinionSettingHolder;
 import dev.rosewood.roseminions.util.MinionUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.persistence.PersistentDataAdapterContext;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -46,6 +50,7 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
     protected final SettingContainer settings;
     protected final Map<Class<? extends MinionModule>, MinionModule> submodules;
     protected final List<ModuleController> activeControllers;
+    protected final ModuleEventListeners eventListeners;
     protected Modular parentModular;
 
     protected final GuiFramework guiFramework;
@@ -57,6 +62,7 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
         this.settings = new SettingContainer(settings);
         this.submodules = new LinkedHashMap<>();
         this.activeControllers = new ArrayList<>();
+        this.eventListeners = new ModuleEventListeners();
         this.parentModular = minion;
         this.guiFramework = GuiFramework.instantiate(RoseMinions.getInstance());
     }
@@ -178,6 +184,20 @@ public abstract class MinionModule implements GuiHolder, PDCSerializable, Modula
         this.submodules.values().forEach(MinionModule::updateAsync);
         this.activeControllers.forEach(ModuleController::updateAsync);
         this.tickAsync();
+    }
+
+    public final <T extends Event> void handleEvent(T event) {
+        this.eventListeners.handleEvent(event);
+
+        if (event instanceof Cancellable cancellable) {
+            for (MinionModule submodule : this.submodules.values()) {
+                if (cancellable.isCancelled())
+                    break;
+                submodule.handleEvent(event);
+            }
+        } else {
+            this.submodules.values().forEach(x -> x.handleEvent(event));
+        }
     }
 
     public final Minion getMinion() {

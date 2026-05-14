@@ -46,6 +46,8 @@ import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -134,6 +136,18 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
     @Override
     public void updateAsync() {
         this.getModules().forEach(MinionModule::updateAsync);
+    }
+
+    public final <T extends Event> void handleEvent(T event) {
+        if (event instanceof Cancellable cancellable) {
+            for (MinionModule submodule : this.modules.values()) {
+                if (cancellable.isCancelled())
+                    break;
+                submodule.handleEvent(event);
+            }
+        } else {
+            this.modules.values().forEach(x -> x.handleEvent(event));
+        }
     }
 
     @Override
