@@ -33,6 +33,7 @@ public class InventoryModule extends MinionModule {
 
         public static final MinionSetting<Integer> INVENTORY_SIZE = define(MinionSetting.ofInteger("inventory-size", 27, "How many individual items can be stored"));
         public static final MinionSetting<ItemStack[]> INVENTORY_CONTENTS = define(MinionSetting.ofHidden("inventory-contents", DataSerializers.ofArray(DataSerializers.ITEMSTACK), () -> new ItemStack[27]));
+        public static final MinionSetting<Boolean> DROP_CONTENTS_ON_REMOVAL = define(MinionSetting.ofBoolean("drop-contents-on-removal", false, "Whether or not the inventory should be dropped on the ground when the minion is removed"));
 
         static {
             define(MinionModule.GUI_PROPERTIES.copy(() ->
@@ -61,6 +62,24 @@ public class InventoryModule extends MinionModule {
     @Override
     public void finalizeLoad() {
         MinionUtils.snapInventorySize(this.settings, INVENTORY_SIZE, INVENTORY_CONTENTS);
+    }
+
+    @Override
+    public void unload(boolean removed) {
+        super.unload(removed);
+
+        if (removed && this.settings.get(DROP_CONTENTS_ON_REMOVAL)) {
+            ItemStack[] items = this.settings.get(INVENTORY_CONTENTS);
+            if (items != null) {
+                for (int i = 0; i < items.length; i++) {
+                    ItemStack item = items[i];
+                    if (item != null)
+                        this.minion.getWorld().dropItemNaturally(this.minion.getCenterLocation(), item);
+                    items[i] = null;
+                }
+            }
+            this.settings.set(INVENTORY_CONTENTS, items);
+        }
     }
 
     @Override

@@ -14,6 +14,7 @@ import dev.rosewood.rosegarden.utils.StringPlaceholders;
 import dev.rosewood.roseminions.RoseMinions;
 import dev.rosewood.roseminions.datatype.MinionPersistentDataType;
 import dev.rosewood.roseminions.manager.LocaleManager;
+import dev.rosewood.roseminions.manager.MinionManager;
 import dev.rosewood.roseminions.manager.MinionModuleManager;
 import dev.rosewood.roseminions.manager.MinionTypeManager;
 import dev.rosewood.roseminions.minion.config.MinionConfig;
@@ -43,6 +44,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -210,10 +212,27 @@ public class Minion implements GuiHolder, Modular, Updatable, PDCSerializable {
         }
     }
 
-    public void unload() {
+    /**
+     * Unloads a minion, optionally removing it.
+     * Call {@link MinionManager#destroyMinion(Minion)} to remove a minion instead of this.
+     * @param removed true if the minion is being removed, false if it's being unloaded
+     */
+    public void unload(boolean removed) {
+        // Close all viewers
+        this.kickOutViewers();
+
+        // Unload functionality
+        this.getModules().forEach(module -> module.unload(removed));
+
+        // Remove entity
+        if (removed) {
+            this.displayEntity.getPassengers().forEach(Entity::remove);
+            this.displayEntity.remove();
+        }
+
+        // Unload GUI
         if (this.guiContainer != null)
             GuiFramework.getInstance().getGuiManager().unregisterGui(this.guiContainer);
-        this.getModules().forEach(MinionModule::unload);
     }
 
     private void buildGui() {

@@ -169,8 +169,8 @@ public class AppearanceModule extends MinionModule {
     }
 
     @Override
-    public void unload() {
-        super.unload();
+    public void unload(boolean removed) {
+        super.unload(removed);
 
         // Remove notification entity
         ArmorStand armorStand = this.minion.getDisplayEntity();

@@ -77,7 +77,7 @@ public class MinionPickupListener implements Listener {
             return;
         }
 
-        minion.kickOutViewers();
+        minionManager.destroyMinion(minion);
 
         ItemStack itemStack = minion.getRankData().getDisplayItemStack();
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -88,8 +88,6 @@ public class MinionPickupListener implements Listener {
         minion.writePDC(dataContainer);
         pdc.set(MinionUtils.MINION_DATA_KEY, PersistentDataType.TAG_CONTAINER, dataContainer);
         itemStack.setItemMeta(itemMeta);
-
-        minionManager.destroyMinion(minion);
 
         PlayerInventory inventory = player.getInventory();
         int heldSlot = inventory.getHeldItemSlot();

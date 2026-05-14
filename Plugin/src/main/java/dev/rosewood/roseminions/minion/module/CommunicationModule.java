@@ -82,8 +82,8 @@ public class CommunicationModule extends MinionModule {
     }
 
     @Override
-    public void unload() {
-        super.unload();
+    public void unload(boolean removed) {
+        super.unload(removed);
 
         // Reset all minions in the conversation to their original display names
         this.resetConversation();

@@ -126,8 +126,9 @@ public class FishingModule extends MinionModule {
     }
 
     @Override
-    public void unload() {
-        super.unload();
+    public void unload(boolean removed) {
+        super.unload(removed);
+
         if (this.bobber != null)
             this.bobber.remove();
     }
