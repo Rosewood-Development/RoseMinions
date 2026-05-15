@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.BlockDisplay;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.util.Transformation;
@@ -99,6 +100,7 @@ public class FishingBobberModel implements EntityModel {
         for (BlockDisplay passenger : passengers) {
             mainDisplay.addPassenger(passenger);
             passenger.setPersistent(false);
+            passenger.setBrightness(new Display.Brightness(15, 15));
         }
 
         return mainDisplay;

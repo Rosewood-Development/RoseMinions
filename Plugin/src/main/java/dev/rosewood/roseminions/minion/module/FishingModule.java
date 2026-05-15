@@ -60,6 +60,7 @@ public class FishingModule extends MinionModule {
         public static final MinionSetting<WorkerAreaProperties> WORKER_AREA_PROPERTIES = define(MinionSetting.of("worker-area-properties",WorkerAreaProperties.SERIALIZER,
                 () -> new WorkerAreaProperties(5, WorkerAreaController.ScanShape.CUBE, new Vector(), WorkerAreaController.ScanDirection.TOP_DOWN, true, 30000L),
                 "Settings that control the worker area for this module"));
+        public static final MinionSetting<List<Material>> FISHABLE_BLOCKS = define(MinionSetting.of("fishable-blocks", DataSerializers.ofList(DataSerializers.MATERIAL), () -> List.of(Material.WATER), "The blocks that can be fished in"));
         public static final MinionSetting<Long> FISH_MIN_DELAY = define(MinionSetting.ofLong("fish-min-delay", 5000L, "The minimum amount of time it takes to find a fish (in milliseconds)"));
         public static final MinionSetting<Long> FISH_MAX_DELAY = define(MinionSetting.ofLong("fish-max-delay", 30000L, "The maximum amount of time it takes to find a fish (in milliseconds)"));
         public static final MinionSetting<Long> FISH_LURE_DELAY_OFFSET = define(MinionSetting.ofLong("fish-lure-delay-offset", 5000L, "The amount of time to subtract from the delay per level of the Lure enchantment (in milliseconds)"));
@@ -155,7 +156,7 @@ public class FishingModule extends MinionModule {
                 this.settings.get(CAST_SOUND).play(this.minion.getCenterLocation());
                 if (this.bobber != null)
                     this.bobber.remove();
-                this.bobber = new FishingBobber(this.targetBlock.getLocation().clone().add(0.5, 0.85, 0.5));
+                this.bobber = new FishingBobber(this.targetBlock.getLocation().clone().add(0.5, 0.8, 0.5));
                 return;
             }
 
@@ -209,9 +210,16 @@ public class FishingModule extends MinionModule {
                 return;
             }
 
-            Location dropLocation = this.targetBlock.getLocation().add(0, 0.5, 0);
+            Location targetBlockLocation = this.targetBlock.getLocation().add(0.5, 0.5, 0.5);
+            Location dropLocation;
+            if (!this.targetBlock.isSolid()) {
+                dropLocation = targetBlockLocation;
+            } else {
+                dropLocation = this.targetBlock.getLocation().add(0.5, 1.4, 0.5);
+            }
+
             NMSHandler nmsHandler = NMSAdapter.getHandler();
-            List<ItemStack> fishedItems = nmsHandler.getFishingLoot(this.minion.getDisplayEntity(), dropLocation, this.getToolUsed());
+            List<ItemStack> fishedItems = nmsHandler.getFishingLoot(this.minion.getDisplayEntity(), targetBlockLocation, this.getToolUsed());
             FishHook hook = nmsHandler.getLastFishHook();
             Loot loot = RoseMinions.getInstance().getManager(HookProviderManager.class).getLootProvider().fish(new Loot(fishedItems, 0), this.minion, hook);
             fishedItems = loot.items();
@@ -268,6 +276,16 @@ public class FishingModule extends MinionModule {
     }
 
     private boolean isValid(BlockData waterData, BlockData airData) {
+        if (!airData.getMaterial().isAir())
+            return false;
+
+        List<Material> fishableBlocks = this.settings.get(FISHABLE_BLOCKS);
+        for (Material material : fishableBlocks) {
+            if (material == waterData.getMaterial())
+                return true;
+            if (material == Material.WATER && (waterData instanceof Waterlogged waterlogged && waterlogged.isWaterlogged()))
+                return true;
+        }
         boolean isWater = waterData.getMaterial() == Material.WATER || (waterData instanceof Waterlogged waterlogged && waterlogged.isWaterlogged());
         return isWater && airData.getMaterial().isAir();
     }

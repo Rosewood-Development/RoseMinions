@@ -18,12 +18,12 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_21_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_21_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_21_R3.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_21_R3.util.CraftChatMessage;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.FishHook;
 import org.bukkit.inventory.ItemStack;
@@ -36,7 +36,6 @@ public class NMSHandlerImpl implements NMSHandler {
     static {
         try {
             entityCounter = (AtomicInteger) ReflectionUtils.getFieldByPositionAndType(net.minecraft.world.entity.Entity.class, 0, AtomicInteger.class).get(null);
-            fishingHook = new FakeFishingHook(((CraftWorld) Bukkit.getWorlds().get(0)).getHandle());
         } catch (ReflectiveOperationException e) {
             e.printStackTrace();
         }
@@ -56,6 +55,8 @@ public class NMSHandlerImpl implements NMSHandler {
 
     @Override
     public List<ItemStack> getFishingLoot(Entity looter, Location location, ItemStack fishingRod) {
+        Vec3 position = new Vec3(location.getX(), location.getY(), location.getZ());
+        fishingHook = new FakeFishingHook(((CraftWorld) location.getWorld()).getHandle(), position);
         fishingHook.setOpenWater(location);
 
         ServerLevel level = ((CraftWorld) looter.getWorld()).getHandle();
@@ -63,6 +64,7 @@ public class NMSHandlerImpl implements NMSHandler {
                 .withParameter(LootContextParams.ORIGIN, new Vec3(location.getX(), location.getY(), location.getZ()))
                 .withOptionalParameter(LootContextParams.TOOL, CraftItemStack.asNMSCopy(fishingRod))
                 .withOptionalParameter(LootContextParams.THIS_ENTITY, fishingHook)
+                .withLuck(fishingRod.getEnchantmentLevel(Enchantment.LUCK_OF_THE_SEA))
                 .create(LootContextParamSets.FISHING);
 
         return MinecraftServer.getServer().reloadableRegistries().getLootTable(BuiltInLootTables.FISHING).getRandomItems(params)

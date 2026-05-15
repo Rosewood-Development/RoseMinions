@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
 
@@ -23,8 +24,9 @@ public class FakeFishingHook extends FishingHook {
 
     private boolean isOpenWater;
 
-    public FakeFishingHook(Level world) {
+    public FakeFishingHook(Level world, Vec3 position) {
         super(EntityType.FISHING_BOBBER, world);
+        this.setPosRaw(position.x(), position.y(), position.z());
     }
 
     @Override
